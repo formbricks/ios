@@ -8,8 +8,27 @@ The iOS SDK for Formbricks
 
 1. In Xcode choose **File → Add Packages…**
 2. Enter your repo URL (e.g. `https://github.com/formbricks/ios.git`)
-3. Choose version rule (e.g. “Up to Next Major” starting at `1.0.0`).
+3. Choose version rule (e.g. "Up to Next Major" starting at `1.0.0`).
 4. Import in your code:
+   ```swift
+   import FormbricksSDK
+   ```
+
+### CocoaPods
+
+1. Add the following to your `Podfile`:
+
+   ```ruby
+   platform :ios, '16.6'
+   use_frameworks! :linkage => :static
+
+   target 'YourTargetName' do
+     pod 'FormbricksSDK', '1.0.0 (or the latest version)'
+   end
+   ```
+
+2. Run `pod install` in your project directory
+3. Import in your code:
    ```swift
    import FormbricksSDK
    ```
@@ -53,4 +72,8 @@ Formbricks.logout()
 Formbricks.cleanup(waitForOperations: true) {
     print("SDK torn down")
 }
+```
+
+```
+
 ```
