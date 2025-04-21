@@ -5,8 +5,6 @@ on:
     # runs on anything like v1.2.3
     tags:
       - "v*.*.*"
-    branches:
-      - "**"
 
 jobs:
   publish-pod:
