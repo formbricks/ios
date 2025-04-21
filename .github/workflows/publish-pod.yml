@@ -1,0 +1,36 @@
+name: Publish CocoaPod
+
+on:
+  push:
+    # runs on anything like v1.2.3
+    tags:
+      - "v*.*.*"
+
+jobs:
+  publish-pod:
+    runs-on: macos-latest
+    steps:
+      # 1. Check out your code
+      - uses: actions/checkout@v3
+
+      # 2. Install a recent Ruby
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.x
+
+      # 3. Install CocoaPods
+      - name: Install CocoaPods
+        run: |
+          gem install cocoapods
+
+      # 4. Authenticate with your CocoaPods Trunk token
+      - name: Configure CocoaPods Trunk Credentials
+        run: |
+          echo "machine trunk.cocoapods.org login $COCOAPODS_TRUNK_TOKEN" > ~/.netrc
+        env:
+          COCOAPODS_TRUNK_TOKEN: ${{ secrets.COCOAPODS_TRUNK_TOKEN }}
+
+      # 5. Push the podspec
+      - name: Push to CocoaPods Trunk
+        run: |
+          pod trunk push FormbricksSDK.podspec --allow-warnings --use-libraries
