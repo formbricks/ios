@@ -33,6 +33,6 @@ jobs:
           COCOAPODS_TRUNK_TOKEN: ${{ secrets.COCOAPODS_TRUNK_TOKEN }}
 
       # 5. Push the podspec
-      - name: Push to CocoaPods Trunk
-        run: |
-          pod trunk push FormbricksSDK.podspec --allow-warnings --use-libraries
+      # - name: Push to CocoaPods Trunk
+      #   run: |
+      #     pod trunk push FormbricksSDK.podspec --allow-warnings
