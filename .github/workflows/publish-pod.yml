@@ -4,6 +4,8 @@ on:
   workflow_dispatch:
 
   push:
+    branches:
+      - "**"
     # runs on anything like v1.2.3
     tags:
       - "v*.*.*"
