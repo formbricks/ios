@@ -23,14 +23,8 @@ jobs:
         run: |
           gem install cocoapods
 
-      # 4. Authenticate with your CocoaPods Trunk token
-      - name: Configure CocoaPods Trunk Credentials
-        run: |
-          echo "machine trunk.cocoapods.org login $COCOAPODS_TRUNK_TOKEN" > ~/.netrc
+      # 4. Push the podspec
+      - name: Publish to CocoaPods Trunk
         env:
           COCOAPODS_TRUNK_TOKEN: ${{ secrets.COCOAPODS_TRUNK_TOKEN }}
-
-      # 5. Push the podspec
-      - name: Push to CocoaPods Trunk
-        run: |
-          pod trunk push FormbricksSDK.podspec --allow-warnings
+        run: pod trunk push FormbricksSDK.podspec --allow-warnings
