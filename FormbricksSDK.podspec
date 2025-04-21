@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = "FormbricksSDK"
-  s.version          = "1.0.1"                              
+  s.version          = "1.0.1-beta.1"                              
   s.summary          = "iOS SDK for Formbricks" 
   s.homepage         = "https://github.com/formbricks/ios"   
   s.license          = { :type => "MIT", :file => "LICENSE" }
