@@ -1,6 +1,8 @@
 name: Publish CocoaPod
 
 on:
+  workflow_dispatch:
+
   push:
     # runs on anything like v1.2.3
     tags:
@@ -16,7 +18,7 @@ jobs:
       # 2. Install a recent Ruby
       - uses: ruby/setup-ruby@v1
         with:
-          ruby-version: 3.x
+          ruby-version: 3.4.3
 
       # 3. Install CocoaPods
       - name: Install CocoaPods
