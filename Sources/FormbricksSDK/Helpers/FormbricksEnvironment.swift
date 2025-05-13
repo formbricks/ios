@@ -12,20 +12,20 @@ internal enum FormbricksEnvironment {
 
   /// Returns the full survey‐script URL as a String
   static var surveyScriptUrlString: String {
-    let path =  ["/js", "surveys.umd.cjs"].joined(separator: "/")
+    let path = "/" + ["js", "surveys.umd.cjs"].joined(separator: "/") // NOSONAR we can hard-code "/" here
     return baseApiUrl + path
   }
 
   /// Returns the full environment‐fetch URL as a String for the given ID
     static var getEnvironmentRequestEndpoint: String {
-      let path = ["/api", "v2", "client", "{environmentId}", "environment"]
+      let path = "/" + ["api", "v2", "client", "{environmentId}", "environment"] // NOSONAR we can hard-code "/" here
       .joined(separator: "/")
     return path
   }
 
   /// Returns the full post-user URL as a String for the given ID
     static var postUserRequestEndpoint: String {
-    let path = ["/api", "v2", "client", "{environmentId}", "user"]
+    let path = "/" + ["api", "v2", "client", "{environmentId}", "user"] // NOSONAR we can hard-code "/" here
       .joined(separator: "/")
     return path
   }
