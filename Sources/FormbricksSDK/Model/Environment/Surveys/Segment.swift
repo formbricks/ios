@@ -129,7 +129,11 @@ enum SegmentFilterRoot: Codable {
 // MARK: - Qualifier
 
 struct SegmentFilterQualifier: Codable {
-    let `operator`: FilterOperator
+    let filterOperator: FilterOperator
+
+    private enum CodingKeys: String, CodingKey {
+        case filterOperator = "operator"
+    }
 }
 
 // MARK: - Primitive Filter
