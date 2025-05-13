@@ -55,7 +55,8 @@ class APIClient<Request: CodableRequest>: Operation, @unchecked Sendable {
     
     private func handleSuccessResponse(data: Data?, statusCode: Int, message: inout String) {
         guard let data = data else {
-            completion?(.failure(FormbricksAPIClientError(type: .invalidResponse, statusCode: statusCode)))
+            let error = FormbricksAPIClientError(type: .invalidResponse, statusCode: statusCode)
+            completion?(.failure(error))
             return
         }
 
@@ -111,9 +112,10 @@ class APIClient<Request: CodableRequest>: Operation, @unchecked Sendable {
         default:
             message.append("Error: \(error.localizedDescription)")
         }
-
-        Formbricks.logger?.error(message)
-        completion?(.failure(FormbricksAPIClientError(type: .invalidResponse, statusCode: statusCode)))
+        
+        let error = FormbricksAPIClientError(type: .invalidResponse, statusCode: statusCode)
+        Formbricks.logger?.error(error.message)
+        completion?(.failure(error))
     }
     
     private func logRequest(_ request: URLRequest) {

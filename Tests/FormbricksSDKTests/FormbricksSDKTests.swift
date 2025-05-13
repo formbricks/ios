@@ -8,6 +8,7 @@ final class FormbricksSDKTests: XCTestCase {
     let userId = "6CCCE716-6783-4D0F-8344-9C7DFA43D8F7"
     let surveyID = "cm6ovw6j7000gsf0kduf4oo4i"
     let mockService = MockFormbricksService()
+    let waitDescription = "wait for a second"
     
     func testFormbricks() throws {
         // Everything should be in the default state before initialization.
@@ -56,7 +57,7 @@ final class FormbricksSDKTests: XCTestCase {
          
          // Authenticate the user.
          Formbricks.setUserId(userId)
-         _ = XCTWaiter.wait(for: [expectation(description: "Wait for a seconds")], timeout: 2.0)
+         _ = XCTWaiter.wait(for: [expectation(description: waitDescription)], timeout: 2.0)
          XCTAssertEqual(Formbricks.userManager?.userId, userId)
          // User refresh timer should be set.
          XCTAssertNotNil(Formbricks.userManager?.syncTimer)
@@ -77,7 +78,7 @@ final class FormbricksSDKTests: XCTestCase {
          
          // Track a known event—the survey should be shown.
          Formbricks.track("click_demo_button")
-         _ = XCTWaiter.wait(for: [expectation(description: "Wait for a seconds")], timeout: 1.0)
+         _ = XCTWaiter.wait(for: [expectation(description: waitDescription)], timeout: 1.0)
          XCTAssertTrue(Formbricks.surveyManager?.isShowingSurvey ?? false)
          
          // "Dismiss" the webview.
@@ -92,7 +93,7 @@ final class FormbricksSDKTests: XCTestCase {
          
          // Track a valid event, but survey should not be shown because a response was already submitted.
          Formbricks.track("click_demo_button")
-         _ = XCTWaiter.wait(for: [expectation(description: "Wait for a seconds")], timeout: 1.0)
+         _ = XCTWaiter.wait(for: [expectation(description: waitDescription)], timeout: 1.0)
          XCTAssertFalse(Formbricks.surveyManager?.isShowingSurvey ?? false)
          
          // Validate logout.
@@ -115,7 +116,7 @@ final class FormbricksSDKTests: XCTestCase {
          Formbricks.surveyManager?.filterSurveys()
          
          Formbricks.track("click_demo_button")
-         _ = XCTWaiter.wait(for: [expectation(description: "Wait for a seconds")], timeout: 1.0)
+         _ = XCTWaiter.wait(for: [expectation(description: waitDescription)], timeout: 1.0)
          XCTAssertTrue(Formbricks.surveyManager?.isShowingSurvey ?? false)
          
         // Test the cleanup

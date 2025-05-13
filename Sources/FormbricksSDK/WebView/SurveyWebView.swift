@@ -25,7 +25,9 @@ struct SurveyWebView: UIViewRepresentable {
         webView.configuration.defaultWebpagePreferences.allowsContentJavaScript = true
         webView.isOpaque = false
         webView.backgroundColor = UIColor.clear
-        if #available(iOS 16.4, *) { webView.isInspectable = true }
+        if #available(iOS 16.4, *) {
+            webView.isInspectable = true
+        }
         webView.navigationDelegate = context.coordinator
         webView.uiDelegate = context.coordinator
         return webView
@@ -137,7 +139,8 @@ final class JsMessageHandler: NSObject, WKScriptMessageHandler {
             }
             
         } else {
-            Formbricks.logger?.error("\(FormbricksSDKError(type: .invalidJavascriptMessage).message): \(message.body)")
+            let error = FormbricksSDKError(type: .invalidJavascriptMessage)
+            Formbricks.logger?.error("\(error.message): \(message.body)")
         }
     }
 }
