@@ -182,8 +182,11 @@ extension SurveyManager {
                 return environmentResponse
             } else {
                 if let data = UserDefaults.standard.data(forKey: SurveyManager.environmentResponseObjectKey) {
+                    print("data")
+                    print(data)
                     return try? JSONDecoder().decode(EnvironmentResponse.self, from: data)
                 } else {
+                    print("from survey manager")
                     let error = FormbricksSDKError(type: .unableToRetrieveEnvironment)
                     Formbricks.logger?.error(error.message)
                     return nil

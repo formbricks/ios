@@ -86,11 +86,6 @@ class MockFormbricksService: FormbricksService {
                 return
             }
         
-            // 5️⃣ Log the raw JSON content
-            if let jsonString = String(data: jsonData, encoding: .utf8) {
-                print("📄 Contents of \(name).json:\n\(jsonString)")
-            }
-            
             // 6️⃣ Decode as before
             do {
                 let body = try JSONDecoder.iso8601Full.decode(T.self, from: jsonData)
