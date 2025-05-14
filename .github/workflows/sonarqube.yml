@@ -35,7 +35,8 @@ jobs:
           xcodebuild test \
           -scheme 'FormbricksSDK' \
           -sdk iphonesimulator \
-          -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=18.4' \
+          -config Debug \
+          -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=18.2' \
           -derivedDataPath build \
           -enableCodeCoverage YES
 
