@@ -16,6 +16,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # Shallow clones should be disabled for better SonarQube analysis
 
       # Install Ruby (for Slather) and Slather itself
       - name: Set up Ruby
@@ -29,7 +31,14 @@ jobs:
       - name: Install Dependencies
         run: swift package resolve
 
-      - name: Test with iPhone Simulator
+      # Run tests for the package using Swift Package Manager
+      - name: Test with SPM
+        run: |
+          swift test
+
+      # Alternative test command if Swift test doesn't work
+      - name: Test with Xcode if needed
+        if: ${{ failure() }}
         run: |
           xcodebuild test \
           -scheme 'FormbricksSDK' \
@@ -38,7 +47,6 @@ jobs:
           -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=18.2' \
           -derivedDataPath build \
           -enableCodeCoverage YES
-          -testPlan FormbricksSDK
 
       # Generate Cobertura XML from that Xcode-derived coverage
       - name: Generate Cobertura XML
