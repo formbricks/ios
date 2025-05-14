@@ -37,6 +37,12 @@ jobs:
             -enableCodeCoverage YES \
             test
 
+            # debug listing (optional)
+            echo "=== Product folders ==="
+            find build/Build/Products -maxdepth 2 -type d
+            echo "=== .xctest bundles ==="
+            find build/Build/Products -name '*.xctest'
+
       # 2. Generate Cobertura XML from that Xcode-derived coverage
       - name: Generate Cobertura XML
         run: |
