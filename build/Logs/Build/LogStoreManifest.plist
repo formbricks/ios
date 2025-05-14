@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>logFormatVersion</key>
+	<integer>11</integer>
+	<key>logs</key>
+	<dict>
+		<key>0F7DC468-D2EC-4473-A764-5CB753F9B768</key>
+		<dict>
+			<key>className</key>
+			<string>IDECommandLineBuildLog</string>
+			<key>documentTypeString</key>
+			<string>&lt;nil&gt;</string>
+			<key>domainType</key>
+			<string>Xcode.IDEActivityLogDomainType.BuildLog</string>
+			<key>fileName</key>
+			<string>0F7DC468-D2EC-4473-A764-5CB753F9B768.xcactivitylog</string>
+			<key>hasPrimaryLog</key>
+			<true/>
+			<key>primaryObservable</key>
+			<dict>
+				<key>highLevelStatus</key>
+				<string>W</string>
+				<key>totalNumberOfAnalyzerIssues</key>
+				<integer>0</integer>
+				<key>totalNumberOfErrors</key>
+				<integer>0</integer>
+				<key>totalNumberOfTestFailures</key>
+				<integer>0</integer>
+				<key>totalNumberOfWarnings</key>
+				<integer>3</integer>
+			</dict>
+			<key>schemeIdentifier-containerName</key>
+			<string>ios</string>
+			<key>schemeIdentifier-schemeName</key>
+			<string>FormbricksSDK</string>
+			<key>schemeIdentifier-sharedScheme</key>
+			<integer>1</integer>
+			<key>signature</key>
+			<string>Testing workspace ios with scheme FormbricksSDK</string>
+			<key>timeStartedRecording</key>
+			<real>768940384.00991797</real>
+			<key>timeStoppedRecording</key>
+			<real>768940386.68198001</real>
+			<key>title</key>
+			<string>Testing workspace ios with scheme FormbricksSDK</string>
+			<key>uniqueIdentifier</key>
+			<string>0F7DC468-D2EC-4473-A764-5CB753F9B768</string>
+		</dict>
+		<key>D8D6AF9F-9980-4E39-ADEA-DE6E4132F215</key>
+		<dict>
+			<key>className</key>
+			<string>IDECommandLineBuildLog</string>
+			<key>documentTypeString</key>
+			<string>&lt;nil&gt;</string>
+			<key>domainType</key>
+			<string>Xcode.IDEActivityLogDomainType.BuildLog</string>
+			<key>fileName</key>
+			<string>D8D6AF9F-9980-4E39-ADEA-DE6E4132F215.xcactivitylog</string>
+			<key>hasPrimaryLog</key>
+			<true/>
+			<key>primaryObservable</key>
+			<dict>
+				<key>highLevelStatus</key>
+				<string>S</string>
+				<key>totalNumberOfAnalyzerIssues</key>
+				<integer>0</integer>
+				<key>totalNumberOfErrors</key>
+				<integer>0</integer>
+				<key>totalNumberOfTestFailures</key>
+				<integer>0</integer>
+				<key>totalNumberOfWarnings</key>
+				<integer>0</integer>
+			</dict>
+			<key>schemeIdentifier-containerName</key>
+			<string>ios</string>
+			<key>schemeIdentifier-schemeName</key>
+			<string>FormbricksSDK</string>
+			<key>schemeIdentifier-sharedScheme</key>
+			<integer>1</integer>
+			<key>signature</key>
+			<string>Testing workspace ios with scheme FormbricksSDK</string>
+			<key>timeStartedRecording</key>
+			<real>768940467.69919205</real>
+			<key>timeStoppedRecording</key>
+			<real>768940468.26889598</real>
+			<key>title</key>
+			<string>Testing workspace ios with scheme FormbricksSDK</string>
+			<key>uniqueIdentifier</key>
+			<string>D8D6AF9F-9980-4E39-ADEA-DE6E4132F215</string>
+		</dict>
+	</dict>
+</dict>
+</plist>

@@ -1,0 +1,30 @@
+"/Users/matthiasnannt/Developer/ios/Sources/FormbricksSDK/Model/Environment/Project/BrandColor.swift":
+  diagnostics: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/BrandColor.dia"
+  swift-dependencies: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/BrandColor.swiftdeps"
+  dependencies: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/BrandColor.d"
+  const-values: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/BrandColor.swiftconstvalues"
+  object: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/BrandColor.o"
+"/Users/matthiasnannt/Developer/ios/Sources/FormbricksSDK/Model/Environment/Surveys/ActionClassReference.swift":
+  dependencies: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/ActionClassReference.d"
+  object: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/ActionClassReference.o"
+  const-values: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/ActionClassReference.swiftconstvalues"
+  swift-dependencies: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/ActionClassReference.swiftdeps"
+  diagnostics: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/ActionClassReference.dia"
+"/Users/matthiasnannt/Developer/ios/Sources/FormbricksSDK/Model/Environment/Project/Project.swift":
+  const-values: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Project.swiftconstvalues"
+  dependencies: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Project.d"
+  diagnostics: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Project.dia"
+  object: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Project.o"
+  swift-dependencies: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Project.swiftdeps"
+"/Users/matthiasnannt/Developer/ios/Sources/FormbricksSDK/Model/Environment/Survey.swift":
+  dependencies: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Survey.d"
+  diagnostics: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Survey.dia"
+  swift-dependencies: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Survey.swiftdeps"
+  object: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Survey.o"
+  const-values: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Survey.swiftconstvalues"
+"/Users/matthiasnannt/Developer/ios/Sources/FormbricksSDK/Model/Environment/Project/Styling.swift":
+  diagnostics: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Styling.dia"
+  const-values: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Styling.swiftconstvalues"
+  object: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Styling.o"
+  dependencies: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Styling.d"
+  swift-dependencies: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Styling.swiftdeps"

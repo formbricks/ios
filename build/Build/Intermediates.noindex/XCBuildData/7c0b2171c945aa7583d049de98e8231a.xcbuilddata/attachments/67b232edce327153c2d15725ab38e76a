@@ -1,0 +1,38 @@
+{
+  "" : {
+    "diagnostics" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDKTests.build/Objects-normal/arm64/FormbricksSDKTests-master.dia",
+    "emit-module-dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDKTests.build/Objects-normal/arm64/FormbricksSDKTests-master-emit-module.d",
+    "emit-module-diagnostics" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDKTests.build/Objects-normal/arm64/FormbricksSDKTests-master-emit-module.dia",
+    "swift-dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDKTests.build/Objects-normal/arm64/FormbricksSDKTests-master.swiftdeps"
+  },
+  "/Users/matthiasnannt/Developer/ios/Tests/FormbricksSDKTests/FormbricksSDKTests.swift" : {
+    "const-values" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDKTests.build/Objects-normal/arm64/FormbricksSDKTests.swiftconstvalues",
+    "dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDKTests.build/Objects-normal/arm64/FormbricksSDKTests.d",
+    "diagnostics" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDKTests.build/Objects-normal/arm64/FormbricksSDKTests.dia",
+    "index-unit-output-path" : "/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDKTests.build/Objects-normal/arm64/FormbricksSDKTests.o",
+    "llvm-bc" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDKTests.build/Objects-normal/arm64/FormbricksSDKTests.bc",
+    "object" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDKTests.build/Objects-normal/arm64/FormbricksSDKTests.o",
+    "swift-dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDKTests.build/Objects-normal/arm64/FormbricksSDKTests.swiftdeps",
+    "swiftmodule" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDKTests.build/Objects-normal/arm64/FormbricksSDKTests~partial.swiftmodule"
+  },
+  "/Users/matthiasnannt/Developer/ios/Tests/FormbricksSDKTests/MockFormbricksService/MockFormbricksService.swift" : {
+    "const-values" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDKTests.build/Objects-normal/arm64/MockFormbricksService.swiftconstvalues",
+    "dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDKTests.build/Objects-normal/arm64/MockFormbricksService.d",
+    "diagnostics" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDKTests.build/Objects-normal/arm64/MockFormbricksService.dia",
+    "index-unit-output-path" : "/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDKTests.build/Objects-normal/arm64/MockFormbricksService.o",
+    "llvm-bc" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDKTests.build/Objects-normal/arm64/MockFormbricksService.bc",
+    "object" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDKTests.build/Objects-normal/arm64/MockFormbricksService.o",
+    "swift-dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDKTests.build/Objects-normal/arm64/MockFormbricksService.swiftdeps",
+    "swiftmodule" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDKTests.build/Objects-normal/arm64/MockFormbricksService~partial.swiftmodule"
+  },
+  "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDKTests.build/DerivedSources/resource_bundle_accessor.swift" : {
+    "const-values" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDKTests.build/Objects-normal/arm64/resource_bundle_accessor.swiftconstvalues",
+    "dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDKTests.build/Objects-normal/arm64/resource_bundle_accessor.d",
+    "diagnostics" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDKTests.build/Objects-normal/arm64/resource_bundle_accessor.dia",
+    "index-unit-output-path" : "/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDKTests.build/Objects-normal/arm64/resource_bundle_accessor.o",
+    "llvm-bc" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDKTests.build/Objects-normal/arm64/resource_bundle_accessor.bc",
+    "object" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDKTests.build/Objects-normal/arm64/resource_bundle_accessor.o",
+    "swift-dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDKTests.build/Objects-normal/arm64/resource_bundle_accessor.swiftdeps",
+    "swiftmodule" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDKTests.build/Objects-normal/arm64/resource_bundle_accessor~partial.swiftmodule"
+  }
+}

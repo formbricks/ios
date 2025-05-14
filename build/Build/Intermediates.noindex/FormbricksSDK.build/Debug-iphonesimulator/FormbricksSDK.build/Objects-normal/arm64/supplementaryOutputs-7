@@ -1,0 +1,30 @@
+"/Users/matthiasnannt/Developer/ios/Sources/FormbricksSDK/Model/Javascript/JsMessageData.swift":
+  object: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/JsMessageData.o"
+  swift-dependencies: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/JsMessageData.swiftdeps"
+  dependencies: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/JsMessageData.d"
+  const-values: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/JsMessageData.swiftconstvalues"
+  diagnostics: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/JsMessageData.dia"
+"/Users/matthiasnannt/Developer/ios/Sources/FormbricksSDK/Model/Error/SDKError.swift":
+  diagnostics: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/SDKError.dia"
+  object: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/SDKError.o"
+  dependencies: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/SDKError.d"
+  swift-dependencies: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/SDKError.swiftdeps"
+  const-values: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/SDKError.swiftconstvalues"
+"/Users/matthiasnannt/Developer/ios/Sources/FormbricksSDK/Model/Javascript/EventType.swift":
+  diagnostics: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/EventType.dia"
+  swift-dependencies: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/EventType.swiftdeps"
+  dependencies: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/EventType.d"
+  object: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/EventType.o"
+  const-values: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/EventType.swiftconstvalues"
+"/Users/matthiasnannt/Developer/ios/Sources/FormbricksSDK/Model/User/Display.swift":
+  object: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Display.o"
+  const-values: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Display.swiftconstvalues"
+  swift-dependencies: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Display.swiftdeps"
+  diagnostics: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Display.dia"
+  dependencies: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Display.d"
+"/Users/matthiasnannt/Developer/ios/Sources/FormbricksSDK/Model/Javascript/OpenExternalUrlMessage.swift":
+  diagnostics: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/OpenExternalUrlMessage.dia"
+  const-values: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/OpenExternalUrlMessage.swiftconstvalues"
+  object: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/OpenExternalUrlMessage.o"
+  dependencies: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/OpenExternalUrlMessage.d"
+  swift-dependencies: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/OpenExternalUrlMessage.swiftdeps"

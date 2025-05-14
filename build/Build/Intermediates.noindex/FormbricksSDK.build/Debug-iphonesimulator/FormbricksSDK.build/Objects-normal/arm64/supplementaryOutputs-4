@@ -1,0 +1,30 @@
+"/Users/matthiasnannt/Developer/ios/Sources/FormbricksSDK/Model/Environment/Common/LocalizedText.swift":
+  dependencies: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/LocalizedText.d"
+  swift-dependencies: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/LocalizedText.swiftdeps"
+  object: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/LocalizedText.o"
+  const-values: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/LocalizedText.swiftconstvalues"
+  diagnostics: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/LocalizedText.dia"
+"/Users/matthiasnannt/Developer/ios/Sources/FormbricksSDK/Model/Environment/ActionClass/ActionClass.swift":
+  dependencies: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/ActionClass.d"
+  const-values: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/ActionClass.swiftconstvalues"
+  diagnostics: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/ActionClass.dia"
+  object: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/ActionClass.o"
+  swift-dependencies: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/ActionClass.swiftdeps"
+"/Users/matthiasnannt/Developer/ios/Sources/FormbricksSDK/Model/Environment/EnvironmentData.swift":
+  dependencies: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/EnvironmentData.d"
+  swift-dependencies: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/EnvironmentData.swiftdeps"
+  diagnostics: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/EnvironmentData.dia"
+  const-values: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/EnvironmentData.swiftconstvalues"
+  object: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/EnvironmentData.o"
+"/Users/matthiasnannt/Developer/ios/Sources/FormbricksSDK/Model/Environment/EnvironmentResponseData.swift":
+  const-values: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/EnvironmentResponseData.swiftconstvalues"
+  object: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/EnvironmentResponseData.o"
+  dependencies: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/EnvironmentResponseData.d"
+  diagnostics: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/EnvironmentResponseData.dia"
+  swift-dependencies: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/EnvironmentResponseData.swiftdeps"
+"/Users/matthiasnannt/Developer/ios/Sources/FormbricksSDK/Model/Environment/EnvironmentResponse.swift":
+  swift-dependencies: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/EnvironmentResponse.swiftdeps"
+  dependencies: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/EnvironmentResponse.d"
+  diagnostics: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/EnvironmentResponse.dia"
+  object: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/EnvironmentResponse.o"
+  const-values: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/EnvironmentResponse.swiftconstvalues"

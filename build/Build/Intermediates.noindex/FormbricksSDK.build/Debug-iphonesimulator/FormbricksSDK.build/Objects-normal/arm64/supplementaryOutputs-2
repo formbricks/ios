@@ -1,0 +1,30 @@
+"/Users/matthiasnannt/Developer/ios/Sources/FormbricksSDK/Helpers/AnyCodable/AnyCodable.swift":
+  dependencies: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/AnyCodable.d"
+  swift-dependencies: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/AnyCodable.swiftdeps"
+  const-values: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/AnyCodable.swiftconstvalues"
+  object: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/AnyCodable.o"
+  diagnostics: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/AnyCodable.dia"
+"/Users/matthiasnannt/Developer/ios/Sources/FormbricksSDK/Helpers/AnyCodable/AnyDecodable.swift":
+  dependencies: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/AnyDecodable.d"
+  swift-dependencies: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/AnyDecodable.swiftdeps"
+  diagnostics: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/AnyDecodable.dia"
+  const-values: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/AnyDecodable.swiftconstvalues"
+  object: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/AnyDecodable.o"
+"/Users/matthiasnannt/Developer/ios/Sources/FormbricksSDK/Formbricks.swift":
+  dependencies: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Formbricks.d"
+  diagnostics: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Formbricks.dia"
+  swift-dependencies: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Formbricks.swiftdeps"
+  object: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Formbricks.o"
+  const-values: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Formbricks.swiftconstvalues"
+"/Users/matthiasnannt/Developer/ios/Sources/FormbricksSDK/Helpers/AnyCodable/AnyEncodable.swift":
+  object: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/AnyEncodable.o"
+  diagnostics: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/AnyEncodable.dia"
+  dependencies: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/AnyEncodable.d"
+  swift-dependencies: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/AnyEncodable.swiftdeps"
+  const-values: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/AnyEncodable.swiftconstvalues"
+"/Users/matthiasnannt/Developer/ios/Sources/FormbricksSDK/Helpers/ConfigBuilder.swift":
+  diagnostics: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/ConfigBuilder.dia"
+  const-values: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/ConfigBuilder.swiftconstvalues"
+  object: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/ConfigBuilder.o"
+  swift-dependencies: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/ConfigBuilder.swiftdeps"
+  dependencies: "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/ConfigBuilder.d"

@@ -1,0 +1,488 @@
+{
+  "" : {
+    "diagnostics" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/FormbricksSDK-master.dia",
+    "emit-module-dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/FormbricksSDK-master-emit-module.d",
+    "emit-module-diagnostics" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/FormbricksSDK-master-emit-module.dia",
+    "swift-dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/FormbricksSDK-master.swiftdeps"
+  },
+  "/Users/matthiasnannt/Developer/ios/Sources/FormbricksSDK/Config.swift" : {
+    "const-values" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Config.swiftconstvalues",
+    "dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Config.d",
+    "diagnostics" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Config.dia",
+    "index-unit-output-path" : "/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Config.o",
+    "llvm-bc" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Config.bc",
+    "object" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Config.o",
+    "swift-dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Config.swiftdeps",
+    "swiftmodule" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Config~partial.swiftmodule"
+  },
+  "/Users/matthiasnannt/Developer/ios/Sources/FormbricksSDK/Extension/Calendar+DaysBetween.swift" : {
+    "const-values" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Calendar+DaysBetween.swiftconstvalues",
+    "dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Calendar+DaysBetween.d",
+    "diagnostics" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Calendar+DaysBetween.dia",
+    "index-unit-output-path" : "/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Calendar+DaysBetween.o",
+    "llvm-bc" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Calendar+DaysBetween.bc",
+    "object" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Calendar+DaysBetween.o",
+    "swift-dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Calendar+DaysBetween.swiftdeps",
+    "swiftmodule" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Calendar+DaysBetween~partial.swiftmodule"
+  },
+  "/Users/matthiasnannt/Developer/ios/Sources/FormbricksSDK/Extension/Error+Message.swift" : {
+    "const-values" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Error+Message.swiftconstvalues",
+    "dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Error+Message.d",
+    "diagnostics" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Error+Message.dia",
+    "index-unit-output-path" : "/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Error+Message.o",
+    "llvm-bc" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Error+Message.bc",
+    "object" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Error+Message.o",
+    "swift-dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Error+Message.swiftdeps",
+    "swiftmodule" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Error+Message~partial.swiftmodule"
+  },
+  "/Users/matthiasnannt/Developer/ios/Sources/FormbricksSDK/Extension/JSON+Formatter.swift" : {
+    "const-values" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/JSON+Formatter.swiftconstvalues",
+    "dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/JSON+Formatter.d",
+    "diagnostics" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/JSON+Formatter.dia",
+    "index-unit-output-path" : "/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/JSON+Formatter.o",
+    "llvm-bc" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/JSON+Formatter.bc",
+    "object" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/JSON+Formatter.o",
+    "swift-dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/JSON+Formatter.swiftdeps",
+    "swiftmodule" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/JSON+Formatter~partial.swiftmodule"
+  },
+  "/Users/matthiasnannt/Developer/ios/Sources/FormbricksSDK/Extension/UIApplication+Window.swift" : {
+    "const-values" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/UIApplication+Window.swiftconstvalues",
+    "dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/UIApplication+Window.d",
+    "diagnostics" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/UIApplication+Window.dia",
+    "index-unit-output-path" : "/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/UIApplication+Window.o",
+    "llvm-bc" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/UIApplication+Window.bc",
+    "object" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/UIApplication+Window.o",
+    "swift-dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/UIApplication+Window.swiftdeps",
+    "swiftmodule" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/UIApplication+Window~partial.swiftmodule"
+  },
+  "/Users/matthiasnannt/Developer/ios/Sources/FormbricksSDK/Formbricks.swift" : {
+    "const-values" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Formbricks.swiftconstvalues",
+    "dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Formbricks.d",
+    "diagnostics" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Formbricks.dia",
+    "index-unit-output-path" : "/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Formbricks.o",
+    "llvm-bc" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Formbricks.bc",
+    "object" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Formbricks.o",
+    "swift-dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Formbricks.swiftdeps",
+    "swiftmodule" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Formbricks~partial.swiftmodule"
+  },
+  "/Users/matthiasnannt/Developer/ios/Sources/FormbricksSDK/Helpers/AnyCodable/AnyCodable.swift" : {
+    "const-values" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/AnyCodable.swiftconstvalues",
+    "dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/AnyCodable.d",
+    "diagnostics" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/AnyCodable.dia",
+    "index-unit-output-path" : "/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/AnyCodable.o",
+    "llvm-bc" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/AnyCodable.bc",
+    "object" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/AnyCodable.o",
+    "swift-dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/AnyCodable.swiftdeps",
+    "swiftmodule" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/AnyCodable~partial.swiftmodule"
+  },
+  "/Users/matthiasnannt/Developer/ios/Sources/FormbricksSDK/Helpers/AnyCodable/AnyDecodable.swift" : {
+    "const-values" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/AnyDecodable.swiftconstvalues",
+    "dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/AnyDecodable.d",
+    "diagnostics" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/AnyDecodable.dia",
+    "index-unit-output-path" : "/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/AnyDecodable.o",
+    "llvm-bc" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/AnyDecodable.bc",
+    "object" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/AnyDecodable.o",
+    "swift-dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/AnyDecodable.swiftdeps",
+    "swiftmodule" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/AnyDecodable~partial.swiftmodule"
+  },
+  "/Users/matthiasnannt/Developer/ios/Sources/FormbricksSDK/Helpers/AnyCodable/AnyEncodable.swift" : {
+    "const-values" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/AnyEncodable.swiftconstvalues",
+    "dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/AnyEncodable.d",
+    "diagnostics" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/AnyEncodable.dia",
+    "index-unit-output-path" : "/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/AnyEncodable.o",
+    "llvm-bc" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/AnyEncodable.bc",
+    "object" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/AnyEncodable.o",
+    "swift-dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/AnyEncodable.swiftdeps",
+    "swiftmodule" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/AnyEncodable~partial.swiftmodule"
+  },
+  "/Users/matthiasnannt/Developer/ios/Sources/FormbricksSDK/Helpers/ConfigBuilder.swift" : {
+    "const-values" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/ConfigBuilder.swiftconstvalues",
+    "dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/ConfigBuilder.d",
+    "diagnostics" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/ConfigBuilder.dia",
+    "index-unit-output-path" : "/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/ConfigBuilder.o",
+    "llvm-bc" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/ConfigBuilder.bc",
+    "object" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/ConfigBuilder.o",
+    "swift-dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/ConfigBuilder.swiftdeps",
+    "swiftmodule" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/ConfigBuilder~partial.swiftmodule"
+  },
+  "/Users/matthiasnannt/Developer/ios/Sources/FormbricksSDK/Helpers/FormbricksEnvironment.swift" : {
+    "const-values" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/FormbricksEnvironment.swiftconstvalues",
+    "dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/FormbricksEnvironment.d",
+    "diagnostics" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/FormbricksEnvironment.dia",
+    "index-unit-output-path" : "/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/FormbricksEnvironment.o",
+    "llvm-bc" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/FormbricksEnvironment.bc",
+    "object" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/FormbricksEnvironment.o",
+    "swift-dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/FormbricksEnvironment.swiftdeps",
+    "swiftmodule" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/FormbricksEnvironment~partial.swiftmodule"
+  },
+  "/Users/matthiasnannt/Developer/ios/Sources/FormbricksSDK/Logger/Logger.swift" : {
+    "const-values" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Logger.swiftconstvalues",
+    "dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Logger.d",
+    "diagnostics" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Logger.dia",
+    "index-unit-output-path" : "/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Logger.o",
+    "llvm-bc" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Logger.bc",
+    "object" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Logger.o",
+    "swift-dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Logger.swiftdeps",
+    "swiftmodule" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Logger~partial.swiftmodule"
+  },
+  "/Users/matthiasnannt/Developer/ios/Sources/FormbricksSDK/Manager/PresentSurveyManager.swift" : {
+    "const-values" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/PresentSurveyManager.swiftconstvalues",
+    "dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/PresentSurveyManager.d",
+    "diagnostics" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/PresentSurveyManager.dia",
+    "index-unit-output-path" : "/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/PresentSurveyManager.o",
+    "llvm-bc" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/PresentSurveyManager.bc",
+    "object" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/PresentSurveyManager.o",
+    "swift-dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/PresentSurveyManager.swiftdeps",
+    "swiftmodule" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/PresentSurveyManager~partial.swiftmodule"
+  },
+  "/Users/matthiasnannt/Developer/ios/Sources/FormbricksSDK/Manager/SurveyManager.swift" : {
+    "const-values" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/SurveyManager.swiftconstvalues",
+    "dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/SurveyManager.d",
+    "diagnostics" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/SurveyManager.dia",
+    "index-unit-output-path" : "/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/SurveyManager.o",
+    "llvm-bc" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/SurveyManager.bc",
+    "object" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/SurveyManager.o",
+    "swift-dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/SurveyManager.swiftdeps",
+    "swiftmodule" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/SurveyManager~partial.swiftmodule"
+  },
+  "/Users/matthiasnannt/Developer/ios/Sources/FormbricksSDK/Manager/UserManager.swift" : {
+    "const-values" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/UserManager.swiftconstvalues",
+    "dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/UserManager.d",
+    "diagnostics" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/UserManager.dia",
+    "index-unit-output-path" : "/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/UserManager.o",
+    "llvm-bc" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/UserManager.bc",
+    "object" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/UserManager.o",
+    "swift-dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/UserManager.swiftdeps",
+    "swiftmodule" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/UserManager~partial.swiftmodule"
+  },
+  "/Users/matthiasnannt/Developer/ios/Sources/FormbricksSDK/Model/Environment/ActionClass/ActionClass.swift" : {
+    "const-values" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/ActionClass.swiftconstvalues",
+    "dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/ActionClass.d",
+    "diagnostics" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/ActionClass.dia",
+    "index-unit-output-path" : "/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/ActionClass.o",
+    "llvm-bc" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/ActionClass.bc",
+    "object" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/ActionClass.o",
+    "swift-dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/ActionClass.swiftdeps",
+    "swiftmodule" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/ActionClass~partial.swiftmodule"
+  },
+  "/Users/matthiasnannt/Developer/ios/Sources/FormbricksSDK/Model/Environment/Common/LocalizedText.swift" : {
+    "const-values" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/LocalizedText.swiftconstvalues",
+    "dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/LocalizedText.d",
+    "diagnostics" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/LocalizedText.dia",
+    "index-unit-output-path" : "/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/LocalizedText.o",
+    "llvm-bc" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/LocalizedText.bc",
+    "object" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/LocalizedText.o",
+    "swift-dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/LocalizedText.swiftdeps",
+    "swiftmodule" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/LocalizedText~partial.swiftmodule"
+  },
+  "/Users/matthiasnannt/Developer/ios/Sources/FormbricksSDK/Model/Environment/EnvironmentData.swift" : {
+    "const-values" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/EnvironmentData.swiftconstvalues",
+    "dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/EnvironmentData.d",
+    "diagnostics" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/EnvironmentData.dia",
+    "index-unit-output-path" : "/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/EnvironmentData.o",
+    "llvm-bc" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/EnvironmentData.bc",
+    "object" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/EnvironmentData.o",
+    "swift-dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/EnvironmentData.swiftdeps",
+    "swiftmodule" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/EnvironmentData~partial.swiftmodule"
+  },
+  "/Users/matthiasnannt/Developer/ios/Sources/FormbricksSDK/Model/Environment/EnvironmentResponse.swift" : {
+    "const-values" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/EnvironmentResponse.swiftconstvalues",
+    "dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/EnvironmentResponse.d",
+    "diagnostics" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/EnvironmentResponse.dia",
+    "index-unit-output-path" : "/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/EnvironmentResponse.o",
+    "llvm-bc" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/EnvironmentResponse.bc",
+    "object" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/EnvironmentResponse.o",
+    "swift-dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/EnvironmentResponse.swiftdeps",
+    "swiftmodule" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/EnvironmentResponse~partial.swiftmodule"
+  },
+  "/Users/matthiasnannt/Developer/ios/Sources/FormbricksSDK/Model/Environment/EnvironmentResponseData.swift" : {
+    "const-values" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/EnvironmentResponseData.swiftconstvalues",
+    "dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/EnvironmentResponseData.d",
+    "diagnostics" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/EnvironmentResponseData.dia",
+    "index-unit-output-path" : "/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/EnvironmentResponseData.o",
+    "llvm-bc" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/EnvironmentResponseData.bc",
+    "object" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/EnvironmentResponseData.o",
+    "swift-dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/EnvironmentResponseData.swiftdeps",
+    "swiftmodule" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/EnvironmentResponseData~partial.swiftmodule"
+  },
+  "/Users/matthiasnannt/Developer/ios/Sources/FormbricksSDK/Model/Environment/Project/BrandColor.swift" : {
+    "const-values" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/BrandColor.swiftconstvalues",
+    "dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/BrandColor.d",
+    "diagnostics" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/BrandColor.dia",
+    "index-unit-output-path" : "/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/BrandColor.o",
+    "llvm-bc" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/BrandColor.bc",
+    "object" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/BrandColor.o",
+    "swift-dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/BrandColor.swiftdeps",
+    "swiftmodule" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/BrandColor~partial.swiftmodule"
+  },
+  "/Users/matthiasnannt/Developer/ios/Sources/FormbricksSDK/Model/Environment/Project/Project.swift" : {
+    "const-values" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Project.swiftconstvalues",
+    "dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Project.d",
+    "diagnostics" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Project.dia",
+    "index-unit-output-path" : "/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Project.o",
+    "llvm-bc" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Project.bc",
+    "object" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Project.o",
+    "swift-dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Project.swiftdeps",
+    "swiftmodule" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Project~partial.swiftmodule"
+  },
+  "/Users/matthiasnannt/Developer/ios/Sources/FormbricksSDK/Model/Environment/Project/Styling.swift" : {
+    "const-values" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Styling.swiftconstvalues",
+    "dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Styling.d",
+    "diagnostics" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Styling.dia",
+    "index-unit-output-path" : "/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Styling.o",
+    "llvm-bc" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Styling.bc",
+    "object" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Styling.o",
+    "swift-dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Styling.swiftdeps",
+    "swiftmodule" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Styling~partial.swiftmodule"
+  },
+  "/Users/matthiasnannt/Developer/ios/Sources/FormbricksSDK/Model/Environment/Survey.swift" : {
+    "const-values" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Survey.swiftconstvalues",
+    "dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Survey.d",
+    "diagnostics" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Survey.dia",
+    "index-unit-output-path" : "/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Survey.o",
+    "llvm-bc" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Survey.bc",
+    "object" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Survey.o",
+    "swift-dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Survey.swiftdeps",
+    "swiftmodule" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Survey~partial.swiftmodule"
+  },
+  "/Users/matthiasnannt/Developer/ios/Sources/FormbricksSDK/Model/Environment/Surveys/ActionClassReference.swift" : {
+    "const-values" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/ActionClassReference.swiftconstvalues",
+    "dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/ActionClassReference.d",
+    "diagnostics" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/ActionClassReference.dia",
+    "index-unit-output-path" : "/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/ActionClassReference.o",
+    "llvm-bc" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/ActionClassReference.bc",
+    "object" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/ActionClassReference.o",
+    "swift-dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/ActionClassReference.swiftdeps",
+    "swiftmodule" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/ActionClassReference~partial.swiftmodule"
+  },
+  "/Users/matthiasnannt/Developer/ios/Sources/FormbricksSDK/Model/Environment/Surveys/Segment.swift" : {
+    "const-values" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Segment.swiftconstvalues",
+    "dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Segment.d",
+    "diagnostics" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Segment.dia",
+    "index-unit-output-path" : "/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Segment.o",
+    "llvm-bc" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Segment.bc",
+    "object" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Segment.o",
+    "swift-dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Segment.swiftdeps",
+    "swiftmodule" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Segment~partial.swiftmodule"
+  },
+  "/Users/matthiasnannt/Developer/ios/Sources/FormbricksSDK/Model/Environment/Surveys/Trigger.swift" : {
+    "const-values" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Trigger.swiftconstvalues",
+    "dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Trigger.d",
+    "diagnostics" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Trigger.dia",
+    "index-unit-output-path" : "/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Trigger.o",
+    "llvm-bc" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Trigger.bc",
+    "object" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Trigger.o",
+    "swift-dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Trigger.swiftdeps",
+    "swiftmodule" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Trigger~partial.swiftmodule"
+  },
+  "/Users/matthiasnannt/Developer/ios/Sources/FormbricksSDK/Model/Error/APIError.swift" : {
+    "const-values" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/APIError.swiftconstvalues",
+    "dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/APIError.d",
+    "diagnostics" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/APIError.dia",
+    "index-unit-output-path" : "/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/APIError.o",
+    "llvm-bc" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/APIError.bc",
+    "object" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/APIError.o",
+    "swift-dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/APIError.swiftdeps",
+    "swiftmodule" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/APIError~partial.swiftmodule"
+  },
+  "/Users/matthiasnannt/Developer/ios/Sources/FormbricksSDK/Model/Error/FormbricksAPIError.swift" : {
+    "const-values" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/FormbricksAPIError.swiftconstvalues",
+    "dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/FormbricksAPIError.d",
+    "diagnostics" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/FormbricksAPIError.dia",
+    "index-unit-output-path" : "/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/FormbricksAPIError.o",
+    "llvm-bc" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/FormbricksAPIError.bc",
+    "object" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/FormbricksAPIError.o",
+    "swift-dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/FormbricksAPIError.swiftdeps",
+    "swiftmodule" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/FormbricksAPIError~partial.swiftmodule"
+  },
+  "/Users/matthiasnannt/Developer/ios/Sources/FormbricksSDK/Model/Error/RuntimeError.swift" : {
+    "const-values" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/RuntimeError.swiftconstvalues",
+    "dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/RuntimeError.d",
+    "diagnostics" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/RuntimeError.dia",
+    "index-unit-output-path" : "/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/RuntimeError.o",
+    "llvm-bc" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/RuntimeError.bc",
+    "object" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/RuntimeError.o",
+    "swift-dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/RuntimeError.swiftdeps",
+    "swiftmodule" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/RuntimeError~partial.swiftmodule"
+  },
+  "/Users/matthiasnannt/Developer/ios/Sources/FormbricksSDK/Model/Error/SDKError.swift" : {
+    "const-values" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/SDKError.swiftconstvalues",
+    "dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/SDKError.d",
+    "diagnostics" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/SDKError.dia",
+    "index-unit-output-path" : "/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/SDKError.o",
+    "llvm-bc" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/SDKError.bc",
+    "object" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/SDKError.o",
+    "swift-dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/SDKError.swiftdeps",
+    "swiftmodule" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/SDKError~partial.swiftmodule"
+  },
+  "/Users/matthiasnannt/Developer/ios/Sources/FormbricksSDK/Model/Javascript/EventType.swift" : {
+    "const-values" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/EventType.swiftconstvalues",
+    "dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/EventType.d",
+    "diagnostics" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/EventType.dia",
+    "index-unit-output-path" : "/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/EventType.o",
+    "llvm-bc" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/EventType.bc",
+    "object" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/EventType.o",
+    "swift-dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/EventType.swiftdeps",
+    "swiftmodule" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/EventType~partial.swiftmodule"
+  },
+  "/Users/matthiasnannt/Developer/ios/Sources/FormbricksSDK/Model/Javascript/JsMessageData.swift" : {
+    "const-values" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/JsMessageData.swiftconstvalues",
+    "dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/JsMessageData.d",
+    "diagnostics" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/JsMessageData.dia",
+    "index-unit-output-path" : "/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/JsMessageData.o",
+    "llvm-bc" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/JsMessageData.bc",
+    "object" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/JsMessageData.o",
+    "swift-dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/JsMessageData.swiftdeps",
+    "swiftmodule" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/JsMessageData~partial.swiftmodule"
+  },
+  "/Users/matthiasnannt/Developer/ios/Sources/FormbricksSDK/Model/Javascript/OpenExternalUrlMessage.swift" : {
+    "const-values" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/OpenExternalUrlMessage.swiftconstvalues",
+    "dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/OpenExternalUrlMessage.d",
+    "diagnostics" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/OpenExternalUrlMessage.dia",
+    "index-unit-output-path" : "/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/OpenExternalUrlMessage.o",
+    "llvm-bc" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/OpenExternalUrlMessage.bc",
+    "object" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/OpenExternalUrlMessage.o",
+    "swift-dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/OpenExternalUrlMessage.swiftdeps",
+    "swiftmodule" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/OpenExternalUrlMessage~partial.swiftmodule"
+  },
+  "/Users/matthiasnannt/Developer/ios/Sources/FormbricksSDK/Model/User/Display.swift" : {
+    "const-values" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Display.swiftconstvalues",
+    "dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Display.d",
+    "diagnostics" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Display.dia",
+    "index-unit-output-path" : "/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Display.o",
+    "llvm-bc" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Display.bc",
+    "object" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Display.o",
+    "swift-dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Display.swiftdeps",
+    "swiftmodule" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/Display~partial.swiftmodule"
+  },
+  "/Users/matthiasnannt/Developer/ios/Sources/FormbricksSDK/Model/User/UserResponseData.swift" : {
+    "const-values" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/UserResponseData.swiftconstvalues",
+    "dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/UserResponseData.d",
+    "diagnostics" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/UserResponseData.dia",
+    "index-unit-output-path" : "/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/UserResponseData.o",
+    "llvm-bc" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/UserResponseData.bc",
+    "object" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/UserResponseData.o",
+    "swift-dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/UserResponseData.swiftdeps",
+    "swiftmodule" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/UserResponseData~partial.swiftmodule"
+  },
+  "/Users/matthiasnannt/Developer/ios/Sources/FormbricksSDK/Model/User/UserState.swift" : {
+    "const-values" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/UserState.swiftconstvalues",
+    "dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/UserState.d",
+    "diagnostics" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/UserState.dia",
+    "index-unit-output-path" : "/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/UserState.o",
+    "llvm-bc" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/UserState.bc",
+    "object" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/UserState.o",
+    "swift-dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/UserState.swiftdeps",
+    "swiftmodule" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/UserState~partial.swiftmodule"
+  },
+  "/Users/matthiasnannt/Developer/ios/Sources/FormbricksSDK/Model/User/UserStateDetails.swift" : {
+    "const-values" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/UserStateDetails.swiftconstvalues",
+    "dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/UserStateDetails.d",
+    "diagnostics" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/UserStateDetails.dia",
+    "index-unit-output-path" : "/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/UserStateDetails.o",
+    "llvm-bc" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/UserStateDetails.bc",
+    "object" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/UserStateDetails.o",
+    "swift-dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/UserStateDetails.swiftdeps",
+    "swiftmodule" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/UserStateDetails~partial.swiftmodule"
+  },
+  "/Users/matthiasnannt/Developer/ios/Sources/FormbricksSDK/Networking/Base/APIClient.swift" : {
+    "const-values" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/APIClient.swiftconstvalues",
+    "dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/APIClient.d",
+    "diagnostics" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/APIClient.dia",
+    "index-unit-output-path" : "/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/APIClient.o",
+    "llvm-bc" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/APIClient.bc",
+    "object" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/APIClient.o",
+    "swift-dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/APIClient.swiftdeps",
+    "swiftmodule" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/APIClient~partial.swiftmodule"
+  },
+  "/Users/matthiasnannt/Developer/ios/Sources/FormbricksSDK/Networking/Base/EncodableRequest.swift" : {
+    "const-values" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/EncodableRequest.swiftconstvalues",
+    "dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/EncodableRequest.d",
+    "diagnostics" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/EncodableRequest.dia",
+    "index-unit-output-path" : "/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/EncodableRequest.o",
+    "llvm-bc" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/EncodableRequest.bc",
+    "object" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/EncodableRequest.o",
+    "swift-dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/EncodableRequest.swiftdeps",
+    "swiftmodule" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/EncodableRequest~partial.swiftmodule"
+  },
+  "/Users/matthiasnannt/Developer/ios/Sources/FormbricksSDK/Networking/Base/HTTPStatusCode.swift" : {
+    "const-values" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/HTTPStatusCode.swiftconstvalues",
+    "dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/HTTPStatusCode.d",
+    "diagnostics" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/HTTPStatusCode.dia",
+    "index-unit-output-path" : "/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/HTTPStatusCode.o",
+    "llvm-bc" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/HTTPStatusCode.bc",
+    "object" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/HTTPStatusCode.o",
+    "swift-dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/HTTPStatusCode.swiftdeps",
+    "swiftmodule" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/HTTPStatusCode~partial.swiftmodule"
+  },
+  "/Users/matthiasnannt/Developer/ios/Sources/FormbricksSDK/Networking/ClientAPI/Endpoints/Environment/GetEnvironmentRequest.swift" : {
+    "const-values" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/GetEnvironmentRequest.swiftconstvalues",
+    "dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/GetEnvironmentRequest.d",
+    "diagnostics" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/GetEnvironmentRequest.dia",
+    "index-unit-output-path" : "/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/GetEnvironmentRequest.o",
+    "llvm-bc" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/GetEnvironmentRequest.bc",
+    "object" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/GetEnvironmentRequest.o",
+    "swift-dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/GetEnvironmentRequest.swiftdeps",
+    "swiftmodule" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/GetEnvironmentRequest~partial.swiftmodule"
+  },
+  "/Users/matthiasnannt/Developer/ios/Sources/FormbricksSDK/Networking/ClientAPI/Endpoints/User/PostUserRequest.swift" : {
+    "const-values" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/PostUserRequest.swiftconstvalues",
+    "dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/PostUserRequest.d",
+    "diagnostics" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/PostUserRequest.dia",
+    "index-unit-output-path" : "/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/PostUserRequest.o",
+    "llvm-bc" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/PostUserRequest.bc",
+    "object" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/PostUserRequest.o",
+    "swift-dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/PostUserRequest.swiftdeps",
+    "swiftmodule" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/PostUserRequest~partial.swiftmodule"
+  },
+  "/Users/matthiasnannt/Developer/ios/Sources/FormbricksSDK/Networking/Queue/UpdateQueue.swift" : {
+    "const-values" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/UpdateQueue.swiftconstvalues",
+    "dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/UpdateQueue.d",
+    "diagnostics" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/UpdateQueue.dia",
+    "index-unit-output-path" : "/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/UpdateQueue.o",
+    "llvm-bc" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/UpdateQueue.bc",
+    "object" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/UpdateQueue.o",
+    "swift-dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/UpdateQueue.swiftdeps",
+    "swiftmodule" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/UpdateQueue~partial.swiftmodule"
+  },
+  "/Users/matthiasnannt/Developer/ios/Sources/FormbricksSDK/Networking/Service/FormbricksService.swift" : {
+    "const-values" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/FormbricksService.swiftconstvalues",
+    "dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/FormbricksService.d",
+    "diagnostics" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/FormbricksService.dia",
+    "index-unit-output-path" : "/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/FormbricksService.o",
+    "llvm-bc" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/FormbricksService.bc",
+    "object" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/FormbricksService.o",
+    "swift-dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/FormbricksService.swiftdeps",
+    "swiftmodule" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/FormbricksService~partial.swiftmodule"
+  },
+  "/Users/matthiasnannt/Developer/ios/Sources/FormbricksSDK/WebView/FormbricksView.swift" : {
+    "const-values" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/FormbricksView.swiftconstvalues",
+    "dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/FormbricksView.d",
+    "diagnostics" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/FormbricksView.dia",
+    "index-unit-output-path" : "/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/FormbricksView.o",
+    "llvm-bc" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/FormbricksView.bc",
+    "object" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/FormbricksView.o",
+    "swift-dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/FormbricksView.swiftdeps",
+    "swiftmodule" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/FormbricksView~partial.swiftmodule"
+  },
+  "/Users/matthiasnannt/Developer/ios/Sources/FormbricksSDK/WebView/FormbricksViewModel.swift" : {
+    "const-values" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/FormbricksViewModel.swiftconstvalues",
+    "dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/FormbricksViewModel.d",
+    "diagnostics" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/FormbricksViewModel.dia",
+    "index-unit-output-path" : "/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/FormbricksViewModel.o",
+    "llvm-bc" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/FormbricksViewModel.bc",
+    "object" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/FormbricksViewModel.o",
+    "swift-dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/FormbricksViewModel.swiftdeps",
+    "swiftmodule" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/FormbricksViewModel~partial.swiftmodule"
+  },
+  "/Users/matthiasnannt/Developer/ios/Sources/FormbricksSDK/WebView/SurveyWebView.swift" : {
+    "const-values" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/SurveyWebView.swiftconstvalues",
+    "dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/SurveyWebView.d",
+    "diagnostics" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/SurveyWebView.dia",
+    "index-unit-output-path" : "/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/SurveyWebView.o",
+    "llvm-bc" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/SurveyWebView.bc",
+    "object" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/SurveyWebView.o",
+    "swift-dependencies" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/SurveyWebView.swiftdeps",
+    "swiftmodule" : "/Users/matthiasnannt/Developer/ios/build/Build/Intermediates.noindex/FormbricksSDK.build/Debug-iphonesimulator/FormbricksSDK.build/Objects-normal/arm64/SurveyWebView~partial.swiftmodule"
+  }
+}

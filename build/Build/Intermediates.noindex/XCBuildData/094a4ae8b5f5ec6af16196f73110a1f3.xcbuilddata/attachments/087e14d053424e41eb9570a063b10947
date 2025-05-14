@@ -1,0 +1,4 @@
+module FormbricksSDK {
+header "FormbricksSDK-Swift.h"
+export *
+}

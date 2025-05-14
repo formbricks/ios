@@ -1,0 +1,8 @@
+Target dependency graph (4 targets)
+Target 'FormbricksSDK' in project 'FormbricksSDK'
+➜ Explicit dependency on target 'FormbricksSDK' in project 'FormbricksSDK'
+Target 'FormbricksSDKTests' in project 'FormbricksSDK'
+➜ Explicit dependency on target 'FormbricksSDK_FormbricksSDKTests' in project 'FormbricksSDK'
+➜ Explicit dependency on target 'FormbricksSDK' in project 'FormbricksSDK'
+Target 'FormbricksSDK' in project 'FormbricksSDK' (no dependencies)
+Target 'FormbricksSDK_FormbricksSDKTests' in project 'FormbricksSDK' (no dependencies)

@@ -1,0 +1,45 @@
+{
+  "data": {
+    "id": "mockEnvironmentId",
+    "noCodeEditorUrl": "https://app.formbricks.com/environments/mockEnvironmentId/surveys/create",
+    "organizationId": "mockOrgId",
+    "productId": "mockProductId",
+    "expiresAt": "2035-03-06T10:33:38.000Z",
+    "surveys": [
+      {
+        "id": "cm6ovw6j7000gsf0kduf4oo4i",
+        "name": "Product Demo Survey",
+        "createdAt": "2023-12-13T13:27:40.661Z",
+        "status": "inProgress",
+        "questions": [
+          {
+            "id": "54767",
+            "type": "cta",
+            "headline": "Welcome to our Product Demo",
+            "html": "",
+            "buttonLabel": "Start",
+            "logic": {
+              "type": "next"
+            },
+            "required": false
+          }
+        ],
+        "triggers": [{ "eventName": "click_demo_button" }],
+        "displayOption": "displayOnce",
+        "autoClose": null,
+        "recontactDays": null,
+        "delay": 0,
+        "autoComplete": null,
+        "closeOnDate": null,
+        "styling": {
+          "placement": "bottomRight",
+          "clickOutsideClose": false,
+          "progressBar": true,
+          "submitText": "Submit",
+          "darkOverlay": false,
+          "highlightBorderColor": "#0E8484"
+        }
+      }
+    ]
+  }
+}
