@@ -30,7 +30,6 @@ jobs:
       - name: Build-for-testing
         run: |
           xcodebuild build-for-testing \
-            -workspace .swiftpm/xcode/package.xcworkspace \
             -scheme FormbricksSDK \
             -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=18.4' \
             -derivedDataPath build \
@@ -40,7 +39,6 @@ jobs:
       - name: Test-without-building
         run: |
           xcodebuild test-without-building \
-            -workspace .swiftpm/xcode/package.xcworkspace \
             -scheme FormbricksSDK \
             -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=18.4' \
             -derivedDataPath build
