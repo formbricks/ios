@@ -50,6 +50,9 @@ class MockFormbricksService: FormbricksService {
                     print("⚠️ \(name).json not found in test bundle root")
                 }
             }
+        
+            print("is data set now? ")
+            print(data)
             
             // 3️⃣ Try “Mock/” subdirectory
             if data == nil {
