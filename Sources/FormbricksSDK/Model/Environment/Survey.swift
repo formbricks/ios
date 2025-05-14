@@ -17,7 +17,6 @@ struct SurveyLanguage: Codable {
     }
 }
 
-
 struct LanguageDetail: Codable {
     let id: String
     let code: String
