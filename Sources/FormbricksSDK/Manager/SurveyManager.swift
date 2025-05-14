@@ -186,7 +186,6 @@ extension SurveyManager {
                     print(data)
                     return try? JSONDecoder().decode(EnvironmentResponse.self, from: data)
                 } else {
-                    print("from survey manager")
                     let error = FormbricksSDKError(type: .unableToRetrieveEnvironment)
                     Formbricks.logger?.error(error.message)
                     return nil

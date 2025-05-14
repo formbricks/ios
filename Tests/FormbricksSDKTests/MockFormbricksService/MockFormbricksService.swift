@@ -89,6 +89,8 @@ class MockFormbricksService: FormbricksService {
             // 6️⃣ Decode as before
             do {
                 let body = try JSONDecoder.iso8601Full.decode(T.self, from: jsonData)
+                UserDefaults.standard.set(data, forKey: "environmentResponseObjectKey")
+                UserDefaults.standard.synchronize()
                 completion(.success(body))
             } catch {
                 print("❌ JSON Decode Error for \(name).json: \(error)")
