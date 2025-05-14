@@ -31,9 +31,18 @@ jobs:
       - name: Install Dependencies
         run: swift package resolve
 
-      - name: Test with iPhone Simulator
+      - name: Build for testing
         run: |
-          xcodebuild test \
+          xcodebuild build-for-testing \
+          -scheme 'FormbricksSDK' \
+          -sdk iphonesimulator \
+          -config Debug \
+          -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=18.4' \
+          -derivedDataPath build
+
+      - name: Run tests
+        run: |
+          xcodebuild test-without-building \
           -scheme 'FormbricksSDK' \
           -sdk iphonesimulator \
           -config Debug \
