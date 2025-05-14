@@ -31,14 +31,7 @@ jobs:
       - name: Install Dependencies
         run: swift package resolve
 
-      # Run tests for the package using Swift Package Manager
-      - name: Test with SPM
-        run: |
-          swift test
-
-      # Alternative test command if Swift test doesn't work
-      - name: Test with Xcode if needed
-        if: ${{ failure() }}
+      - name: Test with iPhone Simulator
         run: |
           xcodebuild test \
           -scheme 'FormbricksSDK' \
