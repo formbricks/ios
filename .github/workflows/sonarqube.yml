@@ -43,8 +43,9 @@ jobs:
 
       - name: Verify test bundle
         run: |
-          ls -la build/Build/Products/Debug/
-          ls -la build/Build/Products/Debug/FormbricksSDKTests.xctest || echo "Test bundle not found"
+          ls -la build/Build/Products/
+          ls -la build/Build/Products/Debug-iphonesimulator/
+          ls -la build/Build/Products/Debug-iphonesimulator/FormbricksSDKTests.xctest || echo "Test bundle not found"
 
       - name: Run tests
         run: |
