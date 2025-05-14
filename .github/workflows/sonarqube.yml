@@ -38,6 +38,7 @@ jobs:
           -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=18.2' \
           -derivedDataPath build \
           -enableCodeCoverage YES
+          -testPlan FormbricksSDK
 
       # Generate Cobertura XML from that Xcode-derived coverage
       - name: Generate Cobertura XML
