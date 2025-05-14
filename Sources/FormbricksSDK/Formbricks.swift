@@ -143,7 +143,7 @@ import Network
     
     /**
      Sets the language for the current user with the given `String`.
-     The SDK must be initialized before calling this method.
+     This method can be called before or after SDK initialization.
           
      Example:
      ```swift
@@ -151,18 +151,17 @@ import Network
      ```
      */
     @objc public static func setLanguage(_ language: String) {
-        guard Formbricks.isInitialized else {
-            let error = FormbricksSDKError(type: .sdkIsNotInitialized)
-            Formbricks.logger?.error(error.message)
-            return
-        }
-        
+        // Set the language property regardless of initialization status
         if (Formbricks.language == language) {
             return
         }
         
         Formbricks.language = language
-        userManager?.set(language: language)
+        
+        // Only update the user manager if SDK is initialized
+        if Formbricks.isInitialized {
+            userManager?.set(language: language)
+        }
     }
     
     /**
