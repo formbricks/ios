@@ -26,34 +26,29 @@ jobs:
       - name: Install slather
         run: gem install slather
 
+      - name: Install Dependencies
+        run: swift package resolve
+
       # Build the tests (with coverage) for the iOS simulator
       - name: Build-for-testing
         run: |
-          xcodebuild build-for-testing \
-            -scheme FormbricksSDK \
-            -sdk iphonesimulator \
-            -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=18.4' \
-            -derivedDataPath build \
-            -enableCodeCoverage YES
+          xcodebuild test \
+          -scheme 'FormbricksSDK' \
+          -destination 'platform=iOS Simulator,name=iPhone 16,OS=18.4'
 
-      - name: Rename "Debug-iphonesimulator" to "Debug"
-        run: |
-          mv build/Build/Products/Debug-iphonesimulator build/Build/Products/Debug
-
-      # Run the tests (without rebuilding)
-      - name: Test-without-building
-        run: |
-          xcodebuild test-without-building \
-            -scheme FormbricksSDK \
-            -sdk iphonesimulator \
-            -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=18.4' \
-            -derivedDataPath build
+      # # Run the tests (without rebuilding)
+      # - name: Test-without-building
+      #   run: |
+      #     xcodebuild test-without-building \
+      #       -scheme FormbricksSDK \
+      #       -sdk iphonesimulator \
+      #       -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=18.4' \
+      #       -derivedDataPath build
 
       # Generate Cobertura XML from that Xcode-derived coverage
       - name: Generate Cobertura XML
         run: |
           slather coverage \
-            --workspace .swiftpm/xcode/package.xcworkspace \
             --scheme FormbricksSDK \
             --cobertura-xml \
             --output-directory coverage \
