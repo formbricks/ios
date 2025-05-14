@@ -96,6 +96,8 @@ extension SurveyManager {
             return
         }
         
+        print("about to call getEnvironmentState")
+        
         service.getEnvironmentState { [weak self] result in
             switch result {
             case .success(let response):
@@ -182,6 +184,8 @@ extension SurveyManager {
                 return environmentResponse
             } else {
                 if let data = UserDefaults.standard.data(forKey: SurveyManager.environmentResponseObjectKey) {
+                    print("data")
+                    print(data)
                     return try? JSONDecoder().decode(EnvironmentResponse.self, from: data)
                 } else {
                     let error = FormbricksSDKError(type: .unableToRetrieveEnvironment)
