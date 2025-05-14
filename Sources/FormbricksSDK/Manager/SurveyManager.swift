@@ -96,6 +96,8 @@ extension SurveyManager {
             return
         }
         
+        print("about to call getEnvironmentState")
+        
         service.getEnvironmentState { [weak self] result in
             switch result {
             case .success(let response):

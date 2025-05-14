@@ -12,6 +12,7 @@ class MockFormbricksService: FormbricksService {
     var isErrorResponseNeeded = false
     
     override func getEnvironmentState(completion: @escaping (ResultType<GetEnvironmentRequest.Response>) -> Void) {
+        print("from getEnvironmentState mock")
         if isErrorResponseNeeded {
             completion(.failure(RuntimeError(message: "")))
         } else {
