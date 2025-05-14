@@ -52,7 +52,7 @@ jobs:
           xcodebuild test-without-building \
           -scheme 'FormbricksSDK' \
           -sdk iphonesimulator \
-          -config Debug \
+          --configuration Debug \
           -destination 'platform=iOS Simulator,name=iPhone SE (3rd generation),OS=18.2' \
           -derivedDataPath build \
           -enableCodeCoverage YES
