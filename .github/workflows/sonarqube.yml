@@ -34,8 +34,8 @@ jobs:
         run: |
           xcodebuild test \
           -scheme 'FormbricksSDK' \
-          -sdk iphoneos \
-          -destination 'platform=iOS Simulator,name=iPhone 16,OS=18.4'
+          -sdk iphonesimulator \
+          -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=18.4'
 
       # # Run the tests (without rebuilding)
       # - name: Test-without-building
