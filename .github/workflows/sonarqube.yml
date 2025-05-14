@@ -29,8 +29,7 @@ jobs:
       - name: Install Dependencies
         run: swift package resolve
 
-      # Build the tests (with coverage) for the iOS simulator
-      - name: Build-for-testing
+      - name: Test with iPhone Simulator
         run: |
           xcodebuild test \
           -scheme 'FormbricksSDK' \
@@ -39,15 +38,6 @@ jobs:
           -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=18.2' \
           -derivedDataPath build \
           -enableCodeCoverage YES
-
-      # # Run the tests (without rebuilding)
-      # - name: Test-without-building
-      #   run: |
-      #     xcodebuild test-without-building \
-      #       -scheme FormbricksSDK \
-      #       -sdk iphonesimulator \
-      #       -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=18.4' \
-      #       -derivedDataPath build
 
       # Generate Cobertura XML from that Xcode-derived coverage
       - name: Generate Cobertura XML
