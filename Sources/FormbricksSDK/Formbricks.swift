@@ -89,7 +89,6 @@ import Network
      ```
      */
     @objc public static func setUserId(_ userId: String) {
-        print("set userId called with: ", userId)
         guard Formbricks.isInitialized else {
             let error = FormbricksSDKError(type: .sdkIsNotInitialized)
                         Formbricks.logger?.error(error.message)
