@@ -30,8 +30,8 @@ jobs:
       - name: Run tests & collect coverage
         run: |
           xcodebuild \
-            -scheme FormbricksSDK-Package \
-            -destination 'platform=iOS Simulator,name=iPhone 14,OS=17.0' \
+            -scheme FormbricksSDK \
+            -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=18.4' \
             -derivedDataPath build \
             -enableCodeCoverage YES \
             test
