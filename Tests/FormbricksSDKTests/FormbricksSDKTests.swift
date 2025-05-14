@@ -9,12 +9,24 @@ final class FormbricksSDKTests: XCTestCase {
     let surveyID = "cm6ovw6j7000gsf0kduf4oo4i"
     let mockService = MockFormbricksService()
     let waitDescription = "wait for a second"
+    var userManager: UserManager!
+    var presentSurveyManager: PresentSurveyManager!
+    var surveyManager: SurveyManager!
+
     
     override func setUp() {
         super.setUp()
         // Always clean up before each test
-        Formbricks.cleanup()
-    }
+//        Formbricks.cleanup()
+        
+        userManager = UserManager()
+        presentSurveyManager = PresentSurveyManager()
+        surveyManager = SurveyManager.create(
+          userManager: userManager,
+          presentSurveyManager: presentSurveyManager,
+          service: mockService
+        )
+   }
     
     override func tearDown() {
         Formbricks.cleanup()
@@ -48,8 +60,8 @@ final class FormbricksSDKTests: XCTestCase {
         // Setup the SDK using your new instance-based design.
         // This creates new instances for both the UserManager and SurveyManager.
         Formbricks.setup(with: FormbricksConfig.Builder(appUrl: appUrl, environmentId: environmentId)
-//            .set(attributes: ["a": "b"])
-//            .add(attribute: "test", forKey: "key")
+            .set(attributes: ["a": "b"])
+            .add(attribute: "test", forKey: "key")
             .setLogLevel(.debug)
             .build())
        

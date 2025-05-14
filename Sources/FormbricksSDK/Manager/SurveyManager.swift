@@ -1,22 +1,42 @@
 import SwiftUI
 
+protocol FormbricksServiceProtocol {
+    func getEnvironmentState(completion: @escaping (ResultType<GetEnvironmentRequest.Response>) -> Void)
+    func postUser(id: String, attributes: [String: String]?, completion: @escaping (ResultType<PostUserRequest.Response>) -> Void)
+}
+
+// Make the real FormbricksService conform to the protocol
+extension FormbricksService: FormbricksServiceProtocol {}
+
 /// The SurveyManager is responsible for managing the surveys that are displayed to the user.
 /// Filtering surveys based on the user's segments, responses, and displays.
 final class SurveyManager {
     private let userManager: UserManager
     private let presentSurveyManager: PresentSurveyManager
     
-    private init(userManager: UserManager, presentSurveyManager: PresentSurveyManager) {
+    internal var service: FormbricksServiceProtocol
+
+        // Private initializer supports dependency injection
+    private init(userManager: UserManager, presentSurveyManager: PresentSurveyManager, service: FormbricksServiceProtocol = FormbricksService()) {
         self.userManager = userManager
         self.presentSurveyManager = presentSurveyManager
+        self.service = service
     }
     
-    static func create(userManager: UserManager, presentSurveyManager: PresentSurveyManager) -> SurveyManager {
-        return SurveyManager(userManager: userManager, presentSurveyManager: presentSurveyManager)
-    }
+    static func create(
+            userManager: UserManager,
+            presentSurveyManager: PresentSurveyManager,
+            service: FormbricksServiceProtocol = FormbricksService()
+        ) -> SurveyManager {
+            return SurveyManager(
+                userManager: userManager,
+                presentSurveyManager: presentSurveyManager,
+                service: service
+            )
+        }
+
     
     private static let environmentResponseObjectKey = "environmentResponseObjectKey"
-    internal var service = FormbricksService()
     private var backingEnvironmentResponse: EnvironmentResponse?
     /// Stores the surveys that are filtered based on the defined criteria, such as recontact days, display options etc.
     internal  private(set) var filteredSurveys: [Survey] = []
@@ -95,8 +115,6 @@ extension SurveyManager {
             filterSurveys()
             return
         }
-        
-        print("about to call getEnvironmentState")
         
         service.getEnvironmentState { [weak self] result in
             switch result {
