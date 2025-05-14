@@ -37,10 +37,6 @@ class APIClient<Request: CodableRequest>: Operation, @unchecked Sendable {
     }
     
     private func processResponse(data: Data?, response: URLResponse?, error: Error?) {
-        print("from api client: ")
-        print(data)
-        print(response)
-        print(error)
         guard let httpStatus = (response as? HTTPURLResponse)?.status else {
             let error = FormbricksAPIClientError(type: .invalidResponse)
             Formbricks.logger?.error("ERROR \(error.message)")

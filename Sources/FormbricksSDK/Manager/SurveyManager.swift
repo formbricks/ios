@@ -1,40 +1,28 @@
 import SwiftUI
 
-protocol FormbricksServiceProtocol {
-    func getEnvironmentState(completion: @escaping (ResultType<GetEnvironmentRequest.Response>) -> Void)
-    func postUser(id: String, attributes: [String: String]?, completion: @escaping (ResultType<PostUserRequest.Response>) -> Void)
-}
-
-// Make the real FormbricksService conform to the protocol
-extension FormbricksService: FormbricksServiceProtocol {}
-
 /// The SurveyManager is responsible for managing the surveys that are displayed to the user.
 /// Filtering surveys based on the user's segments, responses, and displays.
 final class SurveyManager {
     private let userManager: UserManager
     private let presentSurveyManager: PresentSurveyManager
-    
-    internal var service: FormbricksServiceProtocol
 
         // Private initializer supports dependency injection
-    private init(userManager: UserManager, presentSurveyManager: PresentSurveyManager, service: FormbricksServiceProtocol = FormbricksService()) {
+    private init(userManager: UserManager, presentSurveyManager: PresentSurveyManager) {
         self.userManager = userManager
         self.presentSurveyManager = presentSurveyManager
-        self.service = service
     }
     
     static func create(
             userManager: UserManager,
             presentSurveyManager: PresentSurveyManager,
-            service: FormbricksServiceProtocol = FormbricksService()
         ) -> SurveyManager {
             return SurveyManager(
                 userManager: userManager,
-                presentSurveyManager: presentSurveyManager,
-                service: service
+                presentSurveyManager: presentSurveyManager
             )
         }
-
+    
+    internal var service = FormbricksService()
     
     private static let environmentResponseObjectKey = "environmentResponseObjectKey"
     private var backingEnvironmentResponse: EnvironmentResponse?
@@ -202,8 +190,6 @@ extension SurveyManager {
                 return environmentResponse
             } else {
                 if let data = UserDefaults.standard.data(forKey: SurveyManager.environmentResponseObjectKey) {
-                    print("data")
-                    print(data)
                     return try? JSONDecoder().decode(EnvironmentResponse.self, from: data)
                 } else {
                     let error = FormbricksSDKError(type: .unableToRetrieveEnvironment)
