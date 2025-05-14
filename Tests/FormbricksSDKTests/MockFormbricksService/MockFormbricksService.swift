@@ -1,4 +1,5 @@
 import UIKit
+@testable import FormbricksSDK
 
 /// This can be extended later when needed
 enum MockResponse: String {
@@ -27,7 +28,7 @@ class MockFormbricksService: FormbricksService {
     }
     
     func execute<T: Decodable>(_ response: MockResponse, completion: @escaping (ResultType<T>) -> Void) {
-      guard let url = Bundle(for: MockFormbricksService.self).url(forResource: response.rawValue, withExtension: "json"), let data = try? Data(contentsOf: url) else {
+        guard let url = Bundle.module.url(forResource: response.rawValue, withExtension: "json"), let data = try? Data(contentsOf: url) else {
         completion(.failure(RuntimeError(message: "Unable to parse response")))
         return
       }

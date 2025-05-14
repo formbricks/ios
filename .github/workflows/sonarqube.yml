@@ -1,0 +1,53 @@
+name: SonarQube
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [opened, synchronize, reopened]
+  merge_group:
+
+jobs:
+  build-and-analyze:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Install Ruby (for Slather) and Slather itself
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "2.7"
+      - name: Install slather
+        run: gem install slather
+
+      # 1. Build & run tests via xcodebuild, collecting coverage
+      - name: Run tests & collect coverage
+        run: |
+          xcodebuild \
+            -scheme FormbricksSDK-Package \
+            -destination 'platform=iOS Simulator,name=iPhone 14,OS=17.0' \
+            -derivedDataPath build \
+            -enableCodeCoverage YES \
+            test
+
+      # 2. Generate Cobertura XML from that Xcode-derived coverage
+      - name: Generate Cobertura XML
+        run: |
+          slather coverage \
+            --workspace .swiftpm/xcode/package.xcworkspace \
+            --scheme FormbricksSDK-Package \
+            --cobertura-xml \
+            --output-directory coverage \
+            .
+
+      # 3. Run SonarCloud scan, pointing at the Cobertura report
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

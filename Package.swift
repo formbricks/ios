@@ -20,7 +20,10 @@ let package = Package(
     .testTarget(
       name: "FormbricksSDKTests",
       dependencies: ["FormbricksSDK"],
-      path: "Tests/FormbricksSDKTests"
+      resources: [
+        .process("Mock/User.json"),
+        .process("Mock/Environment.json"),
+      ]
     )
   ]
 )
