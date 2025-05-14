@@ -12,14 +12,13 @@ internal enum FormbricksEnvironment {
 
   /// Returns the full survey‐script URL as a String
   static var surveyScriptUrlString: String {
-    guard var components = URLComponents(string: baseApiUrl) else {
+    guard let baseURL = URL(string: baseApiUrl) else {
       fatalError("Invalid base URL: \(baseApiUrl)")
     }
     
-    let pathComponents = components.path.split(separator: "/").map(String.init)
-    components.path = "/" + (pathComponents + ["js", "surveys.umd.cjs"]).joined(separator: "/")
-    
-    return components.string ?? baseApiUrl + "/js/surveys.umd.cjs"
+    // Append path components properly using URL
+    let surveyScriptURL = baseURL.appendingPathComponent("js").appendingPathComponent("surveys.umd.cjs")
+    return surveyScriptURL.absoluteString
   }
 
   /// Returns the full environment‐fetch URL as a String for the given ID
