@@ -39,7 +39,7 @@ import Network
      Formbricks.setup(with: config)
      ```
      */
-    @objc public static func setup(with config: FormbricksConfig, force: Bool = false) {
+    @objc public static func setup(with config: FormbricksConfig, force: Bool = false, skipInitiFetch: Bool = false) {
         logger = Logger()
         apiQueue = OperationQueue()
         
@@ -73,8 +73,10 @@ import Network
         surveyManager = SurveyManager.create(userManager: userManager!, presentSurveyManager: presentSurveyManager!)
         userManager?.surveyManager = surveyManager
         
-        surveyManager?.refreshEnvironmentIfNeeded(force: force)
-        userManager?.syncUserStateIfNeeded()
+        if !skipInitiFetch {
+            surveyManager?.refreshEnvironmentIfNeeded(force: force)
+            userManager?.syncUserStateIfNeeded()
+        }
         
         self.isInitialized = true
     }
