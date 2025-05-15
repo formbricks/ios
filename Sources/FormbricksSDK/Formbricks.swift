@@ -14,7 +14,6 @@ import Network
     static internal var surveyManager: SurveyManager?
     static internal var apiQueue: OperationQueue? = OperationQueue()
     static internal var logger: Logger?
-    static internal var service = FormbricksService()
     
     // make this class not instantiatable outside of the SDK
     internal override init() {
@@ -59,7 +58,7 @@ import Network
         
         let svc: FormbricksServiceProtocol = config.customService
                 ?? {
-                    guard let url = URL(string: config.appUrl) else {
+                    guard URL(string: config.appUrl) != nil else {
                         fatalError("Invalid appUrl")
                     }
                     
@@ -67,6 +66,7 @@ import Network
                 }()
         
         userManager = UserManager()
+        userManager?.service = svc
         if let userId = config.userId {
             userManager?.set(userId: userId)
         }
@@ -79,7 +79,7 @@ import Network
         }
     
         presentSurveyManager = PresentSurveyManager()
-        surveyManager = SurveyManager.create(userManager: userManager!, presentSurveyManager: presentSurveyManager!)
+        surveyManager = SurveyManager.create(userManager: userManager!, presentSurveyManager: presentSurveyManager!, service: svc)
         userManager?.surveyManager = surveyManager
         
         surveyManager?.refreshEnvironmentIfNeeded(force: force)

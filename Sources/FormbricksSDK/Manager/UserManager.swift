@@ -3,9 +3,11 @@ import Foundation
 /// Store and manage user state and sync with the server when needed.
 final class UserManager: UserManagerSyncable {
     weak var surveyManager: SurveyManager?
+    internal var service: FormbricksServiceProtocol
     
-    init(surveyManager: SurveyManager? = nil) {
+    init(surveyManager: SurveyManager? = nil, service: FormbricksServiceProtocol = FormbricksService()) {
         self.surveyManager = surveyManager
+        self.service = service
     }
     
     private static let userIdKey = "userIdKey"
@@ -16,7 +18,7 @@ final class UserManager: UserManagerSyncable {
     private static let lastDisplayedAtKey = "lastDisplayedAtKey"
     private static let expiresAtKey = "expiresAtKey"
     
-    internal var service = FormbricksService()
+//    internal var service = FormbricksService()
     
     private var backingUserId: String?
     private var backingContactId: String?
