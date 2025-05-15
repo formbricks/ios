@@ -27,7 +27,7 @@
       "surveys": [
         {
           "autoClose": null,
-          "delay": 0,
+          "delay": 5,
           "displayLimit": 1,
           "displayOption": "displayMultiple",
           "displayPercentage": 100,
