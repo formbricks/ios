@@ -8,8 +8,10 @@ final class FormbricksViewModel: ObservableObject {
     
     init(environmentResponse: EnvironmentResponse, surveyId: String) {
         self.surveyId = surveyId
-        if let webviewDataJson = WebViewData(environmentResponse: environmentResponse, surveyId: surveyId).getJsonString() {
+        if let webviewDataJson = WebViewData(environmentResponse: environmentResponse, surveyId: surveyId).getJsonString(),
+           let surveyScriptUrl = FormbricksEnvironment.surveyScriptUrlString {
             htmlString = htmlTemplate.replacingOccurrences(of: "{{WEBVIEW_DATA}}", with: webviewDataJson)
+                .replacingOccurrences(of: "{{SURVEY_SCRIPT_URL}}", with: surveyScriptUrl)
         }
     }
 }
@@ -64,7 +66,7 @@ private extension FormbricksViewModel {
                 }
 
                 const script = document.createElement("script");
-                script.src = "\(FormbricksEnvironment.surveyScriptUrlString)";
+                script.src = "{{SURVEY_SCRIPT_URL}}";
                 script.async = true;
                 script.onload = () => loadSurvey();
                 script.onerror = (error) => {
