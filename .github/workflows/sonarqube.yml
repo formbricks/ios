@@ -57,15 +57,10 @@ jobs:
           -derivedDataPath build \
           -enableCodeCoverage YES
 
-      - name: Extract code coverage
+      - name: Extract code coverage and convert to XML
         run: |
           mkdir -p coverage
-          xcrun xccov view build/Logs/Test/*.xcresult --json --report > coverage/coverage.json
-
-      - name: Convert coverage to Cobertura XML
-        run: |
-          pip3 install xccov-to-cobertura
-          xccov-to-cobertura --input coverage/coverage.json --output coverage/coverage.xml
+          ./scripts/xccov-to-sonarqube-generic.sh build/Logs/Test/*.xcresult > coverage/coverage.xml
 
       # Run SonarCloud scan, pointing at the Cobertura report
       - name: SonarCloud Scan
