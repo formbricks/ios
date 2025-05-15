@@ -59,8 +59,9 @@ final class FormbricksSDKTests: XCTestCase {
         XCTAssertEqual(Formbricks.environmentId, environmentId)
          
         // Check error state handling.
-        mockService.isErrorResponseNeeded = true
         XCTAssertFalse(Formbricks.surveyManager?.hasApiError ?? false)
+        
+        mockService.isErrorResponseNeeded = true
         Formbricks.surveyManager?.refreshEnvironmentIfNeeded(force: true)
         XCTAssertTrue(Formbricks.surveyManager?.hasApiError ?? false)
 

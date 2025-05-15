@@ -12,10 +12,11 @@ class MockFormbricksService: FormbricksService {
     var isErrorResponseNeeded = false
     
     override func getEnvironmentState(completion: @escaping (ResultType<GetEnvironmentRequest.Response>) -> Void) {
-        print("from mocked getEnvironmentState")
         if isErrorResponseNeeded {
+            print("modecked getenvironmentstate: running completion with error")
             completion(.failure(RuntimeError(message: "")))
         } else {
+            print("mocked getenvironmentstate: running execute")
             execute(.environment, completion: completion)
         }
     }
@@ -90,11 +91,6 @@ class MockFormbricksService: FormbricksService {
             // 6️⃣ Decode as before
             do {
                 let body = try JSONDecoder.iso8601Full.decode(T.self, from: jsonData)
-                if(name == "Environment") {
-                    print("Setting environmentResponseObjectKey")
-                    UserDefaults.standard.set(data, forKey: "environmentResponseObjectKey")
-                    UserDefaults.standard.synchronize()
-                }
                 completion(.success(body))
             } catch {
                 print("❌ JSON Decode Error for \(name).json: \(error)")
