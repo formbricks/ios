@@ -183,31 +183,12 @@ final class FormbricksSDKTests: XCTestCase {
         
         XCTAssertTrue(Formbricks.isInitialized)
         
-        // Ensure operations complete before cleanup
-        let setupCompleteExpectation = expectation(description: "Setup complete")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            setupCompleteExpectation.fulfill()
-        }
-        
-        wait(for: [setupCompleteExpectation])
-        
-        // Use a DispatchSemaphore so we can synchronously wait for the cleanup to complete
-        // without relying on XCTest expectations which can time out
-        let semaphore = DispatchSemaphore(value: 0)
-        
+        // Wait for cleanup to complete using XCTestExpectation
+        let cleanupExpectation = expectation(description: "Cleanup complete")
         Formbricks.cleanup(waitForOperations: true) {
-            semaphore.signal()
+            cleanupExpectation.fulfill()
         }
-        
-        // Wait for cleanup to finish with a longer timeout
-        _ = semaphore.wait(timeout: .now() + 10.0)
-        
-        // Add a short delay to allow any final cleanup to finish
-        let postCleanupExpectation = expectation(description: "Post cleanup")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            postCleanupExpectation.fulfill()
-        }
-        wait(for: [postCleanupExpectation])
+        wait(for: [cleanupExpectation], timeout: 10.0)
         
         // Validate cleanup: all main properties should be nil or false
         XCTAssertNil(Formbricks.userManager)
