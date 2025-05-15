@@ -60,7 +60,7 @@ jobs:
       - name: Extract code coverage and convert to XML
         run: |
           mkdir -p coverage
-          ./scripts/xccov-to-sonarqube-generic.sh build/Logs/Test/*.xcresult > coverage/coverage.xml
+          bash ./scripts/xccov-to-sonarqube-generic.sh build/Logs/Test/*.xcresult > coverage/coverage.xml
 
       # Run SonarCloud scan, pointing at the Cobertura report
       - name: SonarCloud Scan
