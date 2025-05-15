@@ -2,21 +2,18 @@ import Foundation
 
 internal enum FormbricksEnvironment {
 
-  /// Only `appUrl` is user-supplied. Crash early if it's missing.
-  fileprivate static var baseApiUrl: String {
-    guard let url = Formbricks.appUrl else {
-      fatalError("Formbricks.setup must be called before using the SDK.")
-    }
-    return url
+  /// Only `appUrl` is user-supplied. Returns nil if it's missing.
+  internal static var baseApiUrl: String? {
+    return Formbricks.appUrl
   }
 
   /// Returns the full survey‐script URL as a String
-  static var surveyScriptUrlString: String {
-    guard let baseURL = URL(string: baseApiUrl) else {
-      fatalError("Invalid base URL: \(baseApiUrl)")
+  static var surveyScriptUrlString: String? {
+    guard let baseURLString = baseApiUrl,
+          let baseURL = URL(string: baseURLString),
+          baseURL.scheme == "https" || baseURL.scheme == "http" else {
+      return nil
     }
-    
-    // Append path components properly using URL
     let surveyScriptURL = baseURL.appendingPathComponent("js").appendingPathComponent("surveys.umd.cjs")
     return surveyScriptURL.absoluteString
   }
