@@ -5,24 +5,28 @@ import SwiftUI
 final class SurveyManager {
     private let userManager: UserManager
     private let presentSurveyManager: PresentSurveyManager
+    internal var service: FormbricksServiceProtocol
 
         // Private initializer supports dependency injection
-    private init(userManager: UserManager, presentSurveyManager: PresentSurveyManager) {
+    private init(userManager: UserManager, presentSurveyManager: PresentSurveyManager, service: FormbricksServiceProtocol = FormbricksService()) {
         self.userManager = userManager
         self.presentSurveyManager = presentSurveyManager
+        self.service = service
     }
     
     static func create(
             userManager: UserManager,
-            presentSurveyManager: PresentSurveyManager
+            presentSurveyManager: PresentSurveyManager,
+            service: FormbricksServiceProtocol = FormbricksService()
         ) -> SurveyManager {
             return SurveyManager(
                 userManager: userManager,
-                presentSurveyManager: presentSurveyManager
+                presentSurveyManager: presentSurveyManager,
+                service: service
             )
         }
     
-    internal var service = FormbricksService()
+//    internal var service = FormbricksService()
     
     private static let environmentResponseObjectKey = "environmentResponseObjectKey"
     private var backingEnvironmentResponse: EnvironmentResponse?

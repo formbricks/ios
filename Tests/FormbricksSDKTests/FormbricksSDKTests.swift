@@ -50,9 +50,8 @@ final class FormbricksSDKTests: XCTestCase {
             .set(attributes: ["a": "b"])
             .add(attribute: "test", forKey: "key")
             .setLogLevel(.debug)
-            .build(),
-            force: true,
-            skipInitiFetch: true
+            .service(mockService)
+            .build()
         )
 
         // IMPORTANT: Set up the service dependency on both managers BEFORE any API calls happen

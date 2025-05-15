@@ -39,7 +39,7 @@ import Network
      Formbricks.setup(with: config)
      ```
      */
-    @objc public static func setup(with config: FormbricksConfig, force: Bool = false, skipInitiFetch: Bool = false) {
+    @objc public static func setup(with config: FormbricksConfig, force: Bool = false) {
         logger = Logger()
         apiQueue = OperationQueue()
         
@@ -57,6 +57,15 @@ import Network
         self.environmentId = config.environmentId
         self.logger?.logLevel = config.logLevel
         
+        let svc: FormbricksServiceProtocol = config.customService
+                ?? {
+                    guard let url = URL(string: config.appUrl) else {
+                        fatalError("Invalid appUrl")
+                    }
+                    
+                    return FormbricksService()
+                }()
+        
         userManager = UserManager()
         if let userId = config.userId {
             userManager?.set(userId: userId)
@@ -73,10 +82,8 @@ import Network
         surveyManager = SurveyManager.create(userManager: userManager!, presentSurveyManager: presentSurveyManager!)
         userManager?.surveyManager = surveyManager
         
-        if !skipInitiFetch {
-            surveyManager?.refreshEnvironmentIfNeeded(force: force)
-            userManager?.syncUserStateIfNeeded()
-        }
+        surveyManager?.refreshEnvironmentIfNeeded(force: force)
+        userManager?.syncUserStateIfNeeded()
         
         self.isInitialized = true
     }
