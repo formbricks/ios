@@ -19,37 +19,12 @@ jobs:
         with:
           fetch-depth: 0 # Shallow clones should be disabled for better SonarQube analysis
 
-      # Install Ruby (for Slather) and Slather itself
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: 3.4.3
-
-      - name: Install slather
-        run: gem install slather
-
       - name: Install Dependencies
         run: swift package resolve
 
       - name: Build for testing
         run: |
-          xcodebuild build-for-testing \
-          -scheme 'FormbricksSDK' \
-          -sdk iphonesimulator \
-          -config Debug \
-          -destination 'platform=iOS Simulator,name=iPhone SE (3rd generation),OS=18.2' \
-          -derivedDataPath build \
-          -enableCodeCoverage YES
-
-      - name: Verify test bundle
-        run: |
-          ls -la build/Build/Products/
-          ls -la build/Build/Products/Debug-iphonesimulator/
-          ls -la build/Build/Products/Debug-iphonesimulator/FormbricksSDKTests.xctest || echo "Test bundle not found"
-
-      - name: Run tests
-        run: |
-          xcodebuild test-without-building \
+          xcodebuild test \
           -scheme 'FormbricksSDK' \
           -sdk iphonesimulator \
           -config Debug \
