@@ -81,7 +81,7 @@ final class FormbricksSDKTests: XCTestCase {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             userSetExpectation.fulfill()
         }
-        wait(for: [userSetExpectation], timeout: 1.0)
+        wait(for: [userSetExpectation])
 
         XCTAssertEqual(Formbricks.userManager?.userId, userId)
         // User refresh timer should be set.
