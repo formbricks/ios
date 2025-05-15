@@ -56,6 +56,10 @@ import Network
         self.environmentId = config.environmentId
         self.logger?.logLevel = config.logLevel
         
+        if config.customService != nil {
+            print("using custom service...")
+        }
+        
         let svc: FormbricksServiceProtocol = config.customService
                 ?? {
                     guard URL(string: config.appUrl) != nil else {
