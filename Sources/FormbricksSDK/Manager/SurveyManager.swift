@@ -63,12 +63,7 @@ final class SurveyManager {
     /// Checks if there are any surveys to display, based in the track action, and if so, displays the first one.
     /// Handles the display percentage and the delay of the survey.
     func track(_ action: String) {
-        print("first line survey manager's track: ")
-        print(isShowingSurvey)
-        
         guard !isShowingSurvey else { return }
-        
-        print(environmentResponse)
         
         let actionClasses = environmentResponse?.data.data.actionClasses ?? []
         let codeActionClasses = actionClasses.filter { $0.type == "code" }
@@ -76,8 +71,6 @@ final class SurveyManager {
         let firstSurveyWithActionClass = filteredSurveys.first { survey in
             return survey.triggers?.contains(where: { $0.actionClass?.name == actionClass?.name }) ?? false
         }
-        
-        print("found a survey with the action class having id: ", firstSurveyWithActionClass?.id)
                 
         // Display percentage
         let shouldDisplay = shouldDisplayBasedOnPercentage(firstSurveyWithActionClass?.displayPercentage)
