@@ -191,16 +191,17 @@ final class FormbricksSDKTests: XCTestCase {
         Formbricks.cleanup(waitForOperations: true) {
             cleanupExpectation.fulfill()
         }
-        wait(for: [cleanupExpectation], timeout: 10.0)
+
+        wait(for: [cleanupExpectation])
         
         // Validate cleanup: all main properties should be nil or false
-        XCTAssertNil(Formbricks.userManager)
-        XCTAssertNil(Formbricks.surveyManager)
-        XCTAssertNil(Formbricks.presentSurveyManager)
-        XCTAssertNil(Formbricks.apiQueue)
-        XCTAssertFalse(Formbricks.isInitialized)
-        XCTAssertNil(Formbricks.appUrl)
-        XCTAssertNil(Formbricks.environmentId)
-        XCTAssertNil(Formbricks.logger)
+        XCTAssertNil(Formbricks.userManager, "User manager should be nil")
+        XCTAssertNil(Formbricks.surveyManager, "Survey manager should be nil")
+        XCTAssertNil(Formbricks.presentSurveyManager, "Present survey manager should be nil")
+        XCTAssertNil(Formbricks.apiQueue, "API queue should be nil")
+        XCTAssertFalse(Formbricks.isInitialized, "SDK should not be initialized")
+        XCTAssertNil(Formbricks.appUrl, "App URL should be nil")
+        XCTAssertNil(Formbricks.environmentId, "Environment ID should be nil")
+        XCTAssertNil(Formbricks.logger, "Logger should be nil")
     }
 }
