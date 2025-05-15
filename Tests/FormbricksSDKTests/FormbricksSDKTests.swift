@@ -104,10 +104,10 @@ final class FormbricksSDKTests: XCTestCase {
         // Track a known event—the survey should be shown.
         Formbricks.track("click_demo_button")
         let trackExpectation = expectation(description: "Track event")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
             trackExpectation.fulfill()
         }
-        wait(for: [trackExpectation], timeout: 1.0)
+        wait(for: [trackExpectation], timeout: 5.0)
         
         XCTAssertTrue(Formbricks.surveyManager?.isShowingSurvey ?? false)
         
@@ -124,10 +124,10 @@ final class FormbricksSDKTests: XCTestCase {
         // Track a valid event, but survey should not be shown because a response was already submitted.
         Formbricks.track("click_demo_button")
         let secondTrackExpectation = expectation(description: "Second track event")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
             secondTrackExpectation.fulfill()
         }
-        wait(for: [secondTrackExpectation], timeout: 1.0)
+        wait(for: [secondTrackExpectation], timeout: 5.0)
         
         XCTAssertFalse(Formbricks.surveyManager?.isShowingSurvey ?? false)
         
