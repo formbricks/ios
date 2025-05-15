@@ -14,7 +14,7 @@ final class SurveyManager {
     
     static func create(
             userManager: UserManager,
-            presentSurveyManager: PresentSurveyManager,
+            presentSurveyManager: PresentSurveyManager
         ) -> SurveyManager {
             return SurveyManager(
                 userManager: userManager,
