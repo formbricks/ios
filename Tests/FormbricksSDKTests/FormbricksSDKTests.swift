@@ -43,6 +43,8 @@ final class FormbricksSDKTests: XCTestCase {
         Formbricks.setAttributes(["testA" : "testB"])
         Formbricks.setAttribute("test", forKey: "testKey")
         XCTAssertNil(Formbricks.userManager?.userId)
+
+        Formbricks.apiQueue?.isSuspended = true
         
         // Setup the SDK using your new instance-based design.
         // This creates new instances for both the UserManager and SurveyManager.
@@ -51,10 +53,12 @@ final class FormbricksSDKTests: XCTestCase {
             .add(attribute: "test", forKey: "key")
             .setLogLevel(.debug)
             .build())
-       
+
         // IMPORTANT: Set up the service dependency on both managers BEFORE any API calls happen
         Formbricks.userManager?.service = mockService
         Formbricks.surveyManager?.service = mockService
+        
+        Formbricks.apiQueue?.isSuspended = false 
         
         XCTAssertTrue(Formbricks.isInitialized)
         XCTAssertEqual(Formbricks.appUrl, appUrl)
