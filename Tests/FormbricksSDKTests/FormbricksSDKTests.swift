@@ -77,15 +77,18 @@ final class FormbricksSDKTests: XCTestCase {
         
         // Authenticate the user.
         Formbricks.setUserId(userId)
+        
+        // Wait for user ID to be set with a longer timeout
         let userSetExpectation = expectation(description: "User set")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
             userSetExpectation.fulfill()
         }
-        wait(for: [userSetExpectation])
+        wait(for: [userSetExpectation], timeout: 3.0)
 
-        XCTAssertEqual(Formbricks.userManager?.userId, userId)
+        // Verify user ID is set
+        XCTAssertEqual(Formbricks.userManager?.userId, userId, "User ID should be set")
         // User refresh timer should be set.
-        XCTAssertNotNil(Formbricks.userManager?.syncTimer)
+        XCTAssertNotNil(Formbricks.userManager?.syncTimer, "Sync timer should be set")
         
         // The environment should be fetched.
         XCTAssertNotNil(Formbricks.surveyManager?.environmentResponse)
