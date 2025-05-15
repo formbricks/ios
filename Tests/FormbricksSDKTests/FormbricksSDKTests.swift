@@ -151,13 +151,12 @@ final class FormbricksSDKTests: XCTestCase {
         Formbricks.logout()
         Formbricks.surveyManager?.filterSurveys()
         
-        Formbricks.track("click_demo_button")
         let thirdTrackExpectation = expectation(description: "Third track event")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+        Formbricks.track("click_demo_button", completion: {
             thirdTrackExpectation.fulfill()
-        }
-        wait(for: [thirdTrackExpectation], timeout: 1.0)
+        })
         
+        wait(for: [thirdTrackExpectation], timeout: 2.0)
         XCTAssertTrue(Formbricks.surveyManager?.isShowingSurvey ?? false)
         
         // Test the cleanup
