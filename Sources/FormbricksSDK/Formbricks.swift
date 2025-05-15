@@ -14,7 +14,6 @@ import Network
     static internal var surveyManager: SurveyManager?
     static internal var apiQueue: OperationQueue? = OperationQueue()
     static internal var logger: Logger?
-    static internal var service = FormbricksService()
     
     // make this class not instantiatable outside of the SDK
     internal override init() {
@@ -57,7 +56,17 @@ import Network
         self.environmentId = config.environmentId
         self.logger?.logLevel = config.logLevel
         
+        let svc: FormbricksServiceProtocol = config.customService
+                ?? {
+                    guard URL(string: config.appUrl) != nil else {
+                        fatalError("Invalid appUrl")
+                    }
+                    
+                    return FormbricksService()
+                }()
+        
         userManager = UserManager()
+        userManager?.service = svc
         if let userId = config.userId {
             userManager?.set(userId: userId)
         }
@@ -70,7 +79,7 @@ import Network
         }
     
         presentSurveyManager = PresentSurveyManager()
-        surveyManager = SurveyManager.create(userManager: userManager!, presentSurveyManager: presentSurveyManager!)
+        surveyManager = SurveyManager.create(userManager: userManager!, presentSurveyManager: presentSurveyManager!, service: svc)
         userManager?.surveyManager = surveyManager
         
         surveyManager?.refreshEnvironmentIfNeeded(force: force)
@@ -143,7 +152,7 @@ import Network
     
     /**
      Sets the language for the current user with the given `String`.
-     The SDK must be initialized before calling this method.
+     This method can be called before or after SDK initialization.
           
      Example:
      ```swift
@@ -151,18 +160,17 @@ import Network
      ```
      */
     @objc public static func setLanguage(_ language: String) {
-        guard Formbricks.isInitialized else {
-            let error = FormbricksSDKError(type: .sdkIsNotInitialized)
-            Formbricks.logger?.error(error.message)
-            return
-        }
-        
+        // Set the language property regardless of initialization status
         if (Formbricks.language == language) {
             return
         }
         
         Formbricks.language = language
-        userManager?.set(language: language)
+        
+        // Only update the user manager if SDK is initialized
+        if Formbricks.isInitialized {
+            userManager?.set(language: language)
+        }
     }
     
     /**
@@ -174,7 +182,7 @@ import Network
      Formbricks.track("button_clicked")
      ```
      */
-    @objc public static func track(_ action: String) {
+    @objc public static func track(_ action: String, completion: (() -> Void)? = nil) {
         guard Formbricks.isInitialized else {
             let error = FormbricksSDKError(type: .sdkIsNotInitialized)
             Formbricks.logger?.error(error.message)
@@ -183,7 +191,7 @@ import Network
         
         Formbricks.isInternetAvailabile { available in
             if available {
-                surveyManager?.track(action)
+                surveyManager?.track(action, completion: completion)
             } else {
                 Formbricks.logger?.warning(FormbricksSDKError.init(type: .networkError).message)
             }

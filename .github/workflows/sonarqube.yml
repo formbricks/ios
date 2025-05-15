@@ -1,0 +1,57 @@
+name: SonarQube
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [opened, synchronize, reopened]
+  merge_group:
+
+jobs:
+  build-and-analyze:
+    runs-on: macos-15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # Shallow clones should be disabled for better SonarQube analysis
+
+      - name: Install Dependencies
+        run: swift package resolve
+
+      - name: Run tests
+        run: |
+          xcodebuild test \
+          -scheme 'FormbricksSDK' \
+          -sdk iphonesimulator \
+          -config Debug \
+          -destination 'platform=iOS Simulator,name=iPhone SE (3rd generation),OS=18.2' \
+          -derivedDataPath build \
+          -enableCodeCoverage YES
+
+      - name: Extract code coverage and convert to XML
+        run: |
+          mkdir -p coverage
+          bash ./scripts/xccov-to-sonarqube-generic.sh build/Logs/Test/*.xcresult > coverage/coverage.xml
+
+      # Run SonarCloud scan, pointing at the Cobertura report
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarqube-scan-action@v5.2.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.organization=formbricks
+            -Dsonar.projectKey=formbricks_ios
+            -Dsonar.sources=Sources/FormbricksSDK
+            -Dsonar.tests=Tests/FormbricksSDKTests
+            -Dsonar.coverageReportPaths=coverage/coverage.xml
+            -Dsonar.verbose=true
+            -Dsonar.exclusions=**/Mock/**,**/*.xcodeproj/**,**/.swiftpm/**
+            -Dsonar.c.file.suffixes=-
+            -Dsonar.cpp.file.suffixes=-
+            -Dsonar.objc.file.suffixes=-

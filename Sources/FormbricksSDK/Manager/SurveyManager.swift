@@ -5,18 +5,30 @@ import SwiftUI
 final class SurveyManager {
     private let userManager: UserManager
     private let presentSurveyManager: PresentSurveyManager
-    
-    private init(userManager: UserManager, presentSurveyManager: PresentSurveyManager) {
+    internal var service: FormbricksServiceProtocol
+
+        // Private initializer supports dependency injection
+    private init(userManager: UserManager, presentSurveyManager: PresentSurveyManager, service: FormbricksServiceProtocol = FormbricksService()) {
         self.userManager = userManager
         self.presentSurveyManager = presentSurveyManager
+        self.service = service
     }
     
-    static func create(userManager: UserManager, presentSurveyManager: PresentSurveyManager) -> SurveyManager {
-        return SurveyManager(userManager: userManager, presentSurveyManager: presentSurveyManager)
-    }
+    static func create(
+            userManager: UserManager,
+            presentSurveyManager: PresentSurveyManager,
+            service: FormbricksServiceProtocol = FormbricksService()
+        ) -> SurveyManager {
+            return SurveyManager(
+                userManager: userManager,
+                presentSurveyManager: presentSurveyManager,
+                service: service
+            )
+        }
+    
+//    internal var service = FormbricksService()
     
     private static let environmentResponseObjectKey = "environmentResponseObjectKey"
-    internal var service = FormbricksService()
     private var backingEnvironmentResponse: EnvironmentResponse?
     /// Stores the surveys that are filtered based on the defined criteria, such as recontact days, display options etc.
     internal  private(set) var filteredSurveys: [Survey] = []
@@ -50,7 +62,7 @@ final class SurveyManager {
     
     /// Checks if there are any surveys to display, based in the track action, and if so, displays the first one.
     /// Handles the display percentage and the delay of the survey.
-    func track(_ action: String) {
+    func track(_ action: String, completion: (() -> Void)? = nil) {
         guard !isShowingSurvey else { return }
         
         let actionClasses = environmentResponse?.data.data.actionClasses ?? []
@@ -81,6 +93,7 @@ final class SurveyManager {
             let timeout = firstSurveyWithActionClass?.delay ?? 0
             DispatchQueue.global().asyncAfter(deadline: .now() + Double(timeout)) { [weak self] in
                 self?.showSurvey(withId: surveyId)
+                completion?()
             }
         }
     }
