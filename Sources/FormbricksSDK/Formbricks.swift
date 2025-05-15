@@ -182,7 +182,7 @@ import Network
      Formbricks.track("button_clicked")
      ```
      */
-    @objc public static func track(_ action: String) {
+    @objc public static func track(_ action: String, completion: (() -> Void)? = nil) {
         guard Formbricks.isInitialized else {
             let error = FormbricksSDKError(type: .sdkIsNotInitialized)
             Formbricks.logger?.error(error.message)
@@ -191,7 +191,7 @@ import Network
         
         Formbricks.isInternetAvailabile { available in
             if available {
-                surveyManager?.track(action)
+                surveyManager?.track(action, completion: completion)
             } else {
                 Formbricks.logger?.warning(FormbricksSDKError.init(type: .networkError).message)
             }

@@ -62,7 +62,7 @@ final class SurveyManager {
     
     /// Checks if there are any surveys to display, based in the track action, and if so, displays the first one.
     /// Handles the display percentage and the delay of the survey.
-    func track(_ action: String) {
+    func track(_ action: String, completion: (() -> Void)? = nil) {
         guard !isShowingSurvey else { return }
         
         let actionClasses = environmentResponse?.data.data.actionClasses ?? []
@@ -93,6 +93,7 @@ final class SurveyManager {
             let timeout = firstSurveyWithActionClass?.delay ?? 0
             DispatchQueue.global().asyncAfter(deadline: .now() + Double(timeout)) { [weak self] in
                 self?.showSurvey(withId: surveyId)
+                completion?()
             }
         }
     }

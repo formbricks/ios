@@ -102,13 +102,12 @@ final class FormbricksSDKTests: XCTestCase {
         XCTAssertFalse(Formbricks.surveyManager?.isShowingSurvey ?? false)
         
         // Track a known event—the survey should be shown.
-        Formbricks.track("click_demo_button")
         let trackExpectation = expectation(description: "Track event")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
+        Formbricks.track("click_demo_button", completion: {
             trackExpectation.fulfill()
-        }
+        })
         
-        wait(for: [trackExpectation], timeout: 10.0)
+        wait(for: [trackExpectation], timeout: 2.0)
         
         XCTAssertTrue(Formbricks.surveyManager?.isShowingSurvey ?? false)
         
