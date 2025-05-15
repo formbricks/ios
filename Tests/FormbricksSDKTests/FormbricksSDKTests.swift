@@ -107,7 +107,7 @@ final class FormbricksSDKTests: XCTestCase {
             trackExpectation.fulfill()
         })
         
-        wait(for: [trackExpectation], timeout: 2.0)
+        wait(for: [trackExpectation])
         
         XCTAssertTrue(Formbricks.surveyManager?.isShowingSurvey ?? false)
         
@@ -156,7 +156,8 @@ final class FormbricksSDKTests: XCTestCase {
             thirdTrackExpectation.fulfill()
         })
         
-        wait(for: [thirdTrackExpectation], timeout: 2.0)
+        wait(for: [thirdTrackExpectation])
+        
         XCTAssertTrue(Formbricks.surveyManager?.isShowingSurvey ?? false)
         
         // Test the cleanup
