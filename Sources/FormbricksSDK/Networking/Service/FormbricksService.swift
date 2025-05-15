@@ -5,6 +5,8 @@ class FormbricksService: FormbricksServiceProtocol {
     /// Get the current environment state.
     func getEnvironmentState(completion: @escaping (ResultType<GetEnvironmentRequest.Response>) -> Void) {
         let endPointRequest = GetEnvironmentRequest()
+        print("from real getEnvironmentState")
+        print(endPointRequest)
         execute(endPointRequest, withCompletion: completion)
     }
 
