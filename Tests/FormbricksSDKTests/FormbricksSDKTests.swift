@@ -104,8 +104,7 @@ final class FormbricksSDKTests: XCTestCase {
         // Track a known event—the survey should be shown.
         Formbricks.track("click_demo_button")
         let trackExpectation = expectation(description: "Track event")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
-            print("Survey shown?")
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
             trackExpectation.fulfill()
         }
         
