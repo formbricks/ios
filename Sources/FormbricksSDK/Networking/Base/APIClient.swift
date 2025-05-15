@@ -2,12 +2,13 @@ import Foundation
 
 class APIClient<Request: CodableRequest>: Operation, @unchecked Sendable {
     
-    private let session = URLSession.shared
+    private let session: URLSession
     private let request: Request
     private let completion: ((ResultType<Request.Response>) -> Void)?
     
-    init(request: Request, completion: ((ResultType<Request.Response>) -> Void)?) {
+    init(request: Request, session: URLSession = .shared, completion: ((ResultType<Request.Response>) -> Void)?) {
         self.request = request
+        self.session = session
         self.completion = completion
     }
     
