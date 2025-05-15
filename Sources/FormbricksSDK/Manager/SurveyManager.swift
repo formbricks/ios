@@ -168,7 +168,7 @@ private extension SurveyManager {
     }
     
     /// Refreshes the environment state after the given timeout.
-    func refreshEnvironmentAfter(timeout: Double) {
+    internal func refreshEnvironmentAfter(timeout: Double) {
         guard timeout > 0 else {
             return
         }
@@ -180,7 +180,7 @@ private extension SurveyManager {
     }
     
     /// Decides if the survey should be displayed based on the display percentage.
-    func shouldDisplayBasedOnPercentage(_ displayPercentage: Double?) -> Bool {
+    internal func shouldDisplayBasedOnPercentage(_ displayPercentage: Double?) -> Bool {
         guard let displayPercentage = displayPercentage else { return true }
         let randomNum = Double(Int.random(in: 0..<10000)) / 100.0
         return randomNum <= displayPercentage
@@ -215,7 +215,7 @@ extension SurveyManager {
 }
 
 // MARK: - Helper methods -
-private extension SurveyManager {
+extension SurveyManager {
     /// Filters the surveys based on the display type and limit.
     func filterSurveysBasedOnDisplayType(_ surveys: [Survey], displays: [Display], responses: [String]) -> [Survey] {
         return surveys.filter { survey in
@@ -263,7 +263,7 @@ private extension SurveyManager {
         }
     }
     
-    func getLanguageCode(
+    internal func getLanguageCode(
         survey: Survey,
         language: String?
     ) -> String? {

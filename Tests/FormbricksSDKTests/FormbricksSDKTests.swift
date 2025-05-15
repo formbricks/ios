@@ -204,4 +204,60 @@ final class FormbricksSDKTests: XCTestCase {
         XCTAssertNil(Formbricks.environmentId, "Environment ID should be nil")
         XCTAssertNil(Formbricks.logger, "Logger should be nil")
     }
+    
+    func testSurveyManagerEdgeCases() {
+        // Setup
+        let userManager = UserManager()
+        let presentSurveyManager = PresentSurveyManager()
+        let service = MockFormbricksService()
+        let manager = SurveyManager.create(userManager: userManager, presentSurveyManager: presentSurveyManager, service: service)
+
+        // shouldDisplayBasedOnPercentage
+        XCTAssertTrue(manager.shouldDisplayBasedOnPercentage(nil))
+        XCTAssertTrue(manager.shouldDisplayBasedOnPercentage(100))
+        XCTAssertFalse(manager.shouldDisplayBasedOnPercentage(0))
+
+        // UserDefaults: corrupt data
+        UserDefaults.standard.set(Data([0x00, 0x01]), forKey: "environmentResponseObjectKey")
+        XCTAssertNil(manager.environmentResponse)
+
+        // Timer-based refresh (simulate with short timeout)
+        manager.refreshEnvironmentAfter(timeout: 0.01)
+        let expectation = XCTestExpectation(description: "Timer fired")
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.02) {
+            expectation.fulfill()
+        }
+        wait(for: [expectation], timeout: 0.1)
+
+        // getLanguageCode coverage
+        let survey = Survey(
+            id: "1",
+            name: "Test Survey",
+            triggers: nil,
+            recontactDays: nil,
+            displayLimit: nil,
+            delay: nil,
+            displayPercentage: nil,
+            displayOption: .respondMultiple,
+            segment: nil,
+            styling: nil,
+            languages: [
+                SurveyLanguage(enabled: true, isDefault: true, language: LanguageDetail(id: "1", code: "en", alias: "english", projectId: "p1")),
+                SurveyLanguage(enabled: true, isDefault: false, language: LanguageDetail(id: "2", code: "de", alias: "german", projectId: "p1")),
+                SurveyLanguage(enabled: false, isDefault: false, language: LanguageDetail(id: "3", code: "fr", alias: nil, projectId: "p1"))
+            ]
+        )
+        // No language provided
+        XCTAssertEqual(manager.getLanguageCode(survey: survey, language: nil), "default")
+        // Explicit default
+        XCTAssertEqual(manager.getLanguageCode(survey: survey, language: "default"), "default")
+        // Code match, enabled
+        XCTAssertEqual(manager.getLanguageCode(survey: survey, language: "de"), "de")
+        // Alias match, enabled
+        XCTAssertEqual(manager.getLanguageCode(survey: survey, language: "english"), "default") // isDefault
+        // Code match, disabled
+        XCTAssertNil(manager.getLanguageCode(survey: survey, language: "fr"))
+        // Alias not found
+        XCTAssertNil(manager.getLanguageCode(survey: survey, language: "spanish"))
+    }
 }
