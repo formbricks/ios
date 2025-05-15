@@ -57,14 +57,15 @@ jobs:
           -derivedDataPath build \
           -enableCodeCoverage YES
 
-      # Generate Cobertura XML from that Xcode-derived coverage
-      - name: Generate Cobertura XML
+      - name: Extract code coverage
         run: |
-          slather coverage \
-            --scheme FormbricksSDK \
-            --cobertura-xml \
-            --output-directory coverage \
-            .
+          mkdir -p coverage
+          xcrun xccov view build/Logs/Test/*.xcresult > coverage/coverage.json
+
+      - name: Convert coverage to Cobertura XML
+        run: |
+          pip3 install xccov-to-cobertura
+          xccov-to-cobertura --input coverage/coverage.json --output coverage/coverage.xml
 
       # Run SonarCloud scan, pointing at the Cobertura report
       - name: SonarCloud Scan
