@@ -7,6 +7,6 @@ extension Calendar {
         let toDate = startOfDay(for: to)
         let numberOfDays = dateComponents([.day], from: fromDate, to: toDate)
         
-        return numberOfDays.day! + 1
+        return abs(numberOfDays.day! + 1)
     }
 }
