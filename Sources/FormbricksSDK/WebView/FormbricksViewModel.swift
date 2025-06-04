@@ -52,10 +52,16 @@ private extension FormbricksViewModel {
                     window.webkit.messageHandlers.jsMessage.postMessage(JSON.stringify({ event: "onOpenExternalURL", onOpenExternalURLParams: { url: url } }));
                 };
 
+                let setResponseFinished = null;
+                function getSetIsResponseSendingFinished(callback) {
+                    setResponseFinished = callback;
+                }  
+
                 function loadSurvey() {
                     const options = JSON.parse(json);
                     surveyProps = {
                         ...options,
+                        getSetIsResponseSendingFinished,
                         onDisplayCreated,
                         onResponseCreated,
                         onClose,

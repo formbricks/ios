@@ -30,6 +30,7 @@ struct SurveyWebView: UIViewRepresentable {
         }
         webView.navigationDelegate = context.coordinator
         webView.uiDelegate = context.coordinator
+        webView.scrollView.isScrollEnabled = false
         return webView
     }
     
