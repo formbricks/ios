@@ -3,7 +3,7 @@ import XCTest
 
 final class FormbricksSDKTests: XCTestCase {
     let environmentId = "environmentId"
-    let appUrl = "appUrl"
+    let appUrl = "https://example.com"
     let userId = "6CCCE716-6783-4D0F-8344-9C7DFA43D8F7"
     let surveyID = "cm6ovw6j7000gsf0kduf4oo4i"
     let mockService = MockFormbricksService()
