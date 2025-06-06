@@ -14,7 +14,7 @@ class APIClient<Request: CodableRequest>: Operation, @unchecked Sendable {
     
     override func main() {
         guard let finalURL = buildFinalURL() else {
-            completion?(.failure(FormbricksSDKError(type: .sdkIsNotInitialized)))
+            completion?(.failure(FormbricksSDKError(type: .invalidAppUrl)))
             return
         }
         
@@ -33,10 +33,9 @@ class APIClient<Request: CodableRequest>: Operation, @unchecked Sendable {
         guard let scheme = components.scheme?.lowercased(), scheme == "https" else {
             let errorMessage = "HTTP requests are blocked for security. Only HTTPS requests are allowed. Provided app url: \(apiURL)"
             Formbricks.logger?.error(errorMessage)
-            completion?(.failure(FormbricksSDKError(type: .invalidAppUrl)))
             return nil
         }
-        
+
         components.queryItems = request.queryParams?.map { URLQueryItem(name: $0.key, value: $0.value) }
         
         guard var url = components.url, let path = setPathParams(request.requestEndPoint) else { return nil }
@@ -93,7 +92,7 @@ class APIClient<Request: CodableRequest>: Operation, @unchecked Sendable {
     
     private func handleFailureResponse(data: Data?, error: Error?, statusCode: Int, message: String) {
         var log = message
-
+        
         if let error = error {
             log.append("\nError: \(error.localizedDescription)")
             Formbricks.logger?.error(log)
