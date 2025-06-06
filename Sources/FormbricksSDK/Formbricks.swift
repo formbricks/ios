@@ -59,7 +59,8 @@ import Network
         // Validate appUrl before proceeding with setup
         guard let url = URL(string: config.appUrl) else {
             let error = FormbricksSDKError(type: .invalidAppUrl)
-            fatalError("Invalid appUrl: \(config.appUrl). SDK setup aborted.")
+            Formbricks.logger?.error("Invalid appUrl: \(config.appUrl). SDK setup aborted.")
+            return
         }
         
         // Validate that appUrl uses HTTPS (block HTTP for security)
