@@ -56,14 +56,21 @@ import Network
         self.environmentId = config.environmentId
         self.logger?.logLevel = config.logLevel
         
-        let svc: FormbricksServiceProtocol = config.customService
-                ?? {
-                    guard URL(string: config.appUrl) != nil else {
-                        fatalError("Invalid appUrl")
-                    }
-                    
-                    return FormbricksService()
-                }()
+        // Validate appUrl before proceeding with setup
+        guard let url = URL(string: config.appUrl) else {
+            let error = FormbricksSDKError(type: .invalidAppUrl)
+            Formbricks.logger?.error("Invalid appUrl: \(config.appUrl). SDK setup aborted.")
+            return
+        }
+        
+        // Validate that appUrl uses HTTPS (block HTTP for security)
+        guard url.scheme?.lowercased() == "https" else {
+            let errorMessage = "HTTP requests are blocked for security. Only HTTPS URLs are allowed. Provided app url: \(config.appUrl). SDK setup aborted."
+            Formbricks.logger?.error(errorMessage)
+            return
+        }
+        
+        let svc: FormbricksServiceProtocol = config.customService ?? FormbricksService()
         
         userManager = UserManager()
         userManager?.service = svc

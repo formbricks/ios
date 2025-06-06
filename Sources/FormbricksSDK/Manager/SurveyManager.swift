@@ -26,8 +26,6 @@ final class SurveyManager {
             )
         }
     
-//    internal var service = FormbricksService()
-    
     private static let environmentResponseObjectKey = "environmentResponseObjectKey"
     private var backingEnvironmentResponse: EnvironmentResponse?
     /// Stores the surveys that are filtered based on the defined criteria, such as recontact days, display options etc.
@@ -311,5 +309,4 @@ extension SurveyManager {
             return segments.contains(segmentId)
         }
     }
-    
 }
