@@ -12,6 +12,7 @@ public enum FormbricksSDKErrorType: Int {
     case unableToRetrieveUser
     case unableToPersistUser
     case userIdIsNotSetYet
+    case unableToPostUser
     case invalidDisplayOption
     case surveyNotFoundError
     case surveyNotDisplayableError
@@ -47,6 +48,8 @@ public enum FormbricksSDKErrorType: Int {
             return "Survey Library Load Error"
         case .surveyNotDisplayableError:
             return "Survey Not Displayable"
+        case .unableToPostUser:
+            return "Unable To Post User"
         case .networkError:
             return "No internet connection"
         }

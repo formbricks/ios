@@ -1,5 +1,5 @@
 /// FormbricksService is a service class that handles the network requests for Formbricks API.
-class FormbricksService {
+class FormbricksService: FormbricksServiceProtocol {
     
     // MARK: - Environment -
     /// Get the current environment state.
@@ -15,6 +15,17 @@ class FormbricksService {
         execute(endPointRequest, withCompletion: completion)
     }
 }
+
+protocol FormbricksServiceProtocol {
+    func getEnvironmentState(
+      completion: @escaping (ResultType<GetEnvironmentRequest.Response>) -> Void
+    )
+    func postUser(
+      id: String,
+      attributes: [String: String]?,
+      completion: @escaping (ResultType<PostUserRequest.Response>) -> Void
+    )
+  }
 
 private extension FormbricksService {
     /// Creates the APIClient operation and adds it to the queue

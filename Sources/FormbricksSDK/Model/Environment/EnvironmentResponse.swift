@@ -1,7 +1,7 @@
 import Foundation
 
 struct EnvironmentResponse: Codable {
-    let data: EnvironmentResponseData
+    let data: EnvironmentResponseData?
     
     var responseString: String?
     

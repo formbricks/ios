@@ -7,13 +7,16 @@ import Foundation
     let userId: String?
     let attributes: [String:String]?
     let logLevel: LogLevel
+    /// Optional custom service, injected via Builder
+    let customService: FormbricksServiceProtocol?
     
-    init(appUrl: String, environmentId: String, userId: String?, attributes: [String : String]?, logLevel: LogLevel) {
-        self.appUrl = appUrl
-        self.environmentId = environmentId
-        self.userId = userId
-        self.attributes = attributes
-        self.logLevel = logLevel
+    init(appUrl: String, environmentId: String, userId: String?, attributes: [String : String]?, logLevel: LogLevel, customService: FormbricksServiceProtocol?) {
+            self.appUrl = appUrl
+            self.environmentId = environmentId
+            self.userId = userId
+            self.attributes = attributes
+            self.logLevel = logLevel
+            self.customService = customService
     }
     
     /// The builder class for the FormbricksConfig object.
@@ -23,6 +26,8 @@ import Foundation
         var userId: String?
         var attributes: [String:String] = [:]
         var logLevel: LogLevel = .error
+        /// Optional custom service, injected via Builder
+        var customService: FormbricksServiceProtocol?
         
         @objc public init(appUrl: String, environmentId: String) {
             self.appUrl = appUrl
@@ -53,9 +58,14 @@ import Foundation
             return self
         }
         
+        func service(_ svc: FormbricksServiceProtocol) -> FormbricksConfig.Builder {
+            self.customService = svc
+            return self
+        }
+        
         /// Builds the FormbricksConfig object from the Builder object.
         @objc public func build() -> FormbricksConfig {
-            return FormbricksConfig(appUrl: appUrl, environmentId: environmentId, userId: userId, attributes: attributes, logLevel: logLevel)
+            return FormbricksConfig(appUrl: appUrl, environmentId: environmentId, userId: userId, attributes: attributes, logLevel: logLevel, customService: customService)
         }
     }
 }
