@@ -93,7 +93,6 @@ private class WebViewData {
     
     init(environmentResponse: EnvironmentResponse, surveyId: String) {
         data["survey"] = environmentResponse.getSurveyJson(forSurveyId: surveyId)
-        data["isBrandingEnabled"] = true
         data["appUrl"] = Formbricks.appUrl
         data["environmentId"] = Formbricks.environmentId
         data["contactId"] = Formbricks.userManager?.contactId
