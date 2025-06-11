@@ -93,11 +93,11 @@ private class WebViewData {
     
     init(environmentResponse: EnvironmentResponse, surveyId: String) {
         data["survey"] = environmentResponse.getSurveyJson(forSurveyId: surveyId)
-        data["isBrandingEnabled"] = true
         data["appUrl"] = Formbricks.appUrl
         data["environmentId"] = Formbricks.environmentId
         data["contactId"] = Formbricks.userManager?.contactId
         data["isWebEnvironment"] = false
+        data["isBrandingEnabled"] = environmentResponse.data.data.project.inAppSurveyBranding ?? true
         
         let isMultiLangSurvey = environmentResponse.data.data.surveys?.first(where: { $0.id == surveyId })?.languages?.count ?? 0 > 1
         
