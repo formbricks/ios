@@ -8,8 +8,10 @@ final class FormbricksViewModel: ObservableObject {
     
     init(environmentResponse: EnvironmentResponse, surveyId: String, hiddenFields: [String: Any]? = nil) {
         self.surveyId = surveyId
-        if let webviewDataJson = WebViewData(environmentResponse: environmentResponse, surveyId: surveyId, hiddenFields: hiddenFields).getJsonString() {
+        if let webviewDataJson = WebViewData(environmentResponse: environmentResponse, surveyId: surveyId, hiddenFields: hiddenFields).getJsonString(),
+           let surveyScriptUrl = FormbricksEnvironment.surveyScriptUrlString {
             htmlString = htmlTemplate.replacingOccurrences(of: "{{WEBVIEW_DATA}}", with: webviewDataJson)
+                .replacingOccurrences(of: "{{SURVEY_SCRIPT_URL}}", with: surveyScriptUrl)
         }
     }
 }
@@ -21,7 +23,7 @@ private extension FormbricksViewModel {
         <!doctype html>
         <html>
             <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0">
-
+            
             <head>
                 <title>Formbricks WebView Survey</title>
             </head>
@@ -41,19 +43,25 @@ private extension FormbricksViewModel {
                 function onDisplayCreated() {
                     window.webkit.messageHandlers.jsMessage.postMessage(JSON.stringify({ event: "onDisplayCreated" }));
                 };
-
+        
                 function onResponseCreated() {
                     window.webkit.messageHandlers.jsMessage.postMessage(JSON.stringify({ event: "onResponseCreated" }));
                 };
-
+        
                 function onOpenExternalURL(url) {
                     window.webkit.messageHandlers.jsMessage.postMessage(JSON.stringify({ event: "onOpenExternalURL", onOpenExternalURLParams: { url: url } }));
                 };
+
+                let setResponseFinished = null;
+                function getSetIsResponseSendingFinished(callback) {
+                    setResponseFinished = callback;
+                }  
 
                 function loadSurvey() {
                     const options = JSON.parse(json);
                     surveyProps = {
                         ...options,
+                        getSetIsResponseSendingFinished,
                         onDisplayCreated,
                         onResponseCreated,
                         onClose,
@@ -64,7 +72,7 @@ private extension FormbricksViewModel {
                 }
 
                 const script = document.createElement("script");
-                script.src = "\(FormbricksEnvironment.surveyScriptUrlString)";
+                script.src = "{{SURVEY_SCRIPT_URL}}";
                 script.async = true;
                 script.onload = () => loadSurvey();
                 script.onerror = (error) => {
@@ -94,20 +102,20 @@ private class WebViewData {
             data["hiddenFieldsRecord"] = hiddenFields
         }
 
-        let isMultiLangSurvey = environmentResponse.data.data.surveys?.first(where: { $0.id == surveyId })?.languages?.count ?? 0 > 1
-
+        let isMultiLangSurvey = environmentResponse.data?.data.surveys?.first(where: { $0.id == surveyId })?.languages?.count ?? 0 > 1
+        
         if isMultiLangSurvey {
             data["languageCode"] = Formbricks.language
         } else {
             data["languageCode"] = "default"
         }
-
-        let hasCustomStyling = environmentResponse.data.data.surveys?.first(where: { $0.id == surveyId })?.styling != nil
-        let enabled = environmentResponse.data.data.project.styling?.allowStyleOverwrite ?? false
-
+        
+        let hasCustomStyling = environmentResponse.data?.data.surveys?.first(where: { $0.id == surveyId })?.styling != nil
+        let enabled = environmentResponse.data?.data.project.styling?.allowStyleOverwrite ?? false
+            
         data["styling"] = hasCustomStyling && enabled ? environmentResponse.getSurveyStylingJson(forSurveyId: surveyId): environmentResponse.getProjectStylingJson()
     }
-
+    
     func getJsonString() -> String? {
         do {
             let jsonData = try JSONSerialization.data(withJSONObject: data, options: [])

@@ -8,10 +8,10 @@ final class PresentSurveyManager {
          The class serves as a namespace for the present method, so instance creation is not needed and should be restricted.
         */
     }
-
+    
     /// The view controller that will present the survey window.
     private weak var viewController: UIViewController?
-
+    
     /// Present the webview
     func present(environmentResponse: EnvironmentResponse, id: String, hiddenFields: [String: Any]? = nil) {
         DispatchQueue.main.async { [weak self] in
@@ -20,7 +20,7 @@ final class PresentSurveyManager {
                 let view = FormbricksView(viewModel: FormbricksViewModel(environmentResponse: environmentResponse, surveyId: id, hiddenFields: hiddenFields))
                 let vc = UIHostingController(rootView: view)
                 vc.modalPresentationStyle = .overCurrentContext
-                vc.view.backgroundColor = UIColor.gray.withAlphaComponent(0.6)
+                vc.view.backgroundColor = UIColor.clear//UIColor.gray.withAlphaComponent(0.6)
                 if let presentationController = vc.presentationController as? UISheetPresentationController {
                     presentationController.detents = [.large()]
                 }
@@ -29,7 +29,7 @@ final class PresentSurveyManager {
             }
         }
     }
-
+    
     /// Dismiss the webview
     func dismissView() {
         viewController?.dismiss(animated: false)

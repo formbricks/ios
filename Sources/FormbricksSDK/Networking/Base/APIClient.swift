@@ -5,22 +5,26 @@ class APIClient<Request: CodableRequest>: Operation, @unchecked Sendable {
     private let request: Request
     private let completion: ((ResultType<Request.Response>) -> Void)?
 
-    init(request: Request, completion: ((ResultType<Request.Response>) -> Void)?) {
+    init(request: Request, session: URLSession = .shared , completion: ((ResultType<Request.Response>) -> Void)?) {
         self.request = request
         self.completion = completion
     }
 
     override func main() {
         guard let finalURL = buildFinalURL() else {
-            completion?(.failure(FormbricksSDKError(type: .sdkIsNotInitialized)))
+            completion?(.failure(FormbricksSDKError(type: .invalidAppUrl)))
             return
         }
 
         let urlRequest = createURLRequest(forURL: finalURL)
         logRequest(urlRequest)
+        
+        let sessionConfig = URLSessionConfiguration.ephemeral
+        sessionConfig.timeoutIntervalForRequest = 30
+        sessionConfig.timeoutIntervalForResource = 30
 
-        let session = URLSession(configuration: URLSessionConfiguration.ephemeral,
-                                 delegate: SSLPinningDelegate(),
+        let session = URLSession(configuration: sessionConfig,
+                                 delegate: FormbricksSSLPinningDelegate(),
                                  delegateQueue: nil)
         session.dataTask(with: urlRequest) { data, response, error in
             defer {
@@ -32,6 +36,13 @@ class APIClient<Request: CodableRequest>: Operation, @unchecked Sendable {
 
     private func buildFinalURL() -> URL? {
         guard let apiURL = request.baseURL, var components = URLComponents(string: apiURL) else { return nil }
+        
+        // Ensure only HTTPS requests are allowed (block HTTP)
+        guard let scheme = components.scheme?.lowercased(), scheme == "https" else {
+            let errorMessage = "HTTP requests are blocked for security. Only HTTPS requests are allowed. Provided app url: \(apiURL)"
+            Formbricks.logger?.error(errorMessage)
+            return nil
+        }
 
         components.queryItems = request.queryParams?.map { URLQueryItem(name: $0.key, value: $0.value) }
 
@@ -156,6 +167,7 @@ private extension APIClient {
 
         urlRequest.cachePolicy = .reloadIgnoringLocalAndRemoteCacheData
         urlRequest.httpMethod = request.requestType.rawValue
+        urlRequest.timeoutInterval = 30
 
         if let body = request.requestBody {
             urlRequest.httpBody = body
@@ -179,7 +191,7 @@ private extension APIClient {
 }
 
 
-class SSLPinningDelegate: NSObject, URLSessionDelegate {
+class FormbricksSSLPinningDelegate: NSObject, URLSessionDelegate {
     func urlSession(_ session: URLSession,
                     didReceive challenge: URLAuthenticationChallenge,
                     completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
