@@ -93,11 +93,12 @@ private class WebViewData {
 
     init(environmentResponse: EnvironmentResponse, surveyId: String, hiddenFields: [String: Any]? = nil) {
         data["survey"] = environmentResponse.getSurveyJson(forSurveyId: surveyId)
-        data["isBrandingEnabled"] = true
         data["appUrl"] = Formbricks.appUrl
         data["environmentId"] = Formbricks.environmentId
         data["contactId"] = Formbricks.userManager?.contactId
         data["isWebEnvironment"] = false
+        data["isBrandingEnabled"] = false
+
         if let hiddenFields = hiddenFields, !hiddenFields.isEmpty {
             data["hiddenFieldsRecord"] = hiddenFields
         }
