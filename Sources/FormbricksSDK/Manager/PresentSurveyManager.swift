@@ -25,7 +25,7 @@ final class PresentSurveyManager {
                     presentationController.detents = [.large()]
                 }
                 self.viewController = vc
-                topVC.present(vc, animated: true, completion: nil)
+                topVC.present(vc, animated: false, completion: nil)
             }
         }
     }
