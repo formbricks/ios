@@ -11,7 +11,7 @@ internal enum FormbricksEnvironment {
   static var surveyScriptUrlString: String? {
     guard let baseURLString = baseApiUrl,
           let baseURL = URL(string: baseURLString),
-          baseURL.scheme == "https" || baseURL.scheme == "http" else {
+          baseURL.scheme == "https" else {
       return nil
     }
     let surveyScriptURL = baseURL.appendingPathComponent("js").appendingPathComponent("surveys.umd.cjs")

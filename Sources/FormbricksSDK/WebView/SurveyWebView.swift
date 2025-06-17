@@ -25,6 +25,7 @@ struct SurveyWebView: UIViewRepresentable {
         webView.configuration.defaultWebpagePreferences.allowsContentJavaScript = true
         webView.isOpaque = false
         webView.backgroundColor = UIColor.clear
+        webView.scrollView.isScrollEnabled = false
         if #available(iOS 16.4, *) {
             webView.isInspectable = true
         }
@@ -136,13 +137,15 @@ final class JsMessageHandler: NSObject, WKScriptMessageHandler {
 
             /// Happens when the survey wants to open an external link in the default browser.
             case .onOpenExternalURL:
-                if let message = try? JSONDecoder().decode(OpenExternalUrlMessage.self, from: data), let url = URL(string:  message.onOpenExternalURLParams.url) {
-                    UIApplication.shared.open(url)
-                }
+                // if let message = try? JSONDecoder().decode(OpenExternalUrlMessage.self, from: data), let url = URL(string:  message.onOpenExternalURLParams.url) {
+                //     UIApplication.shared.open(url)
+                // }
+                break
 
             /// Happens when the survey library fails to load.
             case .onSurveyLibraryLoadError:
                 Formbricks.surveyManager?.dismissSurveyWebView()
+                Formbricks.delegate?.onError(FormbricksSDKError(type: .surveyLibraryLoadError))
             }
 
         } else {

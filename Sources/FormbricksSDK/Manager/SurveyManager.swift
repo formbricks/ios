@@ -38,7 +38,11 @@ final class SurveyManager {
     /// Fills up the `filteredSurveys` array
     func filterSurveys() {
         guard let environment = environmentResponse else { return }
-        guard let environmentData = environment.data, let surveys = environmentData.data.surveys else { return }
+        guard let environmentData = environment.data,
+              let surveys = environmentData.data.surveys
+        else { 
+            return
+        }
         
         let displays = userManager.displays ?? []
         let responses = userManager.responses ?? []
@@ -109,7 +113,7 @@ extension SurveyManager {
                                     isTried: Bool = false) {
         if (!force) {
             if let environmentResponse = environmentResponse, let environmentResponseData = environmentResponse.data, environmentResponseData.expiresAt.timeIntervalSinceNow > 0 {
-                Formbricks.logger?.debug("Environment state is still valid until \(environmentResponse.data?.expiresAt)")
+                Formbricks.logger?.debug("Environment state is still valid until \(environmentResponseData.expiresAt)")
                 filterSurveys()
                 return
             }
@@ -171,7 +175,7 @@ extension SurveyManager {
     }
 }
 
-private extension SurveyManager {
+extension SurveyManager {
     /// Presents the survey window with the given id. It is called when a survey is triggered.
     /// The survey is displayed based on the `FormbricksView`.
     /// The view controller is presented over the current context.
