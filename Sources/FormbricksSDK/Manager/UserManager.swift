@@ -139,6 +139,9 @@ final class UserManager: UserManagerSyncable {
         syncTimer = nil
         updateQueue?.cleanup()
         
+        // Re-filter surveys for logged out user
+        surveyManager?.filterSurveys()
+        
         if isUserIdDefined {
             Formbricks.logger?.debug("Successfully logged out user and reset the user state.")
         }
