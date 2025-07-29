@@ -46,6 +46,19 @@ final class SurveyManager {
         
         filteredSurveys = filterSurveysBasedOnDisplayType(surveys, displays: displays, responses: responses)
         filteredSurveys = filterSurveysBasedOnRecontactDays(filteredSurveys, defaultRecontactDays: environment.data.data.project.recontactDays)
+        
+        // If we don't have a user, we exclude surveys that have segments with filters
+        if userManager.userId == nil {
+            filteredSurveys = filteredSurveys.filter { survey in
+                // Include surveys with no segment
+                guard let segment = survey.segment else {
+                    return true
+                }
+                
+                // Include surveys with segments but no filters
+                return segment.filters.isEmpty
+            }
+        }
                 
         // If we have a user, we do more filtering
         if userManager.userId != nil {
