@@ -1,5 +1,9 @@
 import SwiftUI
 
+public extension Notification.Name {
+    static let environmentRefreshed = Notification.Name("Formbricks.environmentRefreshed")
+}
+
 /// The SurveyManager is responsible for managing the surveys that are displayed to the user.
 /// Filtering surveys based on the user's segments, responses, and displays.
 final class SurveyManager {
@@ -127,11 +131,13 @@ extension SurveyManager {
                 self?.environmentResponse = response
                 self?.startRefreshTimer(expiresAt: response.data.expiresAt)
                 self?.filterSurveys()
+                NotificationCenter.default.post(name: .environmentRefreshed, object: self)
             case .failure:
                 self?.hasApiError = true
                 let error = FormbricksSDKError(type: .unableToRefreshEnvironment)
                 Formbricks.logger?.error(error.message)
                 self?.startErrorTimer()
+                NotificationCenter.default.post(name: .environmentRefreshed, object: self)
             }
         }
     }
