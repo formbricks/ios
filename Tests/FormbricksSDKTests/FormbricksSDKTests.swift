@@ -221,13 +221,10 @@ final class FormbricksSDKTests: XCTestCase {
         UserDefaults.standard.set(Data([0x00, 0x01]), forKey: "environmentResponseObjectKey")
         XCTAssertNil(manager.environmentResponse)
 
-        // Timer-based refresh (use more generous timeouts)
+        // Timer-based refresh: wait deterministically for the environment refresh notification
+        let notificationExpectation = expectation(forNotification: .environmentRefreshed, object: manager, handler: nil)
         manager.refreshEnvironmentAfter(timeout: 0.1)
-        let expectation = XCTestExpectation(description: "Timer fired")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-            expectation.fulfill()
-        }
-        wait(for: [expectation], timeout: 1.0)
+        wait(for: [notificationExpectation], timeout: 2.0)
 
         // getLanguageCode coverage
         let survey = Survey(
