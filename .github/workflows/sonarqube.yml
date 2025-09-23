@@ -28,7 +28,7 @@ jobs:
           -scheme 'FormbricksSDK' \
           -sdk iphonesimulator \
           -config Debug \
-          -destination 'platform=iOS Simulator,name=iPhone SE (3rd generation),OS=18.2' \
+          -destination 'platform=iOS Simulator,name=iPhone SE (3rd generation),OS=18.4' \
           -derivedDataPath build \
           -enableCodeCoverage YES
 
@@ -39,7 +39,7 @@ jobs:
 
       # Run SonarCloud scan, pointing at the Cobertura report
       - name: SonarCloud Scan
-        uses: SonarSource/sonarqube-scan-action@v6.0.0
+        uses: SonarSource/sonarqube-scan-action@fd88b7d7ccbaefd23d8f36f73b59db7a3d246602 # v6.0.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
