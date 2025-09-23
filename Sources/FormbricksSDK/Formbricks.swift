@@ -58,7 +58,6 @@ import Network
         
         // Validate appUrl before proceeding with setup
         guard let url = URL(string: config.appUrl) else {
-            let error = FormbricksSDKError(type: .invalidAppUrl)
             Formbricks.logger?.error("Invalid appUrl: \(config.appUrl). SDK setup aborted.")
             return
         }
@@ -107,7 +106,7 @@ import Network
     @objc public static func setUserId(_ userId: String) {
         guard Formbricks.isInitialized else {
             let error = FormbricksSDKError(type: .sdkIsNotInitialized)
-                        Formbricks.logger?.error(error.message)
+            Formbricks.logger?.error(error.message)
             return
         }
         
