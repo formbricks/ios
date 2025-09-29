@@ -13,7 +13,7 @@ final class PresentSurveyManager {
     private weak var viewController: UIViewController?
     
     /// Present the webview
-    func present(environmentResponse: EnvironmentResponse, id: String) {
+    func present(environmentResponse: EnvironmentResponse, id: String, completion: ((Bool) -> Void)? = nil) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             if let window = UIApplication.safeKeyWindow {
@@ -25,7 +25,11 @@ final class PresentSurveyManager {
                     presentationController.detents = [.large()]
                 }
                 self.viewController = vc
-                window.rootViewController?.present(vc, animated: true, completion: nil)
+                window.rootViewController?.present(vc, animated: true, completion: {
+                    completion?(true)
+                })
+            } else {
+                completion?(false)
             }
         }
     }

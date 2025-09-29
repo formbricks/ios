@@ -109,7 +109,7 @@ private class WebViewData {
         
         data["darkOverlay"] = matchedSurvey?.projectOverwrites?.darkOverlay ?? project.darkOverlay
         
-        let isMultiLangSurvey = matchedSurvey?.languages?.count ?? 0 > 1
+        let isMultiLangSurvey = (matchedSurvey?.languages?.count ?? 0) > 1
         
         if isMultiLangSurvey {
             data["languageCode"] = Formbricks.language
