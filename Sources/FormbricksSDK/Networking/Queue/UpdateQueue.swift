@@ -83,11 +83,10 @@ final class UpdateQueue {
 
 private extension UpdateQueue {
     func startDebounceTimer() {
-        timer?.invalidate()
-        timer = nil
-        
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
+            self.timer?.invalidate()
+            self.timer = nil
             self.timer = Timer.scheduledTimer(timeInterval: UpdateQueue.debounceInterval,
                                               target: self,
                                               selector: #selector(self.commit),
@@ -97,16 +96,23 @@ private extension UpdateQueue {
     }
     
     @objc func commit() {
-        let effectiveUserId: String? = self.userId ?? Formbricks.userManager?.userId ?? nil
-    
+        var effectiveUserId: String?
+        var effectiveAttributes: [String: String]?
+        
+        // Capture a consistent snapshot under the sync queue
+        syncQueue.sync {
+            effectiveUserId = self.userId ?? Formbricks.userManager?.userId
+            effectiveAttributes = self.attributes
+        }
+        
         guard let userId = effectiveUserId else {
             let error = FormbricksSDKError(type: .userIdIsNotSetYet)
             Formbricks.logger?.error(error.message)
             return
         }
         
-        Formbricks.logger?.debug("UpdateQueue - commit() called on UpdateQueue with \(userId) and \(attributes ?? [:])")
-        userManager?.syncUser(withId: userId, attributes: attributes)
+        Formbricks.logger?.debug("UpdateQueue - commit() called on UpdateQueue with \(userId) and \(effectiveAttributes ?? [:])")
+        userManager?.syncUser(withId: userId, attributes: effectiveAttributes)
     }
 }
 
