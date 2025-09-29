@@ -67,7 +67,6 @@ private extension FormbricksViewModel {
                         onClose,
                         onOpenExternalURL,
                     };
-
                     window.formbricksSurveys.renderSurvey(surveyProps);
                 }
 
@@ -92,14 +91,25 @@ private class WebViewData {
     var data: [String: Any] = [:]
     
     init(environmentResponse: EnvironmentResponse, surveyId: String) {
+        let matchedSurvey = environmentResponse.data.data.surveys?.first(where: {$0.id == surveyId})
+        let project = environmentResponse.data.data.project
+        
         data["survey"] = environmentResponse.getSurveyJson(forSurveyId: surveyId)
         data["appUrl"] = Formbricks.appUrl
         data["environmentId"] = Formbricks.environmentId
         data["contactId"] = Formbricks.userManager?.contactId
         data["isWebEnvironment"] = false
-        data["isBrandingEnabled"] = environmentResponse.data.data.project.inAppSurveyBranding ?? true
+        data["isBrandingEnabled"] = project.inAppSurveyBranding ?? true
         
-        let isMultiLangSurvey = environmentResponse.data.data.surveys?.first(where: { $0.id == surveyId })?.languages?.count ?? 0 > 1
+        if let placementEnum = matchedSurvey?.projectOverwrites?.placement {
+            data["placement"] = placementEnum.rawValue
+        } else {
+            data["placement"] = project.placement
+        }
+        
+        data["darkOverlay"] = matchedSurvey?.projectOverwrites?.darkOverlay ?? project.darkOverlay
+        
+        let isMultiLangSurvey = matchedSurvey?.languages?.count ?? 0 > 1
         
         if isMultiLangSurvey {
             data["languageCode"] = Formbricks.language
@@ -107,8 +117,8 @@ private class WebViewData {
             data["languageCode"] = "default"
         }
         
-        let hasCustomStyling = environmentResponse.data.data.surveys?.first(where: { $0.id == surveyId })?.styling != nil
-        let enabled = environmentResponse.data.data.project.styling?.allowStyleOverwrite ?? false
+        let hasCustomStyling = matchedSurvey?.styling != nil
+        let enabled = project.styling?.allowStyleOverwrite ?? false
             
         data["styling"] = hasCustomStyling && enabled ? environmentResponse.getSurveyStylingJson(forSurveyId: surveyId): environmentResponse.getProjectStylingJson()
     }
