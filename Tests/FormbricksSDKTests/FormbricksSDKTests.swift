@@ -112,7 +112,8 @@ final class FormbricksSDKTests: XCTestCase {
         
         wait(for: [trackExpectation])
         
-        XCTAssertTrue(Formbricks.surveyManager?.isShowingSurvey ?? false)
+        // In headless test environment, presentation fails (no key window), so flag should reset to false
+        XCTAssertFalse(Formbricks.surveyManager?.isShowingSurvey ?? true)
         
         // "Dismiss" the webview.
         Formbricks.surveyManager?.dismissSurveyWebView()
@@ -161,7 +162,8 @@ final class FormbricksSDKTests: XCTestCase {
         
         wait(for: [thirdTrackExpectation])
         
-        XCTAssertTrue(Formbricks.surveyManager?.isShowingSurvey ?? false)
+        // In headless test environment, presentation fails (no key window), so flag should reset to false
+        XCTAssertFalse(Formbricks.surveyManager?.isShowingSurvey ?? true)
         
         // Test the cleanup
         Formbricks.cleanup()
