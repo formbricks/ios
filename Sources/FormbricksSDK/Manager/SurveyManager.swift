@@ -82,13 +82,21 @@ final class SurveyManager {
         
         let actionClasses = environmentResponse?.data.data.actionClasses ?? []
         let codeActionClasses = actionClasses.filter { $0.type == "code" }
-        let actionClass = codeActionClasses.first { $0.key == action }
+        guard let actionClass = codeActionClasses.first(where: { $0.key == action }) else {
+            Formbricks.logger?.error("\(action) action unknown. Please add this action in Formbricks first in order to use it in your code.")
+            return
+        }
+        
         let firstSurveyWithActionClass = filteredSurveys.first { survey in
-            return survey.triggers?.contains(where: { $0.actionClass?.name == actionClass?.name }) ?? false
+            return survey.triggers?.contains(where: { $0.actionClass?.name == actionClass.name }) ?? false
         }
                 
         // Display percentage
         let shouldDisplay = shouldDisplayBasedOnPercentage(firstSurveyWithActionClass?.displayPercentage)
+        if let survey = firstSurveyWithActionClass, !shouldDisplay {
+            Formbricks.logger?.info("Skipping survey \(survey.name) due to display percentage restriction.")
+            return
+        }
         let isMultiLangSurvey = firstSurveyWithActionClass?.languages?.count ?? 0 > 1
 
         if isMultiLangSurvey {
@@ -103,12 +111,25 @@ final class SurveyManager {
         }
 
         // Display and delay it if needed
-        if let surveyId = firstSurveyWithActionClass?.id, shouldDisplay {
+        if let survey = firstSurveyWithActionClass, shouldDisplay {
             isShowingSurvey = true
-            let timeout = firstSurveyWithActionClass?.delay ?? 0
+            let timeout = survey.delay ?? 0
+            if timeout > 0 {
+                Formbricks.logger?.info("Delaying survey \(survey.name) by \(timeout) seconds")
+            }
             DispatchQueue.global().asyncAfter(deadline: .now() + Double(timeout)) { [weak self] in
-                self?.showSurvey(withId: surveyId)
-                completion?()
+                guard let self = self else { return }
+                if let environmentResponse = self.environmentResponse {
+                    self.presentSurveyManager.present(environmentResponse: environmentResponse, id: survey.id) { success in
+                        if !success {
+                            self.isShowingSurvey = false
+                        }
+                        completion?()
+                    }
+                } else {
+                    self.isShowingSurvey = false
+                    completion?()
+                }
             }
         }
     }
@@ -199,8 +220,9 @@ private extension SurveyManager {
     /// Decides if the survey should be displayed based on the display percentage.
     internal func shouldDisplayBasedOnPercentage(_ displayPercentage: Double?) -> Bool {
         guard let displayPercentage = displayPercentage else { return true }
-        let randomNum = Double(Int.random(in: 0..<10000)) / 100.0
-        return randomNum <= displayPercentage
+        let clampedPercentage = min(max(displayPercentage, 0), 100)
+        let draw = Double.random(in: 0..<100)
+        return draw < clampedPercentage
     }
 }
 
@@ -273,7 +295,9 @@ extension SurveyManager {
             let recontactDays = survey.recontactDays ?? defaultRecontactDays
             
             if let recontactDays = recontactDays {
-                return Calendar.current.numberOfDaysBetween(Date(), and: lastDisplayedAt) >= recontactDays
+                let secondsElapsed = Date().timeIntervalSince(lastDisplayedAt)
+                let daysBetween = Int(secondsElapsed / 86_400)
+                return daysBetween >= recontactDays
             }
             
             return true

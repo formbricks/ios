@@ -8,6 +8,6 @@ extension Calendar {
         let numberOfDays = dateComponents([.day], from: fromDate, to: toDate)
         
         guard let day = numberOfDays.day else { return 0 }
-        return abs(day + 1)
+        return max(0, day)
     }
 }

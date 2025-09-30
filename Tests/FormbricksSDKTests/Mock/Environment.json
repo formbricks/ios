@@ -55,7 +55,13 @@
           "isBackButtonHidden": false,
           "languages": [],
           "name": "Start from scratch",
-          "projectOverwrites": null,
+          "projectOverwrites": {
+            "placement": "center",
+            "darkOverlay": true,
+            "clickOutsideClose": false,
+            "brandColor": "#ff0000",
+            "highlightBorderColor": "#00ff00"
+          },
           "questions": [
             {
               "allowMultipleFiles": true,

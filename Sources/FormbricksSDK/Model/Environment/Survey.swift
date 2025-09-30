@@ -25,6 +25,24 @@ struct LanguageDetail: Codable {
     let projectId: String
 }
 
+// MARK: - New types for projectOverwrites
+
+enum Placement: String, Codable {
+    case topLeft = "topLeft"
+    case topRight = "topRight"
+    case bottomLeft = "bottomLeft"
+    case bottomRight = "bottomRight"
+    case center = "center"
+}
+
+struct ProjectOverwrites: Codable {
+    let brandColor: String?
+    let highlightBorderColor: String?
+    let placement: Placement?
+    let clickOutsideClose: Bool?
+    let darkOverlay: Bool?
+}
+
 struct Survey: Codable {
     let id: String
     let name: String
@@ -37,4 +55,5 @@ struct Survey: Codable {
     let segment: Segment?
     let styling: Styling?
     let languages: [SurveyLanguage]?
+    let projectOverwrites: ProjectOverwrites?
 }
