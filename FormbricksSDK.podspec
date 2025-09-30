@@ -6,7 +6,7 @@ Pod::Spec.new do |s|
   s.license          = { :type => "MIT", :file => "LICENSE" }
   s.author           = { "Formbricks" => "hola@formbricks.com" }
   s.platform         = :ios, "16.6"
-  s.source           = { :git => "https://github.com/formbricks/ios.git", :tag => "v#{s.version}" }
+  s.source           = { :git => "https://github.com/formbricks/ios.git", :tag => s.version }
   s.swift_version    = "5.7"                                
   s.requires_arc     = true
   s.source_files     = "Sources/FormbricksSDK/**/*.{swift}"

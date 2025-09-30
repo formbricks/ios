@@ -2,9 +2,9 @@ name: Publish CocoaPod
 
 on:
   push:
-    # runs on anything like v1.2.3
+    # Run on tags like and 1.2.3
     tags:
-      - "v*.*.*"
+      - "*.*.*"
 
 jobs:
   publish-pod:
@@ -18,7 +18,18 @@ jobs:
         with:
           ruby-version: 3.4.3
 
-      # 3. Install CocoaPods
+      # 3. Run tests
+      - name: Run tests
+        run: |
+          xcodebuild test \
+          -scheme 'FormbricksSDK' \
+          -sdk iphonesimulator \
+          -config Debug \
+          -destination 'platform=iOS Simulator,name=iPhone SE (3rd generation),OS=18.4' \
+          -derivedDataPath build \
+          -enableCodeCoverage YES
+
+      # 4. Install CocoaPods
       - name: Install CocoaPods
         run: |
           gem install cocoapods
