@@ -12,7 +12,7 @@
       ],
       "project": {
         "clickOutsideClose": true,
-        "darkOverlay": false,
+        "overlay": "none",
         "id": "cm6ovvfnv0003sf0k7zi8r3ac",
         "inAppSurveyBranding": true,
         "placement": "bottomRight",
@@ -57,7 +57,7 @@
           "name": "Start from scratch",
           "projectOverwrites": {
             "placement": "center",
-            "darkOverlay": true,
+            "overlay": "dark",
             "clickOutsideClose": false,
             "brandColor": "#ff0000",
             "highlightBorderColor": "#00ff00"

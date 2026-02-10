@@ -305,8 +305,10 @@ final class FormbricksSDKTests: XCTestCase {
             return
         }
 
-        // placement should come from survey.projectOverwrites (center), and darkOverlay true
+        // placement should come from survey.projectOverwrites (center), overlay should be "dark",
+        // and clickOutside should be false (from survey.projectOverwrites.clickOutsideClose)
         XCTAssertEqual(object["placement"] as? String, "center")
-        XCTAssertEqual(object["darkOverlay"] as? Bool, true)
+        XCTAssertEqual(object["overlay"] as? String, "dark")
+        XCTAssertEqual(object["clickOutside"] as? Bool, false)
     }
 }
