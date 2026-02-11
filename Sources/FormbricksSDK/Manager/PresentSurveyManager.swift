@@ -36,6 +36,18 @@ final class PresentSurveyManager {
         }
     }
     
+    /// Returns the appropriate background color for the given overlay style.
+    static func backgroundColor(for overlay: SurveyOverlay) -> UIColor {
+        switch overlay {
+        case .dark:
+            return UIColor(white: 0.2, alpha: 0.6)
+        case .light:
+            return UIColor(white: 0.6, alpha: 0.4)
+        case .none:
+            return .clear
+        }
+    }
+    
     /// Dismiss the webview
     func dismissView() {
         viewController?.dismiss(animated: true)
