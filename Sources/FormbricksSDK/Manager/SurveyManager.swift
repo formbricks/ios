@@ -120,8 +120,7 @@ final class SurveyManager {
             DispatchQueue.global().asyncAfter(deadline: .now() + Double(timeout)) { [weak self] in
                 guard let self = self else { return }
                 if let environmentResponse = self.environmentResponse {
-                    let overlay = self.resolveOverlay(for: survey)
-                    self.presentSurveyManager.present(environmentResponse: environmentResponse, id: survey.id, overlay: overlay) { success in
+                    self.presentSurveyManager.present(environmentResponse: environmentResponse, id: survey.id) { success in
                         if !success {
                             self.isShowingSurvey = false
                         }
@@ -190,9 +189,7 @@ private extension SurveyManager {
     /// The view controller is presented over the current context.
     func showSurvey(withId id: String) {
         if let environmentResponse = environmentResponse {
-            let survey = environmentResponse.data.data.surveys?.first(where: { $0.id == id })
-            let overlay = resolveOverlay(for: survey)
-            presentSurveyManager.present(environmentResponse: environmentResponse, id: id, overlay: overlay)
+            presentSurveyManager.present(environmentResponse: environmentResponse, id: id)
         }
     }
     
@@ -345,15 +342,6 @@ extension SurveyManager {
         
         // 6) Otherwise return its code
         return entry.language.code
-    }
-    
-    /// Resolves the overlay style for the given survey, falling back to the project-level default.
-    /// Survey-level `projectOverwrites.overlay` takes precedence over `project.overlay`.
-    func resolveOverlay(for survey: Survey?) -> SurveyOverlay {
-        if let surveyOverlay = survey?.projectOverwrites?.overlay {
-            return surveyOverlay
-        }
-        return environmentResponse?.data.data.project.overlay ?? .none
     }
     
     /// Filters the surveys based on the user's segments.
