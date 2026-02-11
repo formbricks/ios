@@ -107,7 +107,8 @@ private class WebViewData {
             data["placement"] = project.placement
         }
         
-        data["darkOverlay"] = matchedSurvey?.projectOverwrites?.darkOverlay ?? project.darkOverlay
+        data["clickOutside"] = matchedSurvey?.projectOverwrites?.clickOutsideClose ?? project.clickOutsideClose ?? false
+        data["overlay"] = (matchedSurvey?.projectOverwrites?.overlay ?? project.overlay ?? .none).rawValue
         
         let isMultiLangSurvey = (matchedSurvey?.languages?.count ?? 0) > 1
         

@@ -35,12 +35,19 @@ enum Placement: String, Codable {
     case center = "center"
 }
 
+/// Defines the overlay style displayed behind a survey modal.
+enum SurveyOverlay: String, Codable {
+    case none = "none"
+    case light = "light"
+    case dark = "dark"
+}
+
 struct ProjectOverwrites: Codable {
     let brandColor: String?
     let highlightBorderColor: String?
     let placement: Placement?
     let clickOutsideClose: Bool?
-    let darkOverlay: Bool?
+    let overlay: SurveyOverlay?
 }
 
 struct Survey: Codable {
