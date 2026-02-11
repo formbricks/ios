@@ -261,34 +261,11 @@ final class FormbricksSDKTests: XCTestCase {
         XCTAssertNil(manager.getLanguageCode(survey: survey, language: "spanish"))
     }
 
-    // MARK: - PresentSurveyManager overlay background color tests
+    // MARK: - PresentSurveyManager tests
 
-    func testBackgroundColorForDarkOverlay() {
-        let color = PresentSurveyManager.backgroundColor(for: .dark)
-        var white: CGFloat = 0
-        var alpha: CGFloat = 0
-        color.getWhite(&white, alpha: &alpha)
-        XCTAssertEqual(white, 0.2, accuracy: 0.01, "Dark overlay should use 0.2 white")
-        XCTAssertEqual(alpha, 0.6, accuracy: 0.01, "Dark overlay should use 0.6 alpha")
-    }
-
-    func testBackgroundColorForLightOverlay() {
-        let color = PresentSurveyManager.backgroundColor(for: .light)
-        var white: CGFloat = 0
-        var alpha: CGFloat = 0
-        color.getWhite(&white, alpha: &alpha)
-        XCTAssertEqual(white, 0.6, accuracy: 0.01, "Light overlay should use 0.6 white")
-        XCTAssertEqual(alpha, 0.4, accuracy: 0.01, "Light overlay should use 0.4 alpha")
-    }
-
-    func testBackgroundColorForNoneOverlay() {
-        let color = PresentSurveyManager.backgroundColor(for: .none)
-        XCTAssertEqual(color, .clear, "None overlay should return clear color")
-    }
-
-    func testPresentWithOverlayCompletesInHeadlessEnvironment() {
+    func testPresentCompletesInHeadlessEnvironment() {
         // In a headless test environment there is no key window, so present() should
-        // call the completion with false for every overlay variant.
+        // call the completion with false.
         let config = FormbricksConfig.Builder(appUrl: appUrl, environmentId: environmentId)
             .setLogLevel(.debug)
             .service(mockService)
@@ -306,99 +283,13 @@ final class FormbricksSDKTests: XCTestCase {
         }
 
         let manager = PresentSurveyManager()
-
-        for overlay in [SurveyOverlay.none, .light, .dark] {
-            let presentExpectation = expectation(description: "Present with \(overlay.rawValue) overlay")
-            manager.present(environmentResponse: env, id: surveyID, overlay: overlay) { success in
-                // No key window in headless tests → completion(false)
-                XCTAssertFalse(success, "Presentation should fail in headless environment for overlay: \(overlay.rawValue)")
-                presentExpectation.fulfill()
-            }
-            wait(for: [presentExpectation], timeout: 2.0)
+        let presentExpectation = expectation(description: "Present completes")
+        manager.present(environmentResponse: env, id: surveyID) { success in
+            // No key window in headless tests → completion(false)
+            XCTAssertFalse(success, "Presentation should fail in headless environment")
+            presentExpectation.fulfill()
         }
-    }
-
-    // MARK: - SurveyManager.resolveOverlay tests
-
-    func testResolveOverlayUsesSurveyOverwrite() {
-        let config = FormbricksConfig.Builder(appUrl: appUrl, environmentId: environmentId)
-            .setLogLevel(.debug)
-            .service(mockService)
-            .build()
-        Formbricks.setup(with: config)
-
-        Formbricks.surveyManager?.refreshEnvironmentIfNeeded(force: true)
-        let loadExpectation = expectation(description: "Env loaded")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { loadExpectation.fulfill() }
-        wait(for: [loadExpectation])
-
-        guard let manager = Formbricks.surveyManager else {
-            XCTFail("Missing surveyManager")
-            return
-        }
-
-        // The mock survey has projectOverwrites.overlay = "dark"
-        let surveyWithOverwrite = manager.environmentResponse?.data.data.surveys?.first(where: { $0.id == surveyID })
-        XCTAssertNotNil(surveyWithOverwrite)
-        XCTAssertEqual(manager.resolveOverlay(for: surveyWithOverwrite), .dark,
-                       "Should use survey-level projectOverwrites overlay")
-    }
-
-    func testResolveOverlayFallsBackToProjectDefault() {
-        let config = FormbricksConfig.Builder(appUrl: appUrl, environmentId: environmentId)
-            .setLogLevel(.debug)
-            .service(mockService)
-            .build()
-        Formbricks.setup(with: config)
-
-        Formbricks.surveyManager?.refreshEnvironmentIfNeeded(force: true)
-        let loadExpectation = expectation(description: "Env loaded")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { loadExpectation.fulfill() }
-        wait(for: [loadExpectation])
-
-        guard let manager = Formbricks.surveyManager else {
-            XCTFail("Missing surveyManager")
-            return
-        }
-
-        // A survey without projectOverwrites should fall back to project.overlay ("none" in mock)
-        let surveyWithoutOverwrite = Survey(
-            id: "no-overwrite",
-            name: "No Overwrite",
-            triggers: nil,
-            recontactDays: nil,
-            displayLimit: nil,
-            delay: nil,
-            displayPercentage: nil,
-            displayOption: .respondMultiple,
-            segment: nil,
-            styling: nil,
-            languages: nil,
-            projectOverwrites: nil
-        )
-        XCTAssertEqual(manager.resolveOverlay(for: surveyWithoutOverwrite), .none,
-                       "Should fall back to project-level overlay when no survey overwrite exists")
-    }
-
-    func testResolveOverlayReturnsNoneForNilSurvey() {
-        let config = FormbricksConfig.Builder(appUrl: appUrl, environmentId: environmentId)
-            .setLogLevel(.debug)
-            .service(mockService)
-            .build()
-        Formbricks.setup(with: config)
-
-        Formbricks.surveyManager?.refreshEnvironmentIfNeeded(force: true)
-        let loadExpectation = expectation(description: "Env loaded")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { loadExpectation.fulfill() }
-        wait(for: [loadExpectation])
-
-        guard let manager = Formbricks.surveyManager else {
-            XCTFail("Missing surveyManager")
-            return
-        }
-
-        XCTAssertEqual(manager.resolveOverlay(for: nil), .none,
-                       "Should return .none when survey is nil")
+        wait(for: [presentExpectation], timeout: 2.0)
     }
 
     // MARK: - WebView data tests
