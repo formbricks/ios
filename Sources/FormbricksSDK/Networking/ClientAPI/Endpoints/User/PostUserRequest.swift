@@ -9,11 +9,11 @@ final class PostUserRequest: EncodableRequest<PostUserRequest.Body>, CodableRequ
     
     struct Body: Codable {
         let userId: String
-        let attributes: [String: String]?
+        let attributes: [String: AttributeValue]?
     }
     
         
-    init(userId: String, attributes: [String: String]?) {
+    init(userId: String, attributes: [String: AttributeValue]?) {
         super.init(object: Body(userId: userId, attributes: attributes))
     }
 }

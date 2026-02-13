@@ -83,7 +83,7 @@ final class SurveyManager {
         let actionClasses = environmentResponse?.data.data.actionClasses ?? []
         let codeActionClasses = actionClasses.filter { $0.type == "code" }
         guard let actionClass = codeActionClasses.first(where: { $0.key == action }) else {
-            Formbricks.logger?.error("\(action) action unknown. Please add this action in Formbricks first in order to use it in your code.")
+            Formbricks.logger?.error("Action with identifier '\(action)' is unknown. Please add this action in Formbricks in order to use it via the SDK action tracking.")
             return
         }
         

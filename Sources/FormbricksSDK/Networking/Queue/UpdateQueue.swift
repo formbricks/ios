@@ -1,7 +1,7 @@
 import Foundation
 
 protocol UserManagerSyncable: AnyObject {
-    func syncUser(withId id: String, attributes: [String: String]?)
+    func syncUser(withId id: String, attributes: [String: AttributeValue]?)
 }
 
 /// Update queue. This class is used to queue updates to the user.
@@ -12,7 +12,7 @@ final class UpdateQueue {
     
     private let syncQueue = DispatchQueue(label: "com.formbricks.updateQueue")
     private var userId: String?
-    private var attributes: [String : String]?
+    private var attributes: [String : AttributeValue]?
     private var language: String?
     private var timer: Timer?
     
@@ -29,14 +29,14 @@ final class UpdateQueue {
         }
     }
     
-    func set(attributes: [String : String]) {
+    func set(attributes: [String : AttributeValue]) {
         syncQueue.sync {
             self.attributes = attributes
             startDebounceTimer()
         }
     }
     
-    func add(attribute: String, forKey key: String) {
+    func add(attribute: AttributeValue, forKey key: String) {
         syncQueue.sync {
            if var attr = self.attributes {
                attr[key] = attribute
@@ -57,7 +57,7 @@ final class UpdateQueue {
             
             if effectiveUserId != nil {
                 // If we have a userId, set attributes
-                self.attributes = ["language": language]
+                self.attributes = ["language": .string(language)]
             } else {
                 // If no userId, just update locally without API call
                 Formbricks.logger?.debug("UpdateQueue - updating language locally: \(language)")
@@ -97,7 +97,7 @@ private extension UpdateQueue {
     
     @objc func commit() {
         var effectiveUserId: String?
-        var effectiveAttributes: [String: String]?
+        var effectiveAttributes: [String: AttributeValue]?
         
         // Capture a consistent snapshot under the sync queue
         syncQueue.sync {

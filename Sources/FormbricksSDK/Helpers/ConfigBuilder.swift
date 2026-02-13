@@ -5,12 +5,12 @@ import Foundation
     let appUrl: String
     let environmentId: String
     let userId: String?
-    let attributes: [String:String]?
+    let attributes: [String: AttributeValue]?
     let logLevel: LogLevel
     /// Optional custom service, injected via Builder
     let customService: FormbricksServiceProtocol?
     
-    init(appUrl: String, environmentId: String, userId: String?, attributes: [String : String]?, logLevel: LogLevel, customService: FormbricksServiceProtocol?) {
+    init(appUrl: String, environmentId: String, userId: String?, attributes: [String: AttributeValue]?, logLevel: LogLevel, customService: FormbricksServiceProtocol?) {
             self.appUrl = appUrl
             self.environmentId = environmentId
             self.userId = userId
@@ -24,7 +24,7 @@ import Foundation
         var appUrl: String
         var environmentId: String
         var userId: String?
-        var attributes: [String:String] = [:]
+        var attributes: [String: AttributeValue] = [:]
         var logLevel: LogLevel = .error
         /// Optional custom service, injected via Builder
         var customService: FormbricksServiceProtocol?
@@ -40,14 +40,38 @@ import Foundation
             return self
         }
         
-        /// Sets the attributes for the Builder object.
-        @objc public func set(attributes: [String:String]) -> Builder {
+        /// Sets the attributes for the Builder object using `AttributeValue` values.
+        public func set(attributes: [String: AttributeValue]) -> Builder {
             self.attributes = attributes
             return self
         }
+
+        /// Sets the attributes for the Builder object using string values (Obj-C compatible).
+        @objc public func set(stringAttributes: [String: String]) -> Builder {
+            self.attributes = stringAttributes.mapValues { .string($0) }
+            return self
+        }
         
+        /// Adds a string attribute to the Builder object.
+        @objc public func addStringAttribute(_ attribute: String, forKey key: String) -> Builder {
+            self.attributes[key] = .string(attribute)
+            return self
+        }
+
+        /// Adds a numeric attribute to the Builder object.
+        @objc public func addNumberAttribute(_ attribute: Double, forKey key: String) -> Builder {
+            self.attributes[key] = .number(attribute)
+            return self
+        }
+
+        /// Adds a date attribute to the Builder object. The date is converted to an ISO 8601 string.
+        @objc public func addDateAttribute(_ attribute: Date, forKey key: String) -> Builder {
+            self.attributes[key] = .from(attribute)
+            return self
+        }
+
         /// Adds an attribute to the Builder object.
-        @objc public func add(attribute: String, forKey key: String) -> Builder {
+        public func add(attribute: AttributeValue, forKey key: String) -> Builder {
             self.attributes[key] = attribute
             return self
         }

@@ -10,7 +10,7 @@ class FormbricksService: FormbricksServiceProtocol {
 
     // MARK: - User -
     /// Logs in a user with the given ID or creates one if it doesn't exist.
-    func postUser(id: String, attributes: [String: String]?, completion: @escaping (ResultType<PostUserRequest.Response>) -> Void) {
+    func postUser(id: String, attributes: [String: AttributeValue]?, completion: @escaping (ResultType<PostUserRequest.Response>) -> Void) {
         let endPointRequest = PostUserRequest(userId: id, attributes: attributes)
         execute(endPointRequest, withCompletion: completion)
     }
@@ -22,7 +22,7 @@ protocol FormbricksServiceProtocol {
     )
     func postUser(
       id: String,
-      attributes: [String: String]?,
+      attributes: [String: AttributeValue]?,
       completion: @escaping (ResultType<PostUserRequest.Response>) -> Void
     )
   }
