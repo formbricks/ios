@@ -19,7 +19,7 @@ class MockFormbricksService: FormbricksService {
         }
     }
     
-    override func postUser(id: String, attributes: [String : String]?, completion: @escaping (ResultType<PostUserRequest.Response>) -> Void) {
+    override func postUser(id: String, attributes: [String : AttributeValue]?, completion: @escaping (ResultType<PostUserRequest.Response>) -> Void) {
         if isErrorResponseNeeded {
             completion(.failure(RuntimeError(message: "")))
         } else {

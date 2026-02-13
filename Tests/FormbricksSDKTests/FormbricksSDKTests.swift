@@ -40,15 +40,15 @@ final class FormbricksSDKTests: XCTestCase {
          
         // Use methods before init should have no effect except language.
         Formbricks.setUserId("userId")
-        Formbricks.setAttributes(["testA" : "testB"])
-        Formbricks.setAttribute("test", forKey: "testKey")
+        Formbricks.setAttributes(["testA" : .string("testB")])
+        Formbricks.setAttribute(.string("test"), forKey: "testKey")
         XCTAssertNil(Formbricks.userManager?.userId)
 
         // Setup the SDK using your new instance-based design.
         // This creates new instances for both the UserManager and SurveyManager.
         Formbricks.setup(with: FormbricksConfig.Builder(appUrl: appUrl, environmentId: environmentId)
-            .set(attributes: ["a": "b"])
-            .add(attribute: "test", forKey: "key")
+            .set(attributes: ["a": .string("b")])
+            .add(attribute: .string("test"), forKey: "key")
             .setLogLevel(.debug)
             .service(mockService)
             .build()
