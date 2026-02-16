@@ -394,7 +394,7 @@ final class FormbricksSDKTests: XCTestCase {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { envExpectation.fulfill() }
         wait(for: [envExpectation])
 
-        // Set initial userId
+        // Set initial userId and wait for sync to complete
         Formbricks.setUserId(userId)
         let setExpectation = expectation(description: "First user set")
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) { setExpectation.fulfill() }
@@ -402,15 +402,20 @@ final class FormbricksSDKTests: XCTestCase {
 
         XCTAssertEqual(Formbricks.userManager?.userId, userId)
 
-        // Set a different userId — should clean up previous state and set the new one
+        // Capture previous state to verify cleanup happens
+        Formbricks.surveyManager?.onNewDisplay(surveyId: surveyID)
+        XCTAssertEqual(Formbricks.userManager?.displays?.count, 1, "Should have 1 display before override")
+
+        // Set a different userId — should clean up previous user state first
         let newUserId = "NEW-USER-ID-12345"
         Formbricks.setUserId(newUserId)
 
-        let overrideExpectation = expectation(description: "New user set")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) { overrideExpectation.fulfill() }
-        wait(for: [overrideExpectation], timeout: 3.0)
-
-        XCTAssertEqual(Formbricks.userManager?.userId, newUserId, "userId should be updated to the new value")
+        // Immediately after setUserId, the previous user state should be cleaned up
+        // (logout was called synchronously before queueing the new userId)
+        XCTAssertNil(Formbricks.userManager?.userId, "Previous userId should be cleared by logout")
+        XCTAssertNil(Formbricks.userManager?.displays, "Previous displays should be cleared by logout")
+        XCTAssertNil(Formbricks.userManager?.responses, "Previous responses should be cleared by logout")
+        XCTAssertNil(Formbricks.userManager?.segments, "Previous segments should be cleared by logout")
     }
 
     func testLogoutWithoutUserIdDoesNotError() {
