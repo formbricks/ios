@@ -63,11 +63,11 @@ import Network
         }
         
         // Validate that appUrl uses HTTPS (block HTTP for security)
-//        guard url.scheme?.lowercased() == "https" else {
-//            let errorMessage = "HTTP requests are blocked for security. Only HTTPS URLs are allowed. Provided app url: \(config.appUrl). SDK setup aborted."
-//            Formbricks.logger?.error(errorMessage)
-//            return
-//        }
+        guard url.scheme?.lowercased() == "https" else {
+            let errorMessage = "HTTP requests are blocked for security. Only HTTPS URLs are allowed. Provided app url: \(config.appUrl). SDK setup aborted."
+            Formbricks.logger?.error(errorMessage)
+            return
+        }
         
         let svc: FormbricksServiceProtocol = config.customService ?? FormbricksService()
         

@@ -30,11 +30,11 @@ class APIClient<Request: CodableRequest>: Operation, @unchecked Sendable {
         guard let apiURL = request.baseURL, var components = URLComponents(string: apiURL) else { return nil }
         
         // Ensure only HTTPS requests are allowed (block HTTP)
-//        guard let scheme = components.scheme?.lowercased(), scheme == "https" else {
-//            let errorMessage = "HTTP requests are blocked for security. Only HTTPS requests are allowed. Provided app url: \(apiURL)"
-//            Formbricks.logger?.error(errorMessage)
-//            return nil
-//        }
+        guard let scheme = components.scheme?.lowercased(), scheme == "https" else {
+            let errorMessage = "HTTP requests are blocked for security. Only HTTPS requests are allowed. Provided app url: \(apiURL)"
+            Formbricks.logger?.error(errorMessage)
+            return nil
+        }
 
         components.queryItems = request.queryParams?.map { URLQueryItem(name: $0.key, value: $0.value) }
         
