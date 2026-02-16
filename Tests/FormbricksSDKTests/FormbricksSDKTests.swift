@@ -431,6 +431,49 @@ final class FormbricksSDKTests: XCTestCase {
         XCTAssertNil(Formbricks.userManager?.userId, "userId should remain nil after logout")
     }
 
+    // MARK: - setAttribute overload tests
+
+    func testSetAttributeDouble() {
+        let config = FormbricksConfig.Builder(appUrl: appUrl, environmentId: environmentId)
+            .setLogLevel(.debug)
+            .service(mockService)
+            .build()
+        Formbricks.setup(with: config)
+
+        // Should not crash; exercises the Double overload
+        Formbricks.setAttribute(42.0, forKey: "age")
+    }
+
+    func testSetAttributeDate() {
+        let config = FormbricksConfig.Builder(appUrl: appUrl, environmentId: environmentId)
+            .setLogLevel(.debug)
+            .service(mockService)
+            .build()
+        Formbricks.setup(with: config)
+
+        // Should not crash; exercises the Date overload
+        Formbricks.setAttribute(Date(), forKey: "signupDate")
+    }
+
+    // MARK: - ConfigBuilder coverage tests
+
+    func testConfigBuilderStringAttributes() {
+        let config = FormbricksConfig.Builder(appUrl: appUrl, environmentId: environmentId)
+            .set(stringAttributes: ["key1": "val1", "key2": "val2"])
+            .build()
+
+        XCTAssertEqual(config.attributes?["key1"], "val1")
+        XCTAssertEqual(config.attributes?["key2"], "val2")
+    }
+
+    func testConfigBuilderAddAttribute() {
+        let config = FormbricksConfig.Builder(appUrl: appUrl, environmentId: environmentId)
+            .add(attribute: "hello", forKey: "greeting")
+            .build()
+
+        XCTAssertEqual(config.attributes?["greeting"], "hello")
+    }
+
     // MARK: - PresentSurveyManager tests
 
     func testPresentCompletesInHeadlessEnvironment() {
