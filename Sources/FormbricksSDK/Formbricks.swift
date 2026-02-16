@@ -96,6 +96,11 @@ import Network
     
     /**
      Sets the user id for the current user with the given `String`.
+     
+     - If the same userId is already set, this is a no-op.
+     - If a different userId is already set, the previous user state is cleaned up first
+       before setting the new userId.
+     
      The SDK must be initialized before calling this method.
           
      Example:
@@ -110,24 +115,31 @@ import Network
             return
         }
         
-        if let existing = userManager?.userId, !existing.isEmpty {
-            logger?.error("A userId is already set (\"\(existing)\") – please call Formbricks.logout() before setting a new one.")
+        // If the same userId is already set, no-op
+        if let existing = userManager?.userId, existing == userId {
+            logger?.debug("UserId is already set to the same value, skipping")
             return
+        }
+        
+        // If a different userId is set, clean up the previous user state first
+        if let existing = userManager?.userId, !existing.isEmpty {
+            logger?.debug("Different userId is being set, cleaning up previous user state")
+            userManager?.logout()
         }
         
         userManager?.set(userId: userId)
     }
     
     /**
-     Adds a string attribute for the current user with the given `String` value and `String` key.
+     Adds a string attribute for the current user.
      The SDK must be initialized before calling this method.
           
      Example:
      ```swift
-     Formbricks.setStringAttribute("value", forKey: "key")
+     Formbricks.setAttribute("John", forKey: "name")
      ```
      */
-    @objc public static func setStringAttribute(_ attribute: String, forKey key: String) {
+    @objc public static func setAttribute(_ attribute: String, forKey key: String) {
         guard Formbricks.isInitialized else {
             let error = FormbricksSDKError(type: .sdkIsNotInitialized)
             Formbricks.logger?.error(error.message)
@@ -138,15 +150,15 @@ import Network
     }
 
     /**
-     Adds a numeric attribute for the current user with the given `Double` value and `String` key.
+     Adds a numeric attribute for the current user.
      The SDK must be initialized before calling this method.
           
      Example:
      ```swift
-     Formbricks.setNumberAttribute(42.0, forKey: "age")
+     Formbricks.setAttribute(42.0, forKey: "age")
      ```
      */
-    @objc public static func setNumberAttribute(_ attribute: Double, forKey key: String) {
+    public static func setAttribute(_ attribute: Double, forKey key: String) {
         guard Formbricks.isInitialized else {
             let error = FormbricksSDKError(type: .sdkIsNotInitialized)
             Formbricks.logger?.error(error.message)
@@ -157,59 +169,32 @@ import Network
     }
 
     /**
-     Adds a date attribute for the current user with the given `Date` value and `String` key.
+     Adds a date attribute for the current user.
      The date is converted to an ISO 8601 string. The backend will detect the format and treat it as a date type.
      The SDK must be initialized before calling this method.
           
      Example:
      ```swift
-     Formbricks.setDateAttribute(Date(), forKey: "signupDate")
+     Formbricks.setAttribute(Date(), forKey: "signupDate")
      ```
      */
-    @objc public static func setDateAttribute(_ attribute: Date, forKey key: String) {
+    public static func setAttribute(_ attribute: Date, forKey key: String) {
         guard Formbricks.isInitialized else {
             let error = FormbricksSDKError(type: .sdkIsNotInitialized)
             Formbricks.logger?.error(error.message)
             return
         }
         
-        userManager?.add(attribute: .from(attribute), forKey: key)
+        userManager?.add(attribute: .string(ISO8601DateFormatter().string(from: attribute)), forKey: key)
     }
     
     /**
-     Adds an attribute for the current user with the given `AttributeValue` and `String` key.
+     Sets the user attributes for the current user.
      
-     Attribute types are determined by the value type:
-     - `.string(value)` → string attribute
-     - `.number(value)` → number attribute
-     - `AttributeValue.from(Date())` → date attribute (converted to ISO string)
-     
-     The SDK must be initialized before calling this method.
-          
-     Example:
-     ```swift
-     Formbricks.setAttribute(.string("value"), forKey: "key")
-     Formbricks.setAttribute(.number(42.0), forKey: "age")
-     Formbricks.setAttribute(.from(Date()), forKey: "signupDate")
-     ```
-     */
-    public static func setAttribute(_ attribute: AttributeValue, forKey key: String) {
-        guard Formbricks.isInitialized else {
-            let error = FormbricksSDKError(type: .sdkIsNotInitialized)
-            Formbricks.logger?.error(error.message)
-            return
-        }
-        
-        userManager?.add(attribute: attribute, forKey: key)
-    }
-    
-    /**
-     Sets the user attributes for the current user with the given `Dictionary` of `AttributeValue` values and `String` keys.
-     
-     Attribute types are determined by the value type:
-     - `.string(value)` → string attribute
-     - `.number(value)` → number attribute
-     - `AttributeValue.from(Date())` → date attribute (converted to ISO string)
+     Attribute types are determined by the value:
+     - String values -> string attribute
+     - Number values -> number attribute
+     - Use ISO 8601 date strings for date attributes
      
      On first write to a new attribute, the type is set based on the value type.
      On subsequent writes, the value must match the existing attribute type.
@@ -219,9 +204,9 @@ import Network
      Example:
      ```swift
      Formbricks.setAttributes([
-         "name": .string("John"),
-         "age": .number(30),
-         "signupDate": .from(Date())
+         "name": "John",
+         "age": 30,
+         "score": 9.5
      ])
      ```
      */

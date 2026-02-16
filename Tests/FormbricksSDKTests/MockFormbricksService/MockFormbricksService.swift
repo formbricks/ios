@@ -5,11 +5,17 @@ import UIKit
 enum MockResponse: String {
     case environment = "Environment"
     case user = "User"
+    case userWithErrors = "UserWithErrors"
+    case userWithMessages = "UserWithMessages"
+    case userWithErrorsAndMessages = "UserWithErrorsAndMessages"
 }
 
 class MockFormbricksService: FormbricksService {
     
     var isErrorResponseNeeded = false
+    /// Controls which mock JSON file is used for postUser responses.
+    /// Defaults to `.user` (the standard User.json).
+    var userMockResponse: MockResponse = .user
     
     override func getEnvironmentState(completion: @escaping (ResultType<GetEnvironmentRequest.Response>) -> Void) {
         if isErrorResponseNeeded {
@@ -23,7 +29,7 @@ class MockFormbricksService: FormbricksService {
         if isErrorResponseNeeded {
             completion(.failure(RuntimeError(message: "")))
         } else {
-            execute(.user, completion: completion)
+            execute(userMockResponse, completion: completion)
         }
     }
     

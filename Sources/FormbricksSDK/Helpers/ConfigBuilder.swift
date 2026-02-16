@@ -40,7 +40,14 @@ import Foundation
             return self
         }
         
-        /// Sets the attributes for the Builder object using `AttributeValue` values.
+        /// Sets the attributes for the Builder object.
+        ///
+        /// Thanks to `ExpressibleByStringLiteral`, `ExpressibleByIntegerLiteral`,
+        /// and `ExpressibleByFloatLiteral` conformances on `AttributeValue`,
+        /// you can use literal syntax:
+        /// ```swift
+        /// .set(attributes: ["name": "John", "age": 30])
+        /// ```
         public func set(attributes: [String: AttributeValue]) -> Builder {
             self.attributes = attributes
             return self
@@ -52,27 +59,9 @@ import Foundation
             return self
         }
         
-        /// Adds a string attribute to the Builder object.
-        @objc public func addStringAttribute(_ attribute: String, forKey key: String) -> Builder {
+        /// Adds a string attribute to the Builder object (Obj-C compatible).
+        @objc public func add(attribute: String, forKey key: String) -> Builder {
             self.attributes[key] = .string(attribute)
-            return self
-        }
-
-        /// Adds a numeric attribute to the Builder object.
-        @objc public func addNumberAttribute(_ attribute: Double, forKey key: String) -> Builder {
-            self.attributes[key] = .number(attribute)
-            return self
-        }
-
-        /// Adds a date attribute to the Builder object. The date is converted to an ISO 8601 string.
-        @objc public func addDateAttribute(_ attribute: Date, forKey key: String) -> Builder {
-            self.attributes[key] = .from(attribute)
-            return self
-        }
-
-        /// Adds an attribute to the Builder object.
-        public func add(attribute: AttributeValue, forKey key: String) -> Builder {
-            self.attributes[key] = attribute
             return self
         }
         

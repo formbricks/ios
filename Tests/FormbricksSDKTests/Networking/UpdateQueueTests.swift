@@ -42,9 +42,9 @@ final class UpdateQueueTests: XCTestCase {
     func testSetAttributesTriggersDebounceAndCommit() {
         let exp = expectation(description: "Debounce triggers commit for attributes")
         queue.set(userId: "user123")
-        queue.set(attributes: ["foo": .string("bar")])
+        queue.set(attributes: ["foo": "bar"])
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-            XCTAssertEqual(self.mockUserManager.lastSyncedAttributes?["foo"], .string("bar"))
+            XCTAssertEqual(self.mockUserManager.lastSyncedAttributes?["foo"], "bar")
             exp.fulfill()
         }
         wait(for: [exp], timeout: 1.0)
@@ -53,11 +53,11 @@ final class UpdateQueueTests: XCTestCase {
     func testAddAttributeToExisting() {
         let exp = expectation(description: "Add attribute to existing attributes")
         queue.set(userId: "user123")
-        queue.set(attributes: ["foo": .string("bar")])
-        queue.add(attribute: .string("baz"), forKey: "newKey")
+        queue.set(attributes: ["foo": "bar"])
+        queue.add(attribute: "baz", forKey: "newKey")
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-            XCTAssertEqual(self.mockUserManager.lastSyncedAttributes?["foo"], .string("bar"))
-            XCTAssertEqual(self.mockUserManager.lastSyncedAttributes?["newKey"], .string("baz"))
+            XCTAssertEqual(self.mockUserManager.lastSyncedAttributes?["foo"], "bar")
+            XCTAssertEqual(self.mockUserManager.lastSyncedAttributes?["newKey"], "baz")
             exp.fulfill()
         }
         wait(for: [exp], timeout: 1.0)
@@ -66,9 +66,9 @@ final class UpdateQueueTests: XCTestCase {
     func testAddAttributeToNew() {
         let exp = expectation(description: "Add attribute to new attributes")
         queue.set(userId: "user123")
-        queue.add(attribute: .string("baz"), forKey: "newKey")
+        queue.add(attribute: "baz", forKey: "newKey")
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-            XCTAssertEqual(self.mockUserManager.lastSyncedAttributes?["newKey"], .string("baz"))
+            XCTAssertEqual(self.mockUserManager.lastSyncedAttributes?["newKey"], "baz")
             exp.fulfill()
         }
         wait(for: [exp], timeout: 1.0)
@@ -77,9 +77,9 @@ final class UpdateQueueTests: XCTestCase {
     func testAddNumberAttribute() {
         let exp = expectation(description: "Add number attribute")
         queue.set(userId: "user123")
-        queue.add(attribute: .number(42.0), forKey: "age")
+        queue.add(attribute: 42.0, forKey: "age")
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-            XCTAssertEqual(self.mockUserManager.lastSyncedAttributes?["age"], .number(42.0))
+            XCTAssertEqual(self.mockUserManager.lastSyncedAttributes?["age"], 42.0)
             exp.fulfill()
         }
         wait(for: [exp], timeout: 1.0)
@@ -90,7 +90,7 @@ final class UpdateQueueTests: XCTestCase {
         queue.set(userId: "user123")
         queue.set(language: "de")
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-            XCTAssertEqual(self.mockUserManager.lastSyncedAttributes?["language"], .string("de"))
+            XCTAssertEqual(self.mockUserManager.lastSyncedAttributes?["language"], "de")
             exp.fulfill()
         }
         wait(for: [exp], timeout: 1.0)
@@ -109,7 +109,7 @@ final class UpdateQueueTests: XCTestCase {
     
     func testResetClearsState() {
         queue.set(userId: "user123")
-        queue.set(attributes: ["foo": .string("bar")])
+        queue.set(attributes: ["foo": "bar"])
         queue.set(language: "en")
         queue.reset()
         // Internal state is private, but we can check that no sync happens after reset
@@ -124,7 +124,7 @@ final class UpdateQueueTests: XCTestCase {
     
     func testCleanupStopsTimerAndClearsState() {
         queue.set(userId: "user123")
-        queue.set(attributes: ["foo": .string("bar")])
+        queue.set(attributes: ["foo": "bar"])
         queue.cleanup()
         let exp = expectation(description: "No commit after cleanup")
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
@@ -136,7 +136,7 @@ final class UpdateQueueTests: XCTestCase {
     
     func testCommitWithoutUserIdLogsError() {
         // This will not call syncUser, but will log an error
-        queue.set(attributes: ["foo": .string("bar")])
+        queue.set(attributes: ["foo": "bar"])
         let exp = expectation(description: "No commit without userId")
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
             XCTAssertNil(self.mockUserManager.lastSyncedUserId)

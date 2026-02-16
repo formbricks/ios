@@ -22,6 +22,9 @@ let package = Package(
       dependencies: ["FormbricksSDK"],
       resources: [
         .process("Mock/User.json"),
+        .process("Mock/UserWithErrors.json"),
+        .process("Mock/UserWithMessages.json"),
+        .process("Mock/UserWithErrorsAndMessages.json"),
         .process("Mock/Environment.json"),
       ]
     )

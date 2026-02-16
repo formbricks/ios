@@ -125,13 +125,7 @@ final class UserManager: UserManagerSyncable {
     
     /// Logs out the user and clears the user state.
     func logout() {
-        var isUserIdDefined = false
-        
-        if userId != nil {
-            isUserIdDefined = true
-        } else {
-            Formbricks.logger?.error("no userId is set, please set a userId first using the setUserId function")
-        }
+        Formbricks.logger?.debug("Logging out and cleaning user state")
         
         UserDefaults.standard.removeObject(forKey: UserManager.userIdKey)
         UserDefaults.standard.removeObject(forKey: UserManager.contactIdKey)
@@ -155,11 +149,6 @@ final class UserManager: UserManagerSyncable {
         
         // Re-filter surveys for logged out user
         surveyManager?.filterSurveys()
-        
-        if isUserIdDefined {
-            Formbricks.logger?.debug("Successfully logged out user and reset the user state.")
-        }
-        
     }
     
     func cleanupUpdateQueue() {

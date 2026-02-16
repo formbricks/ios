@@ -3,12 +3,21 @@ import Foundation
 /// Represents a user attribute value that can be a string, number, or date.
 ///
 /// Attribute types are determined by the Swift value type:
-/// - String values → string attribute
-/// - Number values → number attribute
-/// - Date values → date attribute (converted to ISO string)
+/// - String values -> string attribute
+/// - Number values -> number attribute
+/// - Date values -> date attribute (converted to ISO string)
 ///
 /// On first write to a new attribute, the type is set based on the value type.
 /// On subsequent writes, the value must match the existing attribute type.
+///
+/// Supports literal syntax in dictionaries:
+/// ```swift
+/// let attributes: [String: AttributeValue] = [
+///     "name": "John",
+///     "age": 30,
+///     "score": 9.5
+/// ]
+/// ```
 public enum AttributeValue: Codable, Equatable {
     case string(String)
     case number(Double)
@@ -56,25 +65,24 @@ public enum AttributeValue: Codable, Equatable {
         }
         return nil
     }
+}
 
-    /// Creates an `AttributeValue` from a `String`.
-    public static func from(_ value: String) -> AttributeValue {
-        return .string(value)
+// MARK: - Literal conformances for ergonomic dictionary syntax
+
+extension AttributeValue: ExpressibleByStringLiteral {
+    public init(stringLiteral value: String) {
+        self = .string(value)
     }
+}
 
-    /// Creates an `AttributeValue` from a `Double`.
-    public static func from(_ value: Double) -> AttributeValue {
-        return .number(value)
+extension AttributeValue: ExpressibleByIntegerLiteral {
+    public init(integerLiteral value: Int) {
+        self = .number(Double(value))
     }
+}
 
-    /// Creates an `AttributeValue` from an `Int`.
-    public static func from(_ value: Int) -> AttributeValue {
-        return .number(Double(value))
-    }
-
-    /// Creates an `AttributeValue` from a `Date`, converting it to an ISO 8601 string.
-    /// The backend will detect the ISO 8601 format and treat it as a date type.
-    public static func from(_ value: Date) -> AttributeValue {
-        return .string(ISO8601DateFormatter().string(from: value))
+extension AttributeValue: ExpressibleByFloatLiteral {
+    public init(floatLiteral value: Double) {
+        self = .number(value)
     }
 }

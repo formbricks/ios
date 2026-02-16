@@ -40,15 +40,15 @@ final class FormbricksSDKTests: XCTestCase {
          
         // Use methods before init should have no effect except language.
         Formbricks.setUserId("userId")
-        Formbricks.setAttributes(["testA" : .string("testB")])
-        Formbricks.setAttribute(.string("test"), forKey: "testKey")
+        Formbricks.setAttributes(["testA" : "testB"])
+        Formbricks.setAttribute("test", forKey: "testKey")
         XCTAssertNil(Formbricks.userManager?.userId)
 
         // Setup the SDK using your new instance-based design.
         // This creates new instances for both the UserManager and SurveyManager.
         Formbricks.setup(with: FormbricksConfig.Builder(appUrl: appUrl, environmentId: environmentId)
-            .set(attributes: ["a": .string("b")])
-            .add(attribute: .string("test"), forKey: "key")
+            .set(attributes: ["a": "b"])
+            .add(attribute: "test", forKey: "key")
             .setLogLevel(.debug)
             .service(mockService)
             .build()
@@ -259,6 +259,171 @@ final class FormbricksSDKTests: XCTestCase {
         XCTAssertNil(manager.getLanguageCode(survey: survey, language: "fr"))
         // Alias not found
         XCTAssertNil(manager.getLanguageCode(survey: survey, language: "spanish"))
+    }
+
+    // MARK: - UserManager syncUser errors/messages tests
+
+    func testSyncUserLogsErrors() {
+        let errorsMockService = MockFormbricksService()
+        errorsMockService.userMockResponse = .userWithErrors
+
+        let config = FormbricksConfig.Builder(appUrl: appUrl, environmentId: environmentId)
+            .setLogLevel(.debug)
+            .service(errorsMockService)
+            .build()
+        Formbricks.setup(with: config)
+
+        // Refresh environment first
+        Formbricks.surveyManager?.refreshEnvironmentIfNeeded(force: true)
+        let envExpectation = expectation(description: "Env loaded")
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { envExpectation.fulfill() }
+        wait(for: [envExpectation])
+
+        // Set userId to trigger syncUser which uses the mock with errors
+        Formbricks.setUserId(userId)
+
+        let syncExpectation = expectation(description: "User synced with errors")
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+            syncExpectation.fulfill()
+        }
+        wait(for: [syncExpectation], timeout: 3.0)
+
+        // Verify the user was still synced successfully despite errors
+        XCTAssertEqual(Formbricks.userManager?.userId, userId, "User ID should be set even when response has errors")
+        XCTAssertNotNil(Formbricks.userManager?.syncTimer, "Sync timer should still be set")
+    }
+
+    func testSyncUserLogsMessages() {
+        let messagesMockService = MockFormbricksService()
+        messagesMockService.userMockResponse = .userWithMessages
+
+        let config = FormbricksConfig.Builder(appUrl: appUrl, environmentId: environmentId)
+            .setLogLevel(.debug)
+            .service(messagesMockService)
+            .build()
+        Formbricks.setup(with: config)
+
+        // Refresh environment first
+        Formbricks.surveyManager?.refreshEnvironmentIfNeeded(force: true)
+        let envExpectation = expectation(description: "Env loaded")
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { envExpectation.fulfill() }
+        wait(for: [envExpectation])
+
+        // Set userId to trigger syncUser which uses the mock with messages
+        Formbricks.setUserId(userId)
+
+        let syncExpectation = expectation(description: "User synced with messages")
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+            syncExpectation.fulfill()
+        }
+        wait(for: [syncExpectation], timeout: 3.0)
+
+        // Verify the user was synced successfully
+        XCTAssertEqual(Formbricks.userManager?.userId, userId, "User ID should be set when response has messages")
+        XCTAssertNotNil(Formbricks.userManager?.syncTimer, "Sync timer should still be set")
+    }
+
+    func testSyncUserLogsErrorsAndMessages() {
+        let bothMockService = MockFormbricksService()
+        bothMockService.userMockResponse = .userWithErrorsAndMessages
+
+        let config = FormbricksConfig.Builder(appUrl: appUrl, environmentId: environmentId)
+            .setLogLevel(.debug)
+            .service(bothMockService)
+            .build()
+        Formbricks.setup(with: config)
+
+        // Refresh environment first
+        Formbricks.surveyManager?.refreshEnvironmentIfNeeded(force: true)
+        let envExpectation = expectation(description: "Env loaded")
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { envExpectation.fulfill() }
+        wait(for: [envExpectation])
+
+        // Set userId to trigger syncUser which uses the mock with both errors and messages
+        Formbricks.setUserId(userId)
+
+        let syncExpectation = expectation(description: "User synced with errors and messages")
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+            syncExpectation.fulfill()
+        }
+        wait(for: [syncExpectation], timeout: 3.0)
+
+        // Verify the user was synced successfully despite having both errors and messages
+        XCTAssertEqual(Formbricks.userManager?.userId, userId, "User ID should be set when response has both errors and messages")
+        XCTAssertNotNil(Formbricks.userManager?.syncTimer, "Sync timer should still be set")
+    }
+
+    // MARK: - setUserId override behavior tests
+
+    func testSetUserIdSameValueIsNoOp() {
+        let config = FormbricksConfig.Builder(appUrl: appUrl, environmentId: environmentId)
+            .setLogLevel(.debug)
+            .service(mockService)
+            .build()
+        Formbricks.setup(with: config)
+
+        // Refresh environment first
+        Formbricks.surveyManager?.refreshEnvironmentIfNeeded(force: true)
+        let envExpectation = expectation(description: "Env loaded")
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { envExpectation.fulfill() }
+        wait(for: [envExpectation])
+
+        // Set userId
+        Formbricks.setUserId(userId)
+        let setExpectation = expectation(description: "User set")
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) { setExpectation.fulfill() }
+        wait(for: [setExpectation], timeout: 3.0)
+
+        XCTAssertEqual(Formbricks.userManager?.userId, userId)
+
+        // Set the same userId again — should be a no-op, userId stays the same
+        Formbricks.setUserId(userId)
+        XCTAssertEqual(Formbricks.userManager?.userId, userId, "Same userId should remain set (no-op)")
+    }
+
+    func testSetUserIdDifferentValueOverridesPrevious() {
+        let config = FormbricksConfig.Builder(appUrl: appUrl, environmentId: environmentId)
+            .setLogLevel(.debug)
+            .service(mockService)
+            .build()
+        Formbricks.setup(with: config)
+
+        // Refresh environment first
+        Formbricks.surveyManager?.refreshEnvironmentIfNeeded(force: true)
+        let envExpectation = expectation(description: "Env loaded")
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { envExpectation.fulfill() }
+        wait(for: [envExpectation])
+
+        // Set initial userId
+        Formbricks.setUserId(userId)
+        let setExpectation = expectation(description: "First user set")
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) { setExpectation.fulfill() }
+        wait(for: [setExpectation], timeout: 3.0)
+
+        XCTAssertEqual(Formbricks.userManager?.userId, userId)
+
+        // Set a different userId — should clean up previous state and set the new one
+        let newUserId = "NEW-USER-ID-12345"
+        Formbricks.setUserId(newUserId)
+
+        let overrideExpectation = expectation(description: "New user set")
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) { overrideExpectation.fulfill() }
+        wait(for: [overrideExpectation], timeout: 3.0)
+
+        XCTAssertEqual(Formbricks.userManager?.userId, newUserId, "userId should be updated to the new value")
+    }
+
+    func testLogoutWithoutUserIdDoesNotError() {
+        let config = FormbricksConfig.Builder(appUrl: appUrl, environmentId: environmentId)
+            .setLogLevel(.debug)
+            .service(mockService)
+            .build()
+        Formbricks.setup(with: config)
+
+        // Logout without ever setting a userId — should not crash or error
+        XCTAssertNil(Formbricks.userManager?.userId)
+        Formbricks.logout()
+        XCTAssertNil(Formbricks.userManager?.userId, "userId should remain nil after logout")
     }
 
     // MARK: - PresentSurveyManager tests
