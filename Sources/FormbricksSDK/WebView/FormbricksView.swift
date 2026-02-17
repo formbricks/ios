@@ -7,6 +7,7 @@ struct FormbricksView: View {
     var body: some View {
         if let htmlString = viewModel.htmlString {
             SurveyWebView(surveyId: viewModel.surveyId, htmlString: htmlString)
+                .ignoresSafeArea()
         }
     }
 }
