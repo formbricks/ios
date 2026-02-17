@@ -3,9 +3,9 @@ import XCTest
 
 class MockUserManager: UserManagerSyncable {
     var lastSyncedUserId: String?
-    var lastSyncedAttributes: [String: String]?
+    var lastSyncedAttributes: [String: AttributeValue]?
     var syncCallCount = 0
-    func syncUser(withId id: String, attributes: [String : String]?) {
+    func syncUser(withId id: String, attributes: [String : AttributeValue]?) {
         lastSyncedUserId = id
         lastSyncedAttributes = attributes
         syncCallCount += 1
@@ -69,6 +69,17 @@ final class UpdateQueueTests: XCTestCase {
         queue.add(attribute: "baz", forKey: "newKey")
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
             XCTAssertEqual(self.mockUserManager.lastSyncedAttributes?["newKey"], "baz")
+            exp.fulfill()
+        }
+        wait(for: [exp], timeout: 1.0)
+    }
+
+    func testAddNumberAttribute() {
+        let exp = expectation(description: "Add number attribute")
+        queue.set(userId: "user123")
+        queue.add(attribute: 42.0, forKey: "age")
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+            XCTAssertEqual(self.mockUserManager.lastSyncedAttributes?["age"], 42.0)
             exp.fulfill()
         }
         wait(for: [exp], timeout: 1.0)

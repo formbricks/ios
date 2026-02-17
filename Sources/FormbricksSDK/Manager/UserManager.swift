@@ -40,12 +40,12 @@ final class UserManager: UserManagerSyncable {
     }
     
     /// Starts an update queue with the given attribute.
-    func add(attribute: String, forKey key: String) {
+    func add(attribute: AttributeValue, forKey key: String) {
         updateQueue?.add(attribute: attribute, forKey: key)
     }
     
     /// Starts an update queue with the given attributes.
-    func set(attributes: [String: String]) {
+    func set(attributes: [String: AttributeValue]) {
         updateQueue?.set(attributes: attributes)
     }
     
@@ -85,7 +85,7 @@ final class UserManager: UserManagerSyncable {
     }
 
     /// Syncs the user state with the server, calls the `self?.surveyManager?.filterSurveys()` method and starts the sync timer.
-    func syncUser(withId id: String, attributes: [String: String]? = nil) {
+    func syncUser(withId id: String, attributes: [String: AttributeValue]? = nil) {
         service.postUser(id: id, attributes: attributes) { [weak self] result in
             switch result {
             case .success(let userResponse):
@@ -100,6 +100,20 @@ final class UserManager: UserManagerSyncable {
                 let serverLanguage = userResponse.data.state?.data?.language
                 Formbricks.language = serverLanguage ?? "default"
                 
+                // Log errors (always visible) - e.g., invalid attribute keys, type mismatches
+                if let errors = userResponse.data.errors {
+                    for error in errors {
+                        Formbricks.logger?.error(error)
+                    }
+                }
+                
+                // Log informational messages (debug only)
+                if let messages = userResponse.data.messages {
+                    for message in messages {
+                        Formbricks.logger?.debug("User update message: \(message)")
+                    }
+                }
+                
                 self?.updateQueue?.reset()
                 self?.surveyManager?.filterSurveys()
                 self?.startSyncTimer()
@@ -111,13 +125,7 @@ final class UserManager: UserManagerSyncable {
     
     /// Logs out the user and clears the user state.
     func logout() {
-        var isUserIdDefined = false
-        
-        if userId != nil {
-            isUserIdDefined = true
-        } else {
-            Formbricks.logger?.error("no userId is set, please set a userId first using the setUserId function")
-        }
+        Formbricks.logger?.debug("Logging out and cleaning user state")
         
         UserDefaults.standard.removeObject(forKey: UserManager.userIdKey)
         UserDefaults.standard.removeObject(forKey: UserManager.contactIdKey)
@@ -141,11 +149,6 @@ final class UserManager: UserManagerSyncable {
         
         // Re-filter surveys for logged out user
         surveyManager?.filterSurveys()
-        
-        if isUserIdDefined {
-            Formbricks.logger?.debug("Successfully logged out user and reset the user state.")
-        }
-        
     }
     
     func cleanupUpdateQueue() {

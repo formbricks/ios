@@ -5,12 +5,12 @@ import Foundation
     let appUrl: String
     let environmentId: String
     let userId: String?
-    let attributes: [String:String]?
+    let attributes: [String: AttributeValue]?
     let logLevel: LogLevel
     /// Optional custom service, injected via Builder
     let customService: FormbricksServiceProtocol?
     
-    init(appUrl: String, environmentId: String, userId: String?, attributes: [String : String]?, logLevel: LogLevel, customService: FormbricksServiceProtocol?) {
+    init(appUrl: String, environmentId: String, userId: String?, attributes: [String: AttributeValue]?, logLevel: LogLevel, customService: FormbricksServiceProtocol?) {
             self.appUrl = appUrl
             self.environmentId = environmentId
             self.userId = userId
@@ -24,7 +24,7 @@ import Foundation
         var appUrl: String
         var environmentId: String
         var userId: String?
-        var attributes: [String:String] = [:]
+        var attributes: [String: AttributeValue] = [:]
         var logLevel: LogLevel = .error
         /// Optional custom service, injected via Builder
         var customService: FormbricksServiceProtocol?
@@ -41,14 +41,27 @@ import Foundation
         }
         
         /// Sets the attributes for the Builder object.
-        @objc public func set(attributes: [String:String]) -> Builder {
+        ///
+        /// Thanks to `ExpressibleByStringLiteral`, `ExpressibleByIntegerLiteral`,
+        /// and `ExpressibleByFloatLiteral` conformances on `AttributeValue`,
+        /// you can use literal syntax:
+        /// ```swift
+        /// .set(attributes: ["name": "John", "age": 30])
+        /// ```
+        public func set(attributes: [String: AttributeValue]) -> Builder {
             self.attributes = attributes
             return self
         }
+
+        /// Sets the attributes for the Builder object using string values (Obj-C compatible).
+        @objc public func set(stringAttributes: [String: String]) -> Builder {
+            self.attributes = stringAttributes.mapValues { .string($0) }
+            return self
+        }
         
-        /// Adds an attribute to the Builder object.
+        /// Adds a string attribute to the Builder object (Obj-C compatible).
         @objc public func add(attribute: String, forKey key: String) -> Builder {
-            self.attributes[key] = attribute
+            self.attributes[key] = .string(attribute)
             return self
         }
         
