@@ -15,11 +15,11 @@ final class PresentSurveyManager {
     /// Present the webview
     /// The native background is always `.clear` — overlay rendering is handled
     /// entirely by the JS survey library inside the WebView to avoid double-overlay artifacts.
-    func present(environmentResponse: EnvironmentResponse, id: String, completion: ((Bool) -> Void)? = nil) {
+    func present(workspaceResponse: WorkspaceResponse, id: String, completion: ((Bool) -> Void)? = nil) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             if let window = UIApplication.safeKeyWindow {
-                let view = FormbricksView(viewModel: FormbricksViewModel(environmentResponse: environmentResponse, surveyId: id))
+                let view = FormbricksView(viewModel: FormbricksViewModel(workspaceResponse: workspaceResponse, surveyId: id))
                 let vc = UIHostingController(rootView: view)
                 vc.modalPresentationStyle = .overCurrentContext
                 vc.view.backgroundColor = .clear

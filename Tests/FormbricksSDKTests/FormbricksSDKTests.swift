@@ -2,7 +2,7 @@ import XCTest
 @testable import FormbricksSDK
 
 final class FormbricksSDKTests: XCTestCase {
-    let environmentId = "environmentId"
+    let workspaceId = "workspaceId"
     let appUrl = "https://example.com"
     let userId = "6CCCE716-6783-4D0F-8344-9C7DFA43D8F7"
     let surveyID = "cm6ovw6j7000gsf0kduf4oo4i"
@@ -46,7 +46,7 @@ final class FormbricksSDKTests: XCTestCase {
 
         // Setup the SDK using your new instance-based design.
         // This creates new instances for both the UserManager and SurveyManager.
-        Formbricks.setup(with: FormbricksConfig.Builder(appUrl: appUrl, environmentId: environmentId)
+        Formbricks.setup(with: FormbricksConfig.Builder(appUrl: appUrl, workspaceId: workspaceId)
             .set(attributes: ["a": "b"])
             .add(attribute: "test", forKey: "key")
             .setLogLevel(.debug)
@@ -56,17 +56,17 @@ final class FormbricksSDKTests: XCTestCase {
         
         XCTAssertTrue(Formbricks.isInitialized)
         XCTAssertEqual(Formbricks.appUrl, appUrl)
-        XCTAssertEqual(Formbricks.environmentId, environmentId)
+        XCTAssertEqual(Formbricks.workspaceId, workspaceId)
          
         // Check error state handling.
         XCTAssertFalse(Formbricks.surveyManager?.hasApiError ?? false)
         
         mockService.isErrorResponseNeeded = true
-        Formbricks.surveyManager?.refreshEnvironmentIfNeeded(force: true)
+        Formbricks.surveyManager?.refreshWorkspaceIfNeeded(force: true)
         XCTAssertTrue(Formbricks.surveyManager?.hasApiError ?? false)
 
         mockService.isErrorResponseNeeded = false
-        Formbricks.surveyManager?.refreshEnvironmentIfNeeded(force: true)
+        Formbricks.surveyManager?.refreshWorkspaceIfNeeded(force: true)
         
         // Wait for environment to refresh
         let refreshExpectation = expectation(description: "Environment refreshed")
@@ -91,7 +91,7 @@ final class FormbricksSDKTests: XCTestCase {
         XCTAssertNotNil(Formbricks.userManager?.syncTimer, "Sync timer should be set")
         
         // The environment should be fetched.
-        XCTAssertNotNil(Formbricks.surveyManager?.environmentResponse)
+        XCTAssertNotNil(Formbricks.surveyManager?.workspaceResponse)
         
         // Check if the filter method works properly.
         XCTAssertEqual(Formbricks.surveyManager?.filteredSurveys.count, 1)
@@ -173,13 +173,13 @@ final class FormbricksSDKTests: XCTestCase {
         XCTAssertNil(Formbricks.presentSurveyManager)
         XCTAssertFalse(Formbricks.isInitialized)
         XCTAssertNil(Formbricks.appUrl)
-        XCTAssertNil(Formbricks.environmentId)
+        XCTAssertNil(Formbricks.workspaceId)
         XCTAssertNil(Formbricks.logger)
     }
-    
+
     func testCleanupWithCompletion() {
         // Setup the SDK
-        let config = FormbricksConfig.Builder(appUrl: appUrl, environmentId: environmentId)
+        let config = FormbricksConfig.Builder(appUrl: appUrl, workspaceId: workspaceId)
             .setLogLevel(.debug)
             .service(mockService)
             .build()
@@ -203,7 +203,7 @@ final class FormbricksSDKTests: XCTestCase {
         XCTAssertNil(Formbricks.apiQueue, "API queue should be nil")
         XCTAssertFalse(Formbricks.isInitialized, "SDK should not be initialized")
         XCTAssertNil(Formbricks.appUrl, "App URL should be nil")
-        XCTAssertNil(Formbricks.environmentId, "Environment ID should be nil")
+        XCTAssertNil(Formbricks.workspaceId, "Workspace ID should be nil")
         XCTAssertNil(Formbricks.logger, "Logger should be nil")
     }
     
@@ -219,13 +219,15 @@ final class FormbricksSDKTests: XCTestCase {
         XCTAssertTrue(manager.shouldDisplayBasedOnPercentage(100))
         XCTAssertFalse(manager.shouldDisplayBasedOnPercentage(0))
 
-        // UserDefaults: corrupt data
-        UserDefaults.standard.set(Data([0x00, 0x01]), forKey: "environmentResponseObjectKey")
-        XCTAssertNil(manager.environmentResponse)
+        // UserDefaults: corrupt data under both the new and legacy keys so we exercise
+        // the fallback path too.
+        UserDefaults.standard.set(Data([0x00, 0x01]), forKey: SurveyManager.workspaceResponseObjectKey)
+        UserDefaults.standard.removeObject(forKey: SurveyManager.legacyEnvironmentResponseObjectKey)
+        XCTAssertNil(manager.workspaceResponse)
 
-        // Timer-based refresh: wait deterministically for the environment refresh notification
-        let notificationExpectation = expectation(forNotification: .environmentRefreshed, object: manager, handler: nil)
-        manager.refreshEnvironmentAfter(timeout: 0.1)
+        // Timer-based refresh: wait deterministically for the workspace refresh notification
+        let notificationExpectation = expectation(forNotification: .workspaceRefreshed, object: manager, handler: nil)
+        manager.refreshWorkspaceAfter(timeout: 0.1)
         wait(for: [notificationExpectation], timeout: 2.0)
 
         // getLanguageCode coverage
@@ -267,14 +269,14 @@ final class FormbricksSDKTests: XCTestCase {
         let errorsMockService = MockFormbricksService()
         errorsMockService.userMockResponse = .userWithErrors
 
-        let config = FormbricksConfig.Builder(appUrl: appUrl, environmentId: environmentId)
+        let config = FormbricksConfig.Builder(appUrl: appUrl, workspaceId: workspaceId)
             .setLogLevel(.debug)
             .service(errorsMockService)
             .build()
         Formbricks.setup(with: config)
 
         // Refresh environment first
-        Formbricks.surveyManager?.refreshEnvironmentIfNeeded(force: true)
+        Formbricks.surveyManager?.refreshWorkspaceIfNeeded(force: true)
         let envExpectation = expectation(description: "Env loaded")
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { envExpectation.fulfill() }
         wait(for: [envExpectation])
@@ -297,14 +299,14 @@ final class FormbricksSDKTests: XCTestCase {
         let messagesMockService = MockFormbricksService()
         messagesMockService.userMockResponse = .userWithMessages
 
-        let config = FormbricksConfig.Builder(appUrl: appUrl, environmentId: environmentId)
+        let config = FormbricksConfig.Builder(appUrl: appUrl, workspaceId: workspaceId)
             .setLogLevel(.debug)
             .service(messagesMockService)
             .build()
         Formbricks.setup(with: config)
 
         // Refresh environment first
-        Formbricks.surveyManager?.refreshEnvironmentIfNeeded(force: true)
+        Formbricks.surveyManager?.refreshWorkspaceIfNeeded(force: true)
         let envExpectation = expectation(description: "Env loaded")
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { envExpectation.fulfill() }
         wait(for: [envExpectation])
@@ -327,14 +329,14 @@ final class FormbricksSDKTests: XCTestCase {
         let bothMockService = MockFormbricksService()
         bothMockService.userMockResponse = .userWithErrorsAndMessages
 
-        let config = FormbricksConfig.Builder(appUrl: appUrl, environmentId: environmentId)
+        let config = FormbricksConfig.Builder(appUrl: appUrl, workspaceId: workspaceId)
             .setLogLevel(.debug)
             .service(bothMockService)
             .build()
         Formbricks.setup(with: config)
 
         // Refresh environment first
-        Formbricks.surveyManager?.refreshEnvironmentIfNeeded(force: true)
+        Formbricks.surveyManager?.refreshWorkspaceIfNeeded(force: true)
         let envExpectation = expectation(description: "Env loaded")
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { envExpectation.fulfill() }
         wait(for: [envExpectation])
@@ -356,14 +358,14 @@ final class FormbricksSDKTests: XCTestCase {
     // MARK: - setUserId override behavior tests
 
     func testSetUserIdSameValueIsNoOp() {
-        let config = FormbricksConfig.Builder(appUrl: appUrl, environmentId: environmentId)
+        let config = FormbricksConfig.Builder(appUrl: appUrl, workspaceId: workspaceId)
             .setLogLevel(.debug)
             .service(mockService)
             .build()
         Formbricks.setup(with: config)
 
         // Refresh environment first
-        Formbricks.surveyManager?.refreshEnvironmentIfNeeded(force: true)
+        Formbricks.surveyManager?.refreshWorkspaceIfNeeded(force: true)
         let envExpectation = expectation(description: "Env loaded")
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { envExpectation.fulfill() }
         wait(for: [envExpectation])
@@ -382,14 +384,14 @@ final class FormbricksSDKTests: XCTestCase {
     }
 
     func testSetUserIdDifferentValueOverridesPrevious() {
-        let config = FormbricksConfig.Builder(appUrl: appUrl, environmentId: environmentId)
+        let config = FormbricksConfig.Builder(appUrl: appUrl, workspaceId: workspaceId)
             .setLogLevel(.debug)
             .service(mockService)
             .build()
         Formbricks.setup(with: config)
 
         // Refresh environment first
-        Formbricks.surveyManager?.refreshEnvironmentIfNeeded(force: true)
+        Formbricks.surveyManager?.refreshWorkspaceIfNeeded(force: true)
         let envExpectation = expectation(description: "Env loaded")
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { envExpectation.fulfill() }
         wait(for: [envExpectation])
@@ -419,7 +421,7 @@ final class FormbricksSDKTests: XCTestCase {
     }
 
     func testLogoutWithoutUserIdDoesNotError() {
-        let config = FormbricksConfig.Builder(appUrl: appUrl, environmentId: environmentId)
+        let config = FormbricksConfig.Builder(appUrl: appUrl, workspaceId: workspaceId)
             .setLogLevel(.debug)
             .service(mockService)
             .build()
@@ -434,7 +436,7 @@ final class FormbricksSDKTests: XCTestCase {
     // MARK: - setAttribute overload tests
 
     func testSetAttributeDouble() {
-        let config = FormbricksConfig.Builder(appUrl: appUrl, environmentId: environmentId)
+        let config = FormbricksConfig.Builder(appUrl: appUrl, workspaceId: workspaceId)
             .setLogLevel(.debug)
             .service(mockService)
             .build()
@@ -445,7 +447,7 @@ final class FormbricksSDKTests: XCTestCase {
     }
 
     func testSetAttributeDate() {
-        let config = FormbricksConfig.Builder(appUrl: appUrl, environmentId: environmentId)
+        let config = FormbricksConfig.Builder(appUrl: appUrl, workspaceId: workspaceId)
             .setLogLevel(.debug)
             .service(mockService)
             .build()
@@ -458,7 +460,7 @@ final class FormbricksSDKTests: XCTestCase {
     // MARK: - ConfigBuilder coverage tests
 
     func testConfigBuilderStringAttributes() {
-        let config = FormbricksConfig.Builder(appUrl: appUrl, environmentId: environmentId)
+        let config = FormbricksConfig.Builder(appUrl: appUrl, workspaceId: workspaceId)
             .set(stringAttributes: ["key1": "val1", "key2": "val2"])
             .build()
 
@@ -467,7 +469,7 @@ final class FormbricksSDKTests: XCTestCase {
     }
 
     func testConfigBuilderAddAttribute() {
-        let config = FormbricksConfig.Builder(appUrl: appUrl, environmentId: environmentId)
+        let config = FormbricksConfig.Builder(appUrl: appUrl, workspaceId: workspaceId)
             .add(attribute: "hello", forKey: "greeting")
             .build()
 
@@ -479,25 +481,25 @@ final class FormbricksSDKTests: XCTestCase {
     func testPresentCompletesInHeadlessEnvironment() {
         // In a headless test environment there is no key window, so present() should
         // call the completion with false.
-        let config = FormbricksConfig.Builder(appUrl: appUrl, environmentId: environmentId)
+        let config = FormbricksConfig.Builder(appUrl: appUrl, workspaceId: workspaceId)
             .setLogLevel(.debug)
             .service(mockService)
             .build()
         Formbricks.setup(with: config)
 
-        Formbricks.surveyManager?.refreshEnvironmentIfNeeded(force: true)
+        Formbricks.surveyManager?.refreshWorkspaceIfNeeded(force: true)
         let loadExpectation = expectation(description: "Env loaded")
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { loadExpectation.fulfill() }
         wait(for: [loadExpectation])
 
-        guard let env = Formbricks.surveyManager?.environmentResponse else {
-            XCTFail("Missing environmentResponse")
+        guard let workspace = Formbricks.surveyManager?.workspaceResponse else {
+            XCTFail("Missing workspaceResponse")
             return
         }
 
         let manager = PresentSurveyManager()
         let presentExpectation = expectation(description: "Present completes")
-        manager.present(environmentResponse: env, id: surveyID) { success in
+        manager.present(workspaceResponse: workspace, id: surveyID) { success in
             // No key window in headless tests → completion(false)
             XCTAssertFalse(success, "Presentation should fail in headless environment")
             presentExpectation.fulfill()
@@ -509,25 +511,25 @@ final class FormbricksSDKTests: XCTestCase {
 
     func testWebViewDataUsesSurveyOverwrites() {
         // Setup SDK with mock service loading Environment.json (which now includes projectOverwrites)
-        let config = FormbricksConfig.Builder(appUrl: appUrl, environmentId: environmentId)
+        let config = FormbricksConfig.Builder(appUrl: appUrl, workspaceId: workspaceId)
             .setLogLevel(.debug)
             .service(mockService)
             .build()
         Formbricks.setup(with: config)
 
         // Force refresh and wait briefly for async fetch
-        Formbricks.surveyManager?.refreshEnvironmentIfNeeded(force: true)
+        Formbricks.surveyManager?.refreshWorkspaceIfNeeded(force: true)
         let expectation = self.expectation(description: "Env loaded")
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { expectation.fulfill() }
         wait(for: [expectation])
 
-        guard let env = Formbricks.surveyManager?.environmentResponse else {
-            XCTFail("Missing environmentResponse")
+        guard let workspace = Formbricks.surveyManager?.workspaceResponse else {
+            XCTFail("Missing workspaceResponse")
             return
         }
 
         // Build the view model to produce WEBVIEW_DATA
-        let vm = FormbricksViewModel(environmentResponse: env, surveyId: surveyID)
+        let vm = FormbricksViewModel(workspaceResponse: workspace, surveyId: surveyID)
         guard let html = vm.htmlString else {
             XCTFail("Missing htmlString")
             return
@@ -556,5 +558,187 @@ final class FormbricksSDKTests: XCTestCase {
         XCTAssertEqual(object["placement"] as? String, "center")
         XCTAssertEqual(object["overlay"] as? String, "dark")
         XCTAssertEqual(object["clickOutside"] as? Bool, false)
+
+        // WEBVIEW_DATA should include workspaceId (plus environmentId alias for back-compat)
+        XCTAssertEqual(object["workspaceId"] as? String, workspaceId)
+        XCTAssertEqual(object["environmentId"] as? String, workspaceId)
+    }
+
+    // MARK: - workspaceId / environmentId parameter tests
+
+    /// The deprecated `environmentId` init is still supported for backward compatibility.
+    @available(*, deprecated)
+    func testSetupWithDeprecatedEnvironmentId() {
+        let legacyId = "legacy-env-id"
+        let config = FormbricksConfig.Builder(appUrl: appUrl, environmentId: legacyId)
+            .setLogLevel(.debug)
+            .service(mockService)
+            .build()
+        Formbricks.setup(with: config)
+
+        XCTAssertTrue(Formbricks.isInitialized)
+        XCTAssertEqual(Formbricks.workspaceId, legacyId, "environmentId should be stored as workspaceId")
+        XCTAssertTrue(config.usedDeprecatedEnvironmentId)
+    }
+
+    /// New `workspaceId` init does not mark the config as using a deprecated parameter.
+    func testSetupWithWorkspaceIdDoesNotFlagDeprecation() {
+        let config = FormbricksConfig.Builder(appUrl: appUrl, workspaceId: workspaceId)
+            .setLogLevel(.debug)
+            .service(mockService)
+            .build()
+        Formbricks.setup(with: config)
+
+        XCTAssertTrue(Formbricks.isInitialized)
+        XCTAssertEqual(Formbricks.workspaceId, workspaceId)
+        XCTAssertFalse(config.usedDeprecatedEnvironmentId)
+    }
+
+    /// The legacy `Formbricks.environmentId` accessor still returns the canonical id.
+    @available(*, deprecated)
+    func testLegacyEnvironmentIdAccessorMirrorsWorkspaceId() {
+        let config = FormbricksConfig.Builder(appUrl: appUrl, workspaceId: workspaceId)
+            .service(mockService)
+            .build()
+        Formbricks.setup(with: config)
+
+        XCTAssertEqual(Formbricks.environmentId, workspaceId)
+        XCTAssertEqual(Formbricks.environmentId, Formbricks.workspaceId)
+    }
+
+    // MARK: - Tolerant decoding tests
+
+    /// Workspace data should decode when the server sends the new `settings` key.
+    func testWorkspaceDataDecodesFromSettingsKey() throws {
+        let json = """
+        {
+            "data": {
+                "data": {
+                    "settings": {
+                        "recontactDays": 7,
+                        "clickOutsideClose": true,
+                        "overlay": "none",
+                        "placement": "bottomRight",
+                        "inAppSurveyBranding": true,
+                        "styling": { "allowStyleOverwrite": true }
+                    },
+                    "surveys": [],
+                    "actionClasses": []
+                },
+                "expiresAt": "2099-12-31T23:59:59.999Z"
+            }
+        }
+        """.data(using: .utf8)!
+
+        let response = try JSONDecoder.iso8601Full.decode(WorkspaceResponse.self, from: json)
+        XCTAssertEqual(response.data.data.settings.recontactDays, 7)
+        XCTAssertEqual(response.data.data.settings.placement, "bottomRight")
+    }
+
+    /// Workspace data should decode when the server sends the `workspace` key.
+    func testWorkspaceDataDecodesFromWorkspaceKey() throws {
+        let json = """
+        {
+            "data": {
+                "data": {
+                    "workspace": {
+                        "recontactDays": 3,
+                        "clickOutsideClose": false,
+                        "overlay": "none",
+                        "placement": "center",
+                        "inAppSurveyBranding": false,
+                        "styling": { "allowStyleOverwrite": false }
+                    },
+                    "surveys": [],
+                    "actionClasses": []
+                },
+                "expiresAt": "2099-12-31T23:59:59.999Z"
+            }
+        }
+        """.data(using: .utf8)!
+
+        let response = try JSONDecoder.iso8601Full.decode(WorkspaceResponse.self, from: json)
+        XCTAssertEqual(response.data.data.settings.recontactDays, 3)
+        XCTAssertEqual(response.data.data.settings.placement, "center")
+    }
+
+    /// Workspace data should still decode when the server sends the legacy `project` key,
+    /// which lets the SDK read cached blobs written by older SDK versions.
+    func testWorkspaceDataDecodesFromLegacyProjectKey() throws {
+        let json = """
+        {
+            "data": {
+                "data": {
+                    "project": {
+                        "recontactDays": 14,
+                        "clickOutsideClose": true,
+                        "overlay": "none",
+                        "placement": "bottomLeft",
+                        "inAppSurveyBranding": true,
+                        "styling": { "allowStyleOverwrite": true }
+                    },
+                    "surveys": [],
+                    "actionClasses": []
+                },
+                "expiresAt": "2099-12-31T23:59:59.999Z"
+            }
+        }
+        """.data(using: .utf8)!
+
+        let response = try JSONDecoder.iso8601Full.decode(WorkspaceResponse.self, from: json)
+        XCTAssertEqual(response.data.data.settings.recontactDays, 14)
+        XCTAssertEqual(response.data.data.settings.placement, "bottomLeft")
+    }
+
+    // MARK: - UserDefaults migration tests
+
+    /// A cache blob written under the pre-rename key should be read once, migrated to
+    /// the new key, and then removed from the legacy slot.
+    func testLegacyEnvironmentResponseCacheIsMigratedOnRead() throws {
+        // Clear both keys to start from a known state.
+        let defaults = UserDefaults.standard
+        defaults.removeObject(forKey: SurveyManager.workspaceResponseObjectKey)
+        defaults.removeObject(forKey: SurveyManager.legacyEnvironmentResponseObjectKey)
+
+        // Build a blob the way the old SDK version would have written it: decode the
+        // fixture with the SDK's iso8601 decoder, then re-encode with the plain
+        // JSONEncoder used by the persisted-cache path.
+        guard let fixtureUrl = Bundle.module.url(forResource: "Environment", withExtension: "json"),
+              let fixtureData = try? Data(contentsOf: fixtureUrl),
+              let fixtureResponse = try? JSONDecoder.iso8601Full.decode(WorkspaceResponse.self, from: fixtureData),
+              let legacyBlob = try? JSONEncoder().encode(fixtureResponse) else {
+            XCTFail("Missing or invalid Environment.json fixture")
+            return
+        }
+        defaults.set(legacyBlob, forKey: SurveyManager.legacyEnvironmentResponseObjectKey)
+
+        // Fresh SurveyManager so the in-memory backing cache is empty.
+        let userManager = UserManager()
+        let presentSurveyManager = PresentSurveyManager()
+        let manager = SurveyManager.create(userManager: userManager, presentSurveyManager: presentSurveyManager, service: MockFormbricksService())
+
+        // Reading should migrate and return a decoded WorkspaceResponse.
+        XCTAssertNotNil(manager.workspaceResponse, "Legacy cache should be read and decoded")
+
+        // Legacy key is gone, new key is populated.
+        XCTAssertNil(defaults.data(forKey: SurveyManager.legacyEnvironmentResponseObjectKey))
+        XCTAssertNotNil(defaults.data(forKey: SurveyManager.workspaceResponseObjectKey))
+    }
+
+    // MARK: - Notification back-compat
+
+    /// Subscribers of the deprecated `.environmentRefreshed` should still get notified
+    /// while we also post the new `.workspaceRefreshed` name.
+    func testEnvironmentRefreshedNotificationStillFiresForBackwardCompat() {
+        let userManager = UserManager()
+        let presentSurveyManager = PresentSurveyManager()
+        let manager = SurveyManager.create(userManager: userManager, presentSurveyManager: presentSurveyManager, service: MockFormbricksService())
+
+        let legacyExpectation = expectation(forNotification: Notification.Name("Formbricks.environmentRefreshed"), object: manager, handler: nil)
+        let newExpectation = expectation(forNotification: .workspaceRefreshed, object: manager, handler: nil)
+
+        manager.refreshWorkspaceAfter(timeout: 0.1)
+
+        wait(for: [legacyExpectation, newExpectation], timeout: 2.0)
     }
 }

@@ -1,6 +1,11 @@
 import SwiftUI
 
 public extension Notification.Name {
+    /// Posted when the workspace state has been refreshed.
+    static let workspaceRefreshed = Notification.Name("Formbricks.workspaceRefreshed")
+
+    /// Backward-compatible alias for `workspaceRefreshed`. The SDK posts both names.
+    @available(*, deprecated, renamed: "workspaceRefreshed", message: "Use .workspaceRefreshed instead. environmentRefreshed will be removed in a future version.")
     static let environmentRefreshed = Notification.Name("Formbricks.environmentRefreshed")
 }
 
@@ -17,7 +22,7 @@ final class SurveyManager {
         self.presentSurveyManager = presentSurveyManager
         self.service = service
     }
-    
+
     static func create(
             userManager: UserManager,
             presentSurveyManager: PresentSurveyManager,
@@ -29,28 +34,30 @@ final class SurveyManager {
                 service: service
             )
         }
-    
-    private static let environmentResponseObjectKey = "environmentResponseObjectKey"
-    private var backingEnvironmentResponse: EnvironmentResponse?
+
+    internal static let workspaceResponseObjectKey = "workspaceResponseObjectKey"
+    /// Pre-workspace-rename storage key. Read on first access so existing installs can be migrated.
+    internal static let legacyEnvironmentResponseObjectKey = "environmentResponseObjectKey"
+    private var backingWorkspaceResponse: WorkspaceResponse?
     /// Stores the surveys that are filtered based on the defined criteria, such as recontact days, display options etc.
     internal  private(set) var filteredSurveys: [Survey] = []
     /// Stores is a survey is being shown or the show in delayed
     internal private(set) var isShowingSurvey: Bool = false
     /// Store error state
     internal private(set) var hasApiError: Bool = false
-    
+
     /// Fills up the `filteredSurveys` array
     func filterSurveys() {
-        guard let environment = environmentResponse else { return }
-        guard let surveys = environment.data.data.surveys else { return }
-        
+        guard let workspace = workspaceResponse else { return }
+        guard let surveys = workspace.data.data.surveys else { return }
+
         let displays = userManager.displays ?? []
         let responses = userManager.responses ?? []
         let segments = userManager.segments ?? []
-        
+
         filteredSurveys = filterSurveysBasedOnDisplayType(surveys, displays: displays, responses: responses)
-        filteredSurveys = filterSurveysBasedOnRecontactDays(filteredSurveys, defaultRecontactDays: environment.data.data.project.recontactDays)
-        
+        filteredSurveys = filterSurveysBasedOnRecontactDays(filteredSurveys, defaultRecontactDays: workspace.data.data.settings.recontactDays)
+
         // If we don't have a user, we exclude surveys that have segments with filters
         if userManager.userId == nil {
             filteredSurveys = filteredSurveys.filter { survey in
@@ -58,39 +65,39 @@ final class SurveyManager {
                 guard let segment = survey.segment else {
                     return true
                 }
-                
+
                 // Include surveys with segments but no filters
                 return segment.filters.isEmpty
             }
         }
-                
+
         // If we have a user, we do more filtering
         if userManager.userId != nil {
             if segments.isEmpty {
                 filteredSurveys = []
                 return
             }
-            
+
             filteredSurveys = filterSurveysBasedOnSegments(filteredSurveys, segments: segments)
         }
     }
-    
+
     /// Checks if there are any surveys to display, based in the track action, and if so, displays the first one.
     /// Handles the display percentage and the delay of the survey.
     func track(_ action: String, completion: (() -> Void)? = nil) {
         guard !isShowingSurvey else { return }
-        
-        let actionClasses = environmentResponse?.data.data.actionClasses ?? []
+
+        let actionClasses = workspaceResponse?.data.data.actionClasses ?? []
         let codeActionClasses = actionClasses.filter { $0.type == "code" }
         guard let actionClass = codeActionClasses.first(where: { $0.key == action }) else {
             Formbricks.logger?.error("Action with identifier '\(action)' is unknown. Please add this action in Formbricks in order to use it via the SDK action tracking.")
             return
         }
-        
+
         let firstSurveyWithActionClass = filteredSurveys.first { survey in
             return survey.triggers?.contains(where: { $0.actionClass?.name == actionClass.name }) ?? false
         }
-                
+
         // Display percentage
         let shouldDisplay = shouldDisplayBasedOnPercentage(firstSurveyWithActionClass?.displayPercentage)
         if let survey = firstSurveyWithActionClass, !shouldDisplay {
@@ -106,7 +113,7 @@ final class SurveyManager {
                 Formbricks.logger?.error("Survey \(survey.name) is not available in language “\(currentLanguage)”. Skipping.")
                 return
             }
-            
+
             Formbricks.language = languageCode
         }
 
@@ -119,8 +126,8 @@ final class SurveyManager {
             }
             DispatchQueue.global().asyncAfter(deadline: .now() + Double(timeout)) { [weak self] in
                 guard let self = self else { return }
-                if let environmentResponse = self.environmentResponse {
-                    self.presentSurveyManager.present(environmentResponse: environmentResponse, id: survey.id) { success in
+                if let workspaceResponse = self.workspaceResponse {
+                    self.presentSurveyManager.present(workspaceResponse: workspaceResponse, id: survey.id) { success in
                         if !success {
                             self.isShowingSurvey = false
                         }
@@ -137,37 +144,37 @@ final class SurveyManager {
 
 // MARK: - API calls -
 extension SurveyManager {
-    /// Checks if the environment state needs to be refreshed based on its `expiresAt` property, and if so, refreshes it, starts the refresh timer, and filters the surveys.
-    func refreshEnvironmentIfNeeded(force: Bool = false) {
-        if let environmentResponse = environmentResponse, environmentResponse.data.expiresAt.timeIntervalSinceNow > 0, !force {
-            Formbricks.logger?.debug("Environment state is still valid until \(environmentResponse.data.expiresAt)")
+    /// Checks if the workspace state needs to be refreshed based on its `expiresAt` property, and if so, refreshes it, starts the refresh timer, and filters the surveys.
+    func refreshWorkspaceIfNeeded(force: Bool = false) {
+        if let workspaceResponse = workspaceResponse, workspaceResponse.data.expiresAt.timeIntervalSinceNow > 0, !force {
+            Formbricks.logger?.debug("Workspace state is still valid until \(workspaceResponse.data.expiresAt)")
             filterSurveys()
             return
         }
-        
-        service.getEnvironmentState { [weak self] result in
+
+        service.getWorkspaceState { [weak self] result in
             switch result {
             case .success(let response):
                 self?.hasApiError = false
-                self?.environmentResponse = response
+                self?.workspaceResponse = response
                 self?.startRefreshTimer(expiresAt: response.data.expiresAt)
                 self?.filterSurveys()
-                NotificationCenter.default.post(name: .environmentRefreshed, object: self)
+                SurveyManager.postWorkspaceRefreshed(object: self)
             case .failure:
                 self?.hasApiError = true
                 let error = FormbricksSDKError(type: .unableToRefreshEnvironment)
                 Formbricks.logger?.error(error.message)
                 self?.startErrorTimer()
-                NotificationCenter.default.post(name: .environmentRefreshed, object: self)
+                SurveyManager.postWorkspaceRefreshed(object: self)
             }
         }
     }
-    
+
     /// Posts a survey response to the Formbricks API.
     func postResponse(surveyId: String) {
         userManager.onResponse(surveyId: surveyId)
     }
-    
+
     /// Creates a new display for the survey. It is called when the survey is displayed to the user.
     func onNewDisplay(surveyId: String) {
         userManager.onDisplay(surveyId: surveyId)
@@ -188,34 +195,34 @@ private extension SurveyManager {
     /// The survey is displayed based on the `FormbricksView`.
     /// The view controller is presented over the current context.
     func showSurvey(withId id: String) {
-        if let environmentResponse = environmentResponse {
-            presentSurveyManager.present(environmentResponse: environmentResponse, id: id)
+        if let workspaceResponse = workspaceResponse {
+            presentSurveyManager.present(workspaceResponse: workspaceResponse, id: id)
         }
     }
-    
-    /// Starts a timer to refresh the environment state after the given timeout (`expiresAt`).
+
+    /// Starts a timer to refresh the workspace state after the given timeout (`expiresAt`).
     func startRefreshTimer(expiresAt: Date) {
         let timeout = expiresAt.timeIntervalSinceNow
-        refreshEnvironmentAfter(timeout: timeout)
+        refreshWorkspaceAfter(timeout: timeout)
     }
-    
-    /// When an error occurs, it starts a timer to refresh the environment state after the given timeout.
+
+    /// When an error occurs, it starts a timer to refresh the workspace state after the given timeout.
     func startErrorTimer() {
-        refreshEnvironmentAfter(timeout: Double(Config.Environment.refreshStateOnErrorTimeoutInMinutes) * 60.0)
+        refreshWorkspaceAfter(timeout: Double(Config.Environment.refreshStateOnErrorTimeoutInMinutes) * 60.0)
     }
-    
-    /// Refreshes the environment state after the given timeout.
-    internal func refreshEnvironmentAfter(timeout: Double) {
+
+    /// Refreshes the workspace state after the given timeout.
+    internal func refreshWorkspaceAfter(timeout: Double) {
         guard timeout > 0 else {
             return
         }
-        
+
         DispatchQueue.global().asyncAfter(deadline: .now() + timeout) { [weak self] in
-            Formbricks.logger?.debug("Refreshing environment state.")
-            self?.refreshEnvironmentIfNeeded(force: true)
+            Formbricks.logger?.debug("Refreshing workspace state.")
+            self?.refreshWorkspaceIfNeeded(force: true)
         }
     }
-    
+
     /// Decides if the survey should be displayed based on the display percentage.
     internal func shouldDisplayBasedOnPercentage(_ displayPercentage: Double?) -> Bool {
         guard let displayPercentage = displayPercentage else { return true }
@@ -223,27 +230,46 @@ private extension SurveyManager {
         let draw = Double.random(in: 0..<100)
         return draw < clampedPercentage
     }
+
+    /// Posts both `.workspaceRefreshed` (new) and `.environmentRefreshed` (legacy alias)
+    /// so existing subscribers keep working after the rename.
+    static func postWorkspaceRefreshed(object: Any?) {
+        NotificationCenter.default.post(name: .workspaceRefreshed, object: object)
+        NotificationCenter.default.post(name: Notification.Name("Formbricks.environmentRefreshed"), object: object)
+    }
 }
 
 // MARK: - Store data in the UserDefaults -
 extension SurveyManager {
-    var environmentResponse: EnvironmentResponse? {
+    var workspaceResponse: WorkspaceResponse? {
         get {
-            if let environmentResponse = backingEnvironmentResponse {
-                return environmentResponse
-            } else {
-                if let data = UserDefaults.standard.data(forKey: SurveyManager.environmentResponseObjectKey) {
-                    return try? JSONDecoder().decode(EnvironmentResponse.self, from: data)
-                } else {
-                    let error = FormbricksSDKError(type: .unableToRetrieveEnvironment)
-                    Formbricks.logger?.error(error.message)
-                    return nil
-                }
+            if let workspaceResponse = backingWorkspaceResponse {
+                return workspaceResponse
             }
+
+            // Prefer the new key; fall back to the legacy key for installs that still
+            // have data stored under the pre-rename `environmentResponseObjectKey`.
+            let defaults = UserDefaults.standard
+            if let data = defaults.data(forKey: SurveyManager.workspaceResponseObjectKey) {
+                return try? JSONDecoder().decode(WorkspaceResponse.self, from: data)
+            }
+
+            if let legacyData = defaults.data(forKey: SurveyManager.legacyEnvironmentResponseObjectKey) {
+                // Migrate the legacy blob to the new key and drop the old one.
+                defaults.set(legacyData, forKey: SurveyManager.workspaceResponseObjectKey)
+                defaults.removeObject(forKey: SurveyManager.legacyEnvironmentResponseObjectKey)
+                return try? JSONDecoder().decode(WorkspaceResponse.self, from: legacyData)
+            }
+
+            let error = FormbricksSDKError(type: .unableToRetrieveEnvironment)
+            Formbricks.logger?.error(error.message)
+            return nil
         } set {
             if let data = try? JSONEncoder().encode(newValue) {
-                UserDefaults.standard.set(data, forKey: SurveyManager.environmentResponseObjectKey)
-                backingEnvironmentResponse = newValue
+                UserDefaults.standard.set(data, forKey: SurveyManager.workspaceResponseObjectKey)
+                // Drop the legacy cache key once we've written to the new one.
+                UserDefaults.standard.removeObject(forKey: SurveyManager.legacyEnvironmentResponseObjectKey)
+                backingWorkspaceResponse = newValue
             } else {
                 let error = FormbricksSDKError(type: .unableToPersistEnvironment)
                 Formbricks.logger?.error(error.message)
@@ -260,13 +286,13 @@ extension SurveyManager {
             switch survey.displayOption {
             case .respondMultiple:
                 return true
-                
+
             case .displayOnce:
                 return !displays.contains { $0.surveyId == survey.id }
-                
+
             case .displayMultiple:
                 return !responses.contains { $0 == survey.id }
-                
+
             case .displaySome:
                 if let limit = survey.displayLimit {
                     if responses.contains(where: { $0 == survey.id }) {
@@ -276,33 +302,33 @@ extension SurveyManager {
                 } else {
                     return true
                 }
-                
+
             default:
                 let error = FormbricksSDKError(type: .invalidDisplayOption)
                 Formbricks.logger?.error(error.message)
                 return false
             }
-            
-            
+
+
         }
     }
-    
+
     /// Filters the surveys based on the recontact days and the `lastDisplayedAt` date.
     func filterSurveysBasedOnRecontactDays(_ surveys: [Survey], defaultRecontactDays:  Int?) -> [Survey] {
         surveys.filter { survey in
             guard let lastDisplayedAt = userManager.lastDisplayedAt else { return true }
             let recontactDays = survey.recontactDays ?? defaultRecontactDays
-            
+
             if let recontactDays = recontactDays {
                 let secondsElapsed = Date().timeIntervalSince(lastDisplayedAt)
                 let daysBetween = Int(secondsElapsed / 86_400)
                 return daysBetween >= recontactDays
             }
-            
+
             return true
         }
     }
-    
+
     internal func getLanguageCode(
         survey: Survey,
         language: String?
@@ -310,27 +336,27 @@ extension SurveyManager {
         // 1) Collect all codes
         let availableLanguageCodes = survey.languages?
             .map { $0.language.code }
-        
+
         // 2) If no language was passed or it's the explicit "default" token → default
         guard let raw = language?.lowercased(), !raw.isEmpty else {
             return "default"
         }
-        
+
         if raw == "default" {
             return "default"
         }
-    
+
         // 3) Find matching entry by code or alias
         let selected = survey.languages?.first { entry in
             entry.language.code.lowercased() == raw ||
             entry.language.alias?.lowercased() == raw
         }
-        
+
         // 4) If that entry is marked default → default
         if selected?.isDefault == true {
             return "default"
         }
-        
+
         // 5) If no entry, or not enabled, or code not in the available list → nil
         guard
             let entry = selected,
@@ -339,11 +365,11 @@ extension SurveyManager {
         else {
             return nil
         }
-        
+
         // 6) Otherwise return its code
         return entry.language.code
     }
-    
+
     /// Filters the surveys based on the user's segments.
     func filterSurveysBasedOnSegments(_ surveys: [Survey], segments: [String]) -> [Survey] {
         return surveys.filter { survey in

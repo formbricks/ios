@@ -1,9 +1,9 @@
 import XCTest
 @testable import FormbricksSDK
 
-final class GetEnvironmentRequestTests: XCTestCase {
+final class GetWorkspaceRequestTests: XCTestCase {
     func testInit() {
-        let req = GetEnvironmentRequest()
+        let req = GetWorkspaceRequest()
         XCTAssertEqual(req.requestType, .get)
         XCTAssertFalse(req.requestEndPoint.isEmpty)
     }
