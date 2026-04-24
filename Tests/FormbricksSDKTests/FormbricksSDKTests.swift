@@ -13,11 +13,22 @@ final class FormbricksSDKTests: XCTestCase {
         super.setUp()
         // Always clean up before each test
         Formbricks.cleanup()
+        clearPersistedWorkspaceCache()
    }
-    
+
     override func tearDown() {
         Formbricks.cleanup()
+        clearPersistedWorkspaceCache()
         super.tearDown()
+    }
+
+    /// Removes the cached workspace blobs from UserDefaults so tests don't leak
+    /// cache state into each other. `Formbricks.cleanup()` intentionally does
+    /// not wipe these keys because real apps rely on the cache across launches.
+    private func clearPersistedWorkspaceCache() {
+        let defaults = UserDefaults.standard
+        defaults.removeObject(forKey: SurveyManager.workspaceResponseObjectKey)
+        defaults.removeObject(forKey: SurveyManager.legacyEnvironmentResponseObjectKey)
     }
     
     func testFormbricks() throws {

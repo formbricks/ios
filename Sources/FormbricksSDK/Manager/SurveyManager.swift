@@ -149,6 +149,7 @@ extension SurveyManager {
         if let workspaceResponse = workspaceResponse, workspaceResponse.data.expiresAt.timeIntervalSinceNow > 0, !force {
             Formbricks.logger?.debug("Workspace state is still valid until \(workspaceResponse.data.expiresAt)")
             filterSurveys()
+            startRefreshTimer(expiresAt: workspaceResponse.data.expiresAt)
             return
         }
 
@@ -250,15 +251,18 @@ extension SurveyManager {
             // Prefer the new key; fall back to the legacy key for installs that still
             // have data stored under the pre-rename `environmentResponseObjectKey`.
             let defaults = UserDefaults.standard
-            if let data = defaults.data(forKey: SurveyManager.workspaceResponseObjectKey) {
-                return try? JSONDecoder().decode(WorkspaceResponse.self, from: data)
+            if let data = defaults.data(forKey: SurveyManager.workspaceResponseObjectKey),
+               let decoded = try? JSONDecoder().decode(WorkspaceResponse.self, from: data) {
+                return decoded
             }
 
-            if let legacyData = defaults.data(forKey: SurveyManager.legacyEnvironmentResponseObjectKey) {
-                // Migrate the legacy blob to the new key and drop the old one.
+            if let legacyData = defaults.data(forKey: SurveyManager.legacyEnvironmentResponseObjectKey),
+               let decoded = try? JSONDecoder().decode(WorkspaceResponse.self, from: legacyData) {
+                // Only migrate after a successful decode, so a corrupt legacy blob
+                // can't poison the new key or get silently discarded.
                 defaults.set(legacyData, forKey: SurveyManager.workspaceResponseObjectKey)
                 defaults.removeObject(forKey: SurveyManager.legacyEnvironmentResponseObjectKey)
-                return try? JSONDecoder().decode(WorkspaceResponse.self, from: legacyData)
+                return decoded
             }
 
             let error = FormbricksSDKError(type: .unableToRetrieveEnvironment)

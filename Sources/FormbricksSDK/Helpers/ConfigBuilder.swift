@@ -3,7 +3,7 @@ import Foundation
 /// The configuration object for the Formbricks SDK.
 @objc(FormbricksConfig) public class FormbricksConfig: NSObject {
     let appUrl: String
-    let workspaceId: String
+    @objc public let workspaceId: String
     let userId: String?
     let attributes: [String: AttributeValue]?
     let logLevel: LogLevel
