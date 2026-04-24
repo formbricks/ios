@@ -34,7 +34,7 @@ jobs:
           -scheme 'FormbricksSDK' \
           -sdk iphonesimulator \
           -config Debug \
-          -destination 'platform=iOS Simulator,name=iPhone SE (3rd generation),OS=18.5' \
+          -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest' \
           -derivedDataPath build \
           -enableCodeCoverage YES
 
