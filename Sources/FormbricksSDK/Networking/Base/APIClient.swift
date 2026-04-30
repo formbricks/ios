@@ -30,11 +30,11 @@ class APIClient<Request: CodableRequest>: Operation, @unchecked Sendable {
         guard let apiURL = request.baseURL, var components = URLComponents(string: apiURL) else { return nil }
         
         // Ensure only HTTPS requests are allowed (block HTTP)
-        guard let scheme = components.scheme?.lowercased(), scheme == "https" else {
-            let errorMessage = "HTTP requests are blocked for security. Only HTTPS requests are allowed. Provided app url: \(apiURL)"
-            Formbricks.logger?.error(errorMessage)
-            return nil
-        }
+       guard let scheme = components.scheme?.lowercased(), scheme == "https" else {
+           let errorMessage = "HTTP requests are blocked for security. Only HTTPS requests are allowed. Provided app url: \(apiURL)"
+           Formbricks.logger?.error(errorMessage)
+           return nil
+       }
 
         components.queryItems = request.queryParams?.map { URLQueryItem(name: $0.key, value: $0.value) }
         
@@ -78,9 +78,9 @@ class APIClient<Request: CodableRequest>: Operation, @unchecked Sendable {
                 completion?(.success(VoidResponse() as! Request.Response))
             } else {
                 var body = try request.decoder.decode(Request.Response.self, from: data)
-                if var env = body as? EnvironmentResponse, let jsonString = String(data: data, encoding: .utf8) {
-                    env.responseString = jsonString
-                    body = env as! Request.Response
+                if var workspace = body as? WorkspaceResponse, let jsonString = String(data: data, encoding: .utf8) {
+                    workspace.responseString = jsonString
+                    body = workspace as! Request.Response
                 }
                 Formbricks.logger?.info(message)
                 completion?(.success(body))
@@ -120,7 +120,7 @@ class APIClient<Request: CodableRequest>: Operation, @unchecked Sendable {
         default:
             message.append("Error: \(error.localizedDescription)")
         }
-        
+
         let error = FormbricksAPIClientError(type: .invalidResponse, statusCode: statusCode)
         Formbricks.logger?.error(error.message)
         completion?(.failure(error))
@@ -162,14 +162,16 @@ private extension APIClient {
     
     func setPathParams(_ path: String) -> String? {
         var newPath = path
-        if let environmentId = Formbricks.environmentId {
-            newPath = newPath.replacingOccurrences(of: "{environmentId}", with: environmentId)
+        if let workspaceId = Formbricks.workspaceId {
+            newPath = newPath.replacingOccurrences(of: "{workspaceId}", with: workspaceId)
+            // Backward-compatible: still replace the legacy `{environmentId}` placeholder.
+            newPath = newPath.replacingOccurrences(of: "{environmentId}", with: workspaceId)
         }
-        
+
         request.pathParams?.forEach { key, value in
             newPath = newPath.replacingOccurrences(of: key, with: value)
         }
-        
+
         return newPath
     }
 }

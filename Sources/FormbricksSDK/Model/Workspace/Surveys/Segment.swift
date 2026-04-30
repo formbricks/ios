@@ -189,14 +189,44 @@ struct Segment: Codable {
     let description: String?
     let isPrivate: Bool
     let filters: [SegmentFilter]
-    let environmentId: String
+    let workspaceId: String?
     let createdAt: Date
     let updatedAt: Date
     let surveys: [String]
 
     private enum CodingKeys: String, CodingKey {
-        case id, title, description, filters, surveys
+        case id, title, description, filters, surveys, createdAt, updatedAt
         case isPrivate = "isPrivate"
-        case environmentId, createdAt, updatedAt
+        case workspaceId
+        case environmentId
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        title = try container.decode(String.self, forKey: .title)
+        description = try container.decodeIfPresent(String.self, forKey: .description)
+        isPrivate = try container.decode(Bool.self, forKey: .isPrivate)
+        filters = try container.decode([SegmentFilter].self, forKey: .filters)
+        createdAt = try container.decode(Date.self, forKey: .createdAt)
+        updatedAt = try container.decode(Date.self, forKey: .updatedAt)
+        surveys = try container.decode([String].self, forKey: .surveys)
+        // Server may send `workspaceId` (new) or `environmentId` (legacy). Field is
+        // informational only — not read by SDK logic — so keep it optional.
+        workspaceId = try container.decodeIfPresent(String.self, forKey: .workspaceId)
+            ?? container.decodeIfPresent(String.self, forKey: .environmentId)
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encode(title, forKey: .title)
+        try container.encodeIfPresent(description, forKey: .description)
+        try container.encode(isPrivate, forKey: .isPrivate)
+        try container.encode(filters, forKey: .filters)
+        try container.encode(createdAt, forKey: .createdAt)
+        try container.encode(updatedAt, forKey: .updatedAt)
+        try container.encode(surveys, forKey: .surveys)
+        try container.encodeIfPresent(workspaceId, forKey: .workspaceId)
     }
 }

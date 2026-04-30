@@ -5,7 +5,13 @@ import Network
 @objc(Formbricks) public class Formbricks: NSObject {
     
     static internal var appUrl: String?
-    static internal var environmentId: String?
+    static internal var workspaceId: String?
+    /// Backward-compatible alias for `workspaceId`.
+    @available(*, deprecated, renamed: "workspaceId", message: "Use workspaceId instead. environmentId will be removed in a future version.")
+    static internal var environmentId: String? {
+        get { workspaceId }
+        set { workspaceId = newValue }
+    }
     static internal var language: String = "default"
     static internal var isInitialized: Bool = false
     
@@ -30,31 +36,35 @@ import Network
           
      Example:
      ```swift
-     let config = FormbricksConfig.Builder(appUrl: "APP_URL_HERE", environmentId: "TOKEN_HERE")
+     let config = FormbricksConfig.Builder(appUrl: "APP_URL_HERE", workspaceId: "TOKEN_HERE")
         .setUserId("USER_ID_HERE")
         .setLogLevel(.debug)
         .build()
-      
+
      Formbricks.setup(with: config)
      ```
      */
     @objc public static func setup(with config: FormbricksConfig, force: Bool = false) {
         logger = Logger()
         apiQueue = OperationQueue()
-        
+
         if force {
             isInitialized = false
         }
-        
+
         guard !isInitialized else {
             let error = FormbricksSDKError(type: .sdkIsAlreadyInitialized)
             Formbricks.logger?.error(error.message)
             return
         }
-        
+
         self.appUrl = config.appUrl
-        self.environmentId = config.environmentId
+        self.workspaceId = config.workspaceId
         self.logger?.logLevel = config.logLevel
+
+        if config.usedDeprecatedEnvironmentId {
+            Formbricks.logger?.debug("environmentId is deprecated and will be removed in a future version. Please use workspaceId instead.")
+        }
         
         // Validate appUrl before proceeding with setup
         guard let url = URL(string: config.appUrl) else {
@@ -63,11 +73,11 @@ import Network
         }
         
         // Validate that appUrl uses HTTPS (block HTTP for security)
-        guard url.scheme?.lowercased() == "https" else {
-            let errorMessage = "HTTP requests are blocked for security. Only HTTPS URLs are allowed. Provided app url: \(config.appUrl). SDK setup aborted."
-            Formbricks.logger?.error(errorMessage)
-            return
-        }
+       guard url.scheme?.lowercased() == "https" else {
+           let errorMessage = "HTTP requests are blocked for security. Only HTTPS URLs are allowed. Provided app url: \(config.appUrl). SDK setup aborted."
+           Formbricks.logger?.error(errorMessage)
+           return
+       }
         
         let svc: FormbricksServiceProtocol = config.customService ?? FormbricksService()
         
@@ -88,7 +98,7 @@ import Network
         surveyManager = SurveyManager.create(userManager: userManager!, presentSurveyManager: presentSurveyManager!, service: svc)
         userManager?.surveyManager = surveyManager
         
-        surveyManager?.refreshEnvironmentIfNeeded(force: force)
+        surveyManager?.refreshWorkspaceIfNeeded(force: force)
         userManager?.syncUserStateIfNeeded()
         
         self.isInitialized = true
@@ -289,7 +299,7 @@ import Network
     }
     
     /**
-    Cleans up the SDK. This will clear the user attributes, the user id and the environment state.
+    Cleans up the SDK. This will clear the user attributes, the user id and the workspace state.
     The SDK must be initialized before calling this method.
     If `waitForOperations` is set to `true`, it will wait for all operations to finish before cleaning up.
     If `waitForOperations` is set to `false`, it will clean up immediately.
@@ -331,7 +341,7 @@ import Network
         apiQueue = nil
         isInitialized = false
         appUrl = nil
-        environmentId = nil
+        workspaceId = nil
         logger = nil
         language = "default"
     }

@@ -1,6 +1,6 @@
 import Foundation
 
-internal enum FormbricksEnvironment {
+internal enum FormbricksWorkspace {
 
   /// Only `appUrl` is user-supplied. Returns nil if it's missing.
   internal static var baseApiUrl: String? {
@@ -18,13 +18,13 @@ internal enum FormbricksEnvironment {
     return surveyScriptURL.absoluteString
   }
 
-  /// Returns the full environment‐fetch URL as a String for the given ID
-  static var getEnvironmentRequestEndpoint: String {
-    return ["api", "v2", "client", "{environmentId}", "environment"].joined(separator: "/")
+  /// Returns the workspace-state fetch URL path with a `{workspaceId}` placeholder.
+  static var getWorkspaceStateRequestEndpoint: String {
+    return ["api", "v2", "client", "{workspaceId}", "environment"].joined(separator: "/")
   }
 
-  /// Returns the full post-user URL as a String for the given ID
+  /// Returns the post-user URL path with a `{workspaceId}` placeholder.
   static var postUserRequestEndpoint: String {
-    return ["api", "v2", "client", "{environmentId}", "user"].joined(separator: "/")
+    return ["api", "v2", "client", "{workspaceId}", "user"].joined(separator: "/")
   }
 }
