@@ -20,7 +20,8 @@ internal enum FormbricksEnvironment {
 
   /// Returns the full environment‐fetch URL as a String for the given ID
   static var getEnvironmentRequestEndpoint: String {
-    return ["api", "v2", "client", "{environmentId}", "environment"].joined(separator: "/")
+    let path =  ["api", "v2", "client", "{environmentId}", "environment"].joined(separator: "/")
+    return path
   }
 
   /// Returns the full post-user URL as a String for the given ID
