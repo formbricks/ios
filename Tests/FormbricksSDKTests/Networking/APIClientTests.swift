@@ -56,13 +56,13 @@ final class APIClientTests: XCTestCase {
     override func setUp() {
         super.setUp()
         mockURLSession = MockURLSession()
-        Formbricks.environmentId = "test-env-id"
+        Formbricks.workspaceId = "test-workspace-id"
     }
-    
+
     override func tearDown() {
         mockURLSession = nil
         sut = nil
-        Formbricks.environmentId = nil
+        Formbricks.workspaceId = nil
         super.tearDown()
     }
     
@@ -627,11 +627,11 @@ final class APIClientTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
     
-    func testEnvironmentResponse() {
+    func testWorkspaceResponse() {
         // Given
         let expectation = XCTestExpectation(description: "API call completes")
-        
-        let request = GetEnvironmentRequest()
+
+        let request = GetWorkspaceRequest()
         Formbricks.appUrl = "https://api.test.com"
         addTeardownBlock {
             Formbricks.appUrl = nil
