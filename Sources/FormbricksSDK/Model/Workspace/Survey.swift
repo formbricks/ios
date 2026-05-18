@@ -52,9 +52,9 @@ struct ProjectOverwrites: Codable {
 
 struct Survey: Codable {
     let id: String
-    // `name` is intentionally optional — the public client API no longer returns it.
-    // Older cached payloads may still include it, so we accept it when present.
-    let name: String?
+    // `name` intentionally omitted — internal label, not returned by the
+    // public client API. Cached payloads from older SDK versions may still
+    // include it in JSON; Codable will quietly ignore unknown keys.
     let triggers: [Trigger]?
     let recontactDays: Int?
     let displayLimit: Int?

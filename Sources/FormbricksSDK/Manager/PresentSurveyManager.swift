@@ -65,11 +65,9 @@ final class PresentSurveyManager {
             let view = FormbricksView(
                 viewModel: FormbricksViewModel(workspaceResponse: workspaceResponse, surveyId: id))
             let vc = UIHostingController(rootView: view)
-            vc.modalPresentationStyle = .pageSheet
+            vc.modalPresentationStyle = .overFullScreen
+            vc.modalTransitionStyle = .crossDissolve
             vc.view.backgroundColor = .clear
-            if let sheet = vc.sheetPresentationController {
-                sheet.detents = [.large()]
-            }
             self.viewController = vc
             presenter.present(
                 vc, animated: true,

@@ -66,10 +66,10 @@ final class SurveyManager {
                     return true
                 }
 
-                // Include surveys with segments but no filters.
-                // `resolvedHasFilters` prefers the server-supplied `hasFilters`
-                // flag and falls back to the legacy `filters` array.
-                return !segment.resolvedHasFilters
+                // Include surveys with segments but no filters. `hasFilters`
+                // is decoded directly from the server response, or derived
+                // from a legacy cached `filters` array (see Segment decoder).
+                return !segment.hasFilters
             }
         }
 

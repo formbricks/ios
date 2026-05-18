@@ -244,7 +244,6 @@ final class FormbricksSDKTests: XCTestCase {
         // getLanguageCode coverage
         let survey = Survey(
             id: "1",
-            name: "Test Survey",
             triggers: nil,
             recontactDays: nil,
             displayLimit: nil,
