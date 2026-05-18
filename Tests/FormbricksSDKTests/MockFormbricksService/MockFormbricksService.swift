@@ -17,7 +17,7 @@ class MockFormbricksService: FormbricksService {
     /// Defaults to `.user` (the standard User.json).
     var userMockResponse: MockResponse = .user
     
-    override func getEnvironmentState(completion: @escaping (ResultType<GetEnvironmentRequest.Response>) -> Void) {
+    override func getWorkspaceState(completion: @escaping (ResultType<GetWorkspaceRequest.Response>) -> Void) {
         if isErrorResponseNeeded {
             completion(.failure(RuntimeError(message: "")))
         } else {

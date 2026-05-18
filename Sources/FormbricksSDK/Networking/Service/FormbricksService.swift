@@ -1,10 +1,10 @@
 /// FormbricksService is a service class that handles the network requests for Formbricks API.
 class FormbricksService: FormbricksServiceProtocol {
-    
-    // MARK: - Environment -
-    /// Get the current environment state.
-    func getEnvironmentState(completion: @escaping (ResultType<GetEnvironmentRequest.Response>) -> Void) {
-        let endPointRequest = GetEnvironmentRequest()
+
+    // MARK: - Workspace -
+    /// Fetch the current workspace state.
+    func getWorkspaceState(completion: @escaping (ResultType<GetWorkspaceRequest.Response>) -> Void) {
+        let endPointRequest = GetWorkspaceRequest()
         execute(endPointRequest, withCompletion: completion)
     }
 
@@ -17,8 +17,8 @@ class FormbricksService: FormbricksServiceProtocol {
 }
 
 protocol FormbricksServiceProtocol {
-    func getEnvironmentState(
-      completion: @escaping (ResultType<GetEnvironmentRequest.Response>) -> Void
+    func getWorkspaceState(
+      completion: @escaping (ResultType<GetWorkspaceRequest.Response>) -> Void
     )
     func postUser(
       id: String,

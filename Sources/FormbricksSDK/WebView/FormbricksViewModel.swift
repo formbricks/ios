@@ -5,11 +5,11 @@ import SwiftUI
 final class FormbricksViewModel: ObservableObject {
     @Published var htmlString: String?
     let surveyId: String
-    
-    init(environmentResponse: EnvironmentResponse, surveyId: String) {
+
+    init(workspaceResponse: WorkspaceResponse, surveyId: String) {
         self.surveyId = surveyId
-        if let webviewDataJson = WebViewData(environmentResponse: environmentResponse, surveyId: surveyId).getJsonString(),
-           let surveyScriptUrl = FormbricksEnvironment.surveyScriptUrlString {
+        if let webviewDataJson = WebViewData(workspaceResponse: workspaceResponse, surveyId: surveyId).getJsonString(),
+           let surveyScriptUrl = FormbricksWorkspace.surveyScriptUrlString {
             htmlString = htmlTemplate.replacingOccurrences(of: "{{WEBVIEW_DATA}}", with: webviewDataJson)
                 .replacingOccurrences(of: "{{SURVEY_SCRIPT_URL}}", with: surveyScriptUrl)
         }
@@ -23,7 +23,7 @@ private extension FormbricksViewModel {
         <!doctype html>
         <html>
             <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0">
-            
+
             <head>
                 <title>Formbricks WebView Survey</title>
             </head>
@@ -43,11 +43,11 @@ private extension FormbricksViewModel {
                 function onDisplayCreated() {
                     window.webkit.messageHandlers.jsMessage.postMessage(JSON.stringify({ event: "onDisplayCreated" }));
                 };
-        
+
                 function onResponseCreated() {
                     window.webkit.messageHandlers.jsMessage.postMessage(JSON.stringify({ event: "onResponseCreated" }));
                 };
-        
+
                 function onOpenExternalURL(url) {
                     window.webkit.messageHandlers.jsMessage.postMessage(JSON.stringify({ event: "onOpenExternalURL", onOpenExternalURLParams: { url: url } }));
                 };
@@ -55,7 +55,7 @@ private extension FormbricksViewModel {
                 let setResponseFinished = null;
                 function getSetIsResponseSendingFinished(callback) {
                     setResponseFinished = callback;
-                }  
+                }
 
                 function loadSurvey() {
                     const options = JSON.parse(json);
@@ -83,47 +83,50 @@ private extension FormbricksViewModel {
         </html>
         """
     }
-    
+
 }
 
 // MARK: - Helper class -
 private class WebViewData {
     var data: [String: Any] = [:]
-    
-    init(environmentResponse: EnvironmentResponse, surveyId: String) {
-        let matchedSurvey = environmentResponse.data.data.surveys?.first(where: {$0.id == surveyId})
-        let project = environmentResponse.data.data.project
-        
-        data["survey"] = environmentResponse.getSurveyJson(forSurveyId: surveyId)
+
+    init(workspaceResponse: WorkspaceResponse, surveyId: String) {
+        let matchedSurvey = workspaceResponse.data.data.surveys?.first(where: {$0.id == surveyId})
+        let settings = workspaceResponse.data.data.settings
+
+        data["survey"] = workspaceResponse.getSurveyJson(forSurveyId: surveyId)
         data["appUrl"] = Formbricks.appUrl
-        data["environmentId"] = Formbricks.environmentId
+        data["workspaceId"] = Formbricks.workspaceId
+        // Keep `environmentId` in the payload for backward compatibility with older
+        // survey-script versions that still read it.
+        data["environmentId"] = Formbricks.workspaceId
         data["contactId"] = Formbricks.userManager?.contactId
         data["isWebEnvironment"] = false
-        data["isBrandingEnabled"] = project.inAppSurveyBranding ?? true
-        
+        data["isBrandingEnabled"] = settings.inAppSurveyBranding ?? true
+
         if let placementEnum = matchedSurvey?.projectOverwrites?.placement {
             data["placement"] = placementEnum.rawValue
         } else {
-            data["placement"] = project.placement
+            data["placement"] = settings.placement
         }
-        
-        data["clickOutside"] = matchedSurvey?.projectOverwrites?.clickOutsideClose ?? project.clickOutsideClose ?? false
-        data["overlay"] = (matchedSurvey?.projectOverwrites?.overlay ?? project.overlay ?? .none).rawValue
-        
+
+        data["clickOutside"] = matchedSurvey?.projectOverwrites?.clickOutsideClose ?? settings.clickOutsideClose ?? false
+        data["overlay"] = (matchedSurvey?.projectOverwrites?.overlay ?? settings.overlay ?? .none).rawValue
+
         let isMultiLangSurvey = (matchedSurvey?.languages?.count ?? 0) > 1
-        
+
         if isMultiLangSurvey {
             data["languageCode"] = Formbricks.language
         } else {
             data["languageCode"] = "default"
         }
-        
+
         let hasCustomStyling = matchedSurvey?.styling != nil
-        let enabled = project.styling?.allowStyleOverwrite ?? false
-            
-        data["styling"] = hasCustomStyling && enabled ? environmentResponse.getSurveyStylingJson(forSurveyId: surveyId): environmentResponse.getProjectStylingJson()
+        let enabled = settings.styling?.allowStyleOverwrite ?? false
+
+        data["styling"] = hasCustomStyling && enabled ? workspaceResponse.getSurveyStylingJson(forSurveyId: surveyId): workspaceResponse.getSettingsStylingJson()
     }
-    
+
     func getJsonString() -> String? {
         do {
             let jsonData = try JSONSerialization.data(withJSONObject: data, options: [])
@@ -133,5 +136,5 @@ private class WebViewData {
             return nil
         }
     }
-    
+
 }

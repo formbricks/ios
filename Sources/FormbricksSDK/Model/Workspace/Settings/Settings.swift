@@ -1,4 +1,4 @@
-struct Project: Codable {
+struct Settings: Codable {
     let id: String?
     let recontactDays: Int?
     let clickOutsideClose: Bool?

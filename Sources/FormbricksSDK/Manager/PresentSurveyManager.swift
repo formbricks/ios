@@ -16,28 +16,35 @@ final class PresentSurveyManager {
     /// Mirrors UIKit's own `presentedViewController` traversal so a single walker is enough.
     private func topMostViewController(from viewController: UIViewController) -> UIViewController {
         if let presented = viewController.presentedViewController,
-           !presented.isBeingDismissed {
+            !presented.isBeingDismissed
+        {
             return topMostViewController(from: presented)
         }
         if let navigation = viewController as? UINavigationController,
-           let visible = navigation.visibleViewController {
+            let visible = navigation.visibleViewController
+        {
             return topMostViewController(from: visible)
         }
         if let tabBar = viewController as? UITabBarController,
-           let selected = tabBar.selectedViewController {
+            let selected = tabBar.selectedViewController
+        {
             return topMostViewController(from: selected)
         }
         return viewController
     }
 
     /// Present the webview as a page sheet over the current top-most view controller.
-    func present(environmentResponse: EnvironmentResponse, id: String, completion: ((Bool) -> Void)? = nil) {
+    func present(
+        workspaceResponse: WorkspaceResponse, id: String, completion: ((Bool) -> Void)? = nil
+    ) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
 
             guard let window = UIApplication.safeKeyWindow,
-                  let rootVC = window.rootViewController else {
-                Formbricks.logger?.error("Survey present aborted: no key window or root view controller available.")
+                let rootVC = window.rootViewController
+            else {
+                Formbricks.logger?.error(
+                    "Survey present aborted: no key window or root view controller available.")
                 completion?(false)
                 return
             }
@@ -48,12 +55,15 @@ final class PresentSurveyManager {
             // crops the survey to the alert frame or is rejected by UIKit. Bail with a clear log so the host
             // app can dismiss the alert before triggering the survey.
             if presenter is UIAlertController {
-                Formbricks.logger?.warning("Survey present aborted: top-most VC is a UIAlertController. Dismiss it before triggering the survey.")
+                Formbricks.logger?.warning(
+                    "Survey present aborted: top-most VC is a UIAlertController. Dismiss it before triggering the survey."
+                )
                 completion?(false)
                 return
             }
 
-            let view = FormbricksView(viewModel: FormbricksViewModel(environmentResponse: environmentResponse, surveyId: id))
+            let view = FormbricksView(
+                viewModel: FormbricksViewModel(workspaceResponse: workspaceResponse, surveyId: id))
             let vc = UIHostingController(rootView: view)
             vc.modalPresentationStyle = .pageSheet
             vc.view.backgroundColor = .clear
@@ -61,9 +71,11 @@ final class PresentSurveyManager {
                 sheet.detents = [.large()]
             }
             self.viewController = vc
-            presenter.present(vc, animated: true, completion: {
-                completion?(true)
-            })
+            presenter.present(
+                vc, animated: true,
+                completion: {
+                    completion?(true)
+                })
         }
     }
 
