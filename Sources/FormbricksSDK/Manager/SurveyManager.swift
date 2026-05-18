@@ -58,9 +58,11 @@ final class SurveyManager {
                 guard let segment = survey.segment else {
                     return true
                 }
-                
-                // Include surveys with segments but no filters
-                return segment.filters.isEmpty
+
+                // Include surveys with segments but no filters.
+                // `resolvedHasFilters` prefers the server-supplied `hasFilters`
+                // flag and falls back to the legacy `filters` array.
+                return !segment.resolvedHasFilters
             }
         }
                 
@@ -94,7 +96,7 @@ final class SurveyManager {
         // Display percentage
         let shouldDisplay = shouldDisplayBasedOnPercentage(firstSurveyWithActionClass?.displayPercentage)
         if let survey = firstSurveyWithActionClass, !shouldDisplay {
-            Formbricks.logger?.info("Skipping survey \(survey.name) due to display percentage restriction.")
+            Formbricks.logger?.info("Skipping survey \(survey.id) due to display percentage restriction.")
             return
         }
         let isMultiLangSurvey = firstSurveyWithActionClass?.languages?.count ?? 0 > 1
@@ -103,7 +105,7 @@ final class SurveyManager {
             guard let survey = firstSurveyWithActionClass else {return}
             let currentLanguage = Formbricks.language
             guard let languageCode = getLanguageCode(survey: survey, language: currentLanguage) else {
-                Formbricks.logger?.error("Survey \(survey.name) is not available in language “\(currentLanguage)”. Skipping.")
+                Formbricks.logger?.error("Survey \(survey.id) is not available in language “\(currentLanguage)”. Skipping.")
                 return
             }
             
@@ -115,7 +117,7 @@ final class SurveyManager {
             isShowingSurvey = true
             let timeout = survey.delay ?? 0
             if timeout > 0 {
-                Formbricks.logger?.info("Delaying survey \(survey.name) by \(timeout) seconds")
+                Formbricks.logger?.info("Delaying survey \(survey.id) by \(timeout) seconds")
             }
             DispatchQueue.global().asyncAfter(deadline: .now() + Double(timeout)) { [weak self] in
                 guard let self = self else { return }

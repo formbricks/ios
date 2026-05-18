@@ -183,20 +183,33 @@ struct SegmentFilter: Codable {
 
 // MARK: - Segment Model
 
+/// Public client API returns the minimal `{ id, hasFilters }` shape — full
+/// filter logic (titles, descriptions, conditions) is evaluated server-side
+/// and must not reach the device. Legacy fields remain optional so cached
+/// payloads written by older SDK versions still decode within the cache window.
 struct Segment: Codable {
     let id: String
-    let title: String
+    let hasFilters: Bool?
+    let title: String?
     let description: String?
-    let isPrivate: Bool
-    let filters: [SegmentFilter]
-    let environmentId: String
-    let createdAt: Date
-    let updatedAt: Date
-    let surveys: [String]
+    let isPrivate: Bool?
+    let filters: [SegmentFilter]?
+    let environmentId: String?
+    let createdAt: Date?
+    let updatedAt: Date?
+    let surveys: [String]?
 
     private enum CodingKeys: String, CodingKey {
-        case id, title, description, filters, surveys
+        case id, hasFilters, title, description, filters, surveys
         case isPrivate = "isPrivate"
         case environmentId, createdAt, updatedAt
+    }
+
+    /// Whether this segment has any filters. Prefers the server-supplied
+    /// `hasFilters` flag; falls back to the legacy `filters` array for
+    /// payloads cached by older SDK versions.
+    var resolvedHasFilters: Bool {
+        if let hasFilters = hasFilters { return hasFilters }
+        return !(filters?.isEmpty ?? true)
     }
 }
