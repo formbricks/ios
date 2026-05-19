@@ -28,8 +28,8 @@ private extension FormbricksViewModel {
                 <title>Formbricks WebView Survey</title>
             </head>
 
-            <body style="overflow: hidden; height: 100vh; display: flex; flex-direction: column; justify-content: flex-end;">
-                <div id="formbricks-react-native" style="width: 100%;"></div>
+            <body style="overflow: hidden; height: 100vh; margin: 0; background: transparent;">
+                <div id="formbricks-react-native" style="width: 100%; height: 100%;"></div>
             </body>
 
             <script type="text/javascript">
