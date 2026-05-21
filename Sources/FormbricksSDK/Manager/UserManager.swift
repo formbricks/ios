@@ -18,8 +18,6 @@ final class UserManager: UserManagerSyncable {
     private static let lastDisplayedAtKey = "lastDisplayedAtKey"
     private static let expiresAtKey = "expiresAtKey"
     
-//    internal var service = FormbricksService()
-    
     private var backingUserId: String?
     private var backingContactId: String?
     private var backingSegments: [String]?
@@ -75,12 +73,16 @@ final class UserManager: UserManagerSyncable {
     /// Syncs the user state with the server if the user id is set and the expiration date has passed.
     func syncUserStateIfNeeded() {
         guard let id = userId, let expiresAt = self.expiresAt, expiresAt.timeIntervalSinceNow <= 0 else {
-            backingSegments = []
-            backingDisplays = []
-            backingResponses = []
+            // Drop only the in-memory caches. Assigning `[]` would mask the
+            // persisted UserDefaults arrays because the lazy getter falls back
+            // to disk only when the backing is nil; an empty array short-circuits
+            // the `??` and the persisted responses/segments never get read.
+            backingSegments = nil
+            backingDisplays = nil
+            backingResponses = nil
             return
         }
-        
+
         syncUser(withId: id)
     }
 
