@@ -8,7 +8,7 @@ The iOS SDK for Formbricks
 
 1. In Xcode choose **File → Add Packages…**
 2. Enter your repo URL (e.g. `https://github.com/formbricks/ios.git`)
-3. Choose version rule (e.g. "Up to Next Major" starting at `1.0.0`).
+3. Choose version rule (e.g. "Up to Next Major" starting at `2.0.0`).
 4. Import in your code:
    ```swift
    import FormbricksSDK
@@ -23,7 +23,7 @@ The iOS SDK for Formbricks
    use_frameworks! :linkage => :static
 
    target 'YourTargetName' do
-     pod 'FormbricksSDK', '1.0.0 (or the latest version)'
+     pod 'FormbricksSDK', '2.0.0 (or the latest version)'
    end
    ```
 
@@ -41,10 +41,19 @@ import FormbricksSDK
 // 1. Build your config (you can also inject userId + attributes here)
 let config = FormbricksConfig.Builder(
         appUrl: "https://your‑app.bricks.com",
-        environmentId: "YOUR_ENV_ID"
+        workspaceId: "YOUR_WORKSPACE_ID"
     )
     .setLogLevel(.debug)
     .build()
+
+// Note: `environmentId` is still supported as a deprecated alias for
+// `workspaceId` and will be removed in a future major release.
+// Existing integrations using `environmentId` continue to work:
+//
+//   FormbricksConfig.Builder(
+//       appUrl: "https://your‑app.bricks.com",
+//       environmentId: "YOUR_ENV_ID" // deprecated, use workspaceId
+//   )
 
 // 2. Initialize the SDK (once per launch)
 Formbricks.setup(with: config)
