@@ -47,7 +47,7 @@ let config = FormbricksConfig.Builder(
     .build()
 
 // Note: `environmentId` is still supported as a deprecated alias for
-// `workspaceId` and will be removed in a future major release.
+// `workspaceId` and will be removed in a future release.
 // Existing integrations using `environmentId` continue to work:
 //
 //   FormbricksConfig.Builder(
@@ -81,8 +81,4 @@ Formbricks.logout()
 Formbricks.cleanup(waitForOperations: true) {
     print("SDK torn down")
 }
-```
-
-```
-
 ```
