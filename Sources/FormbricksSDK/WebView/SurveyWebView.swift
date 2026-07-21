@@ -96,7 +96,7 @@ extension SurveyWebView {
             completionHandler()
         }
         
-        func webView(_ webView: WKWebView, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
+        func webView(_ webView: WKWebView, didReceive _: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
             // Let the OS perform standard certificate-chain validation. Never force-trust
             // arbitrary certificates, as that would disable TLS validation and expose the
             // survey WebView traffic to man-in-the-middle interception.
