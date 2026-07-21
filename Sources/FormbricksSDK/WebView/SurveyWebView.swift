@@ -25,9 +25,14 @@ struct SurveyWebView: UIViewRepresentable {
         webView.configuration.defaultWebpagePreferences.allowsContentJavaScript = true
         webView.isOpaque = false
         webView.backgroundColor = UIColor.clear
+        // Web Inspector is a debugging aid only; never expose the survey WebView
+        // to inspection in release builds (avoids leaking payload/responses and
+        // allowing DOM/JS tampering on production devices).
+        #if DEBUG
         if #available(iOS 16.4, *) {
             webView.isInspectable = true
         }
+        #endif
         webView.navigationDelegate = context.coordinator
         webView.uiDelegate = context.coordinator
         webView.scrollView.isScrollEnabled = false
@@ -105,11 +110,19 @@ extension SurveyWebView {
 final class JsMessageHandler: NSObject, WKScriptMessageHandler {
     
     let surveyId: String
-    
+
     init(surveyId: String) {
         self.surveyId = surveyId
     }
-   
+
+    /// Whether an external URL from survey content is safe to hand to the OS.
+    /// Only web links are allowed; other schemes (tel, sms, custom app deep links,
+    /// etc.) are refused so survey content cannot trigger unexpected native actions.
+    static func isAllowedExternalURL(_ url: URL) -> Bool {
+        guard let scheme = url.scheme?.lowercased() else { return false }
+        return scheme == "http" || scheme == "https"
+    }
+
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
         Formbricks.logger?.debug(message.body)
         
@@ -130,8 +143,13 @@ final class JsMessageHandler: NSObject, WKScriptMessageHandler {
             
             /// Happens when the survey wants to open an external link in the default browser.
             case .onOpenExternalURL:
-                if let message = try? JSONDecoder().decode(OpenExternalUrlMessage.self, from: data), let url = URL(string:  message.onOpenExternalURLParams.url) {
-                    UIApplication.shared.open(url)
+                if let message = try? JSONDecoder().decode(OpenExternalUrlMessage.self, from: data),
+                   let url = URL(string: message.onOpenExternalURLParams.url) {
+                    if JsMessageHandler.isAllowedExternalURL(url) {
+                        UIApplication.shared.open(url)
+                    } else {
+                        Formbricks.logger?.warning("Blocked external URL with disallowed scheme: \(url.scheme ?? "nil")")
+                    }
                 }
                 
             /// Happens when the survey library fails to load.

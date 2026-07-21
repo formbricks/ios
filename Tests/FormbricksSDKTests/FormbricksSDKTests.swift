@@ -546,19 +546,19 @@ final class FormbricksSDKTests: XCTestCase {
             return
         }
 
-        // Extract the JSON payload between backticks in `const json = `...``
-        guard let markerRange = html.range(of: "const json = `") else {
+        // The payload is base64-encoded and embedded as atob("...") (see ENG-1813).
+        // Extract the base64 blob, decode it, and parse the JSON.
+        guard let markerRange = html.range(of: "atob(\"") else {
             XCTFail("Marker not found")
             return
         }
         let start = markerRange.upperBound
-        guard let end = html[start...].firstIndex(of: "`") else {
-            XCTFail("End backtick not found")
+        guard let end = html[start...].firstIndex(of: "\"") else {
+            XCTFail("End quote not found")
             return
         }
-        let jsonSubstring = html[start..<end]
-        let jsonString = String(jsonSubstring)
-        guard let data = jsonString.data(using: .utf8),
+        let base64String = String(html[start..<end])
+        guard let data = Data(base64Encoded: base64String),
               let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
             XCTFail("Invalid JSON in WEBVIEW_DATA")
             return
@@ -790,6 +790,67 @@ final class FormbricksSDKTests: XCTestCase {
                        "WebView must let the OS validate the certificate chain, not override it.")
         XCTAssertNil(capturedCredential,
                      "WebView must not supply a credential that force-trusts the server certificate (MITM risk).")
+    }
+
+    /// Security regression guard (ENG-1812): external URLs coming from survey
+    /// content must be restricted to web schemes. Other schemes (tel, sms, custom
+    /// app deep links, file, javascript, etc.) must be refused so survey content
+    /// cannot trigger unexpected native actions.
+    func testExternalURLSchemeAllowlist() {
+        // Allowed
+        for allowed in ["https://formbricks.com", "http://example.com/path?q=1", "HTTPS://UPPER.example"] {
+            let url = URL(string: allowed)!
+            XCTAssertTrue(JsMessageHandler.isAllowedExternalURL(url), "\(allowed) should be allowed")
+        }
+        // Blocked
+        for blocked in ["tel:+123456789", "sms:+123456789", "mailto:a@b.com",
+                        "facetime:a@b.com", "file:///etc/passwd", "javascript:alert(1)",
+                        "whatsapp://send?text=hi", "myapp://do-something"] {
+            let url = URL(string: blocked)!
+            XCTAssertFalse(JsMessageHandler.isAllowedExternalURL(url), "\(blocked) should be blocked")
+        }
+    }
+
+    /// Security regression guard (ENG-1813): the survey payload must be embedded in
+    /// the WebView HTML as a base64 blob, never spliced raw into a JS template
+    /// literal. Base64 output cannot contain backticks, `${...}`, or quotes, so
+    /// survey content can no longer break out of the string literal and run as code.
+    func testWebViewPayloadIsBase64EncodedNotRawTemplateLiteral() {
+        let config = FormbricksConfig.Builder(appUrl: appUrl, workspaceId: workspaceId)
+            .setLogLevel(.debug)
+            .service(mockService)
+            .build()
+        Formbricks.setup(with: config)
+
+        Formbricks.surveyManager?.refreshWorkspaceIfNeeded(force: true)
+        let loaded = expectation(description: "Env loaded")
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { loaded.fulfill() }
+        wait(for: [loaded])
+
+        guard let workspace = Formbricks.surveyManager?.workspaceResponse else {
+            XCTFail("Missing workspaceResponse"); return
+        }
+        guard let html = FormbricksViewModel(workspaceResponse: workspace, surveyId: surveyID).htmlString else {
+            XCTFail("Missing htmlString"); return
+        }
+
+        // The old raw-template-literal injection must be gone.
+        XCTAssertFalse(html.contains("const json = `"),
+                       "Payload must not be spliced into a JS template literal (script-injection risk).")
+
+        // The payload must be delivered via atob("...") and the blob must be pure base64.
+        guard let start = html.range(of: "atob(\"")?.upperBound,
+              let end = html[start...].firstIndex(of: "\"") else {
+            XCTFail("Base64 payload marker not found"); return
+        }
+        let blob = String(html[start..<end])
+        XCTAssertFalse(blob.isEmpty, "Payload blob should not be empty")
+        let base64Charset = CharacterSet(charactersIn: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=")
+        XCTAssertTrue(blob.unicodeScalars.allSatisfy { base64Charset.contains($0) },
+                      "Embedded payload must be pure base64 — no characters that could break out of the JS string.")
+        // And it must decode back to valid JSON.
+        XCTAssertNotNil(Data(base64Encoded: blob).flatMap { try? JSONSerialization.jsonObject(with: $0) },
+                        "Base64 payload must decode to valid JSON.")
     }
 }
 
