@@ -1,4 +1,5 @@
 import XCTest
+import WebKit
 @testable import FormbricksSDK
 
 final class FormbricksSDKTests: XCTestCase {
@@ -751,4 +752,52 @@ final class FormbricksSDKTests: XCTestCase {
 
         wait(for: [legacyExpectation, newExpectation], timeout: 2.0)
     }
+
+    /// Security regression guard: the survey WebView must delegate
+    /// TLS certificate validation to the OS and must never force-trust the
+    /// server certificate. Force-trusting any certificate disables chain
+    /// validation and exposes survey traffic to man-in-the-middle interception.
+    func testWebViewAuthChallengeUsesDefaultHandlingAndDoesNotForceTrust() {
+        let coordinator = SurveyWebView.Coordinator()
+        let webView = WKWebView()
+        let protectionSpace = URLProtectionSpace(
+            host: "example.com",
+            port: 443,
+            protocol: NSURLProtectionSpaceHTTPS,
+            realm: nil,
+            authenticationMethod: NSURLAuthenticationMethodServerTrust
+        )
+        let challenge = URLAuthenticationChallenge(
+            protectionSpace: protectionSpace,
+            proposedCredential: nil,
+            previousFailureCount: 0,
+            failureResponse: nil,
+            error: nil,
+            sender: NoopChallengeSender()
+        )
+
+        var capturedDisposition: URLSession.AuthChallengeDisposition?
+        var capturedCredential: URLCredential?
+        let handlerCalled = expectation(description: "completion handler called")
+        coordinator.webView(webView, didReceive: challenge) { disposition, credential in
+            capturedDisposition = disposition
+            capturedCredential = credential
+            handlerCalled.fulfill()
+        }
+        wait(for: [handlerCalled], timeout: 1.0)
+
+        XCTAssertEqual(capturedDisposition, .performDefaultHandling,
+                       "WebView must let the OS validate the certificate chain, not override it.")
+        XCTAssertNil(capturedCredential,
+                     "WebView must not supply a credential that force-trusts the server certificate (MITM risk).")
+    }
+}
+
+/// Minimal sender so a `URLAuthenticationChallenge` can be constructed in tests.
+/// The handler under test only inspects the disposition it hands back, so these
+/// callbacks intentionally do nothing.
+private final class NoopChallengeSender: NSObject, URLAuthenticationChallengeSender {
+    func use(_ credential: URLCredential, for challenge: URLAuthenticationChallenge) {}
+    func continueWithoutCredential(for challenge: URLAuthenticationChallenge) {}
+    func cancel(_ challenge: URLAuthenticationChallenge) {}
 }

@@ -92,11 +92,10 @@ extension SurveyWebView {
         }
         
         func webView(_ webView: WKWebView, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
-            if let serverTrust = challenge.protectionSpace.serverTrust {
-                completionHandler(.useCredential, URLCredential(trust: serverTrust))
-            } else {
-                 completionHandler(.useCredential, nil)
-            }
+            // Let the OS perform standard certificate-chain validation. Never force-trust
+            // arbitrary certificates, as that would disable TLS validation and expose the
+            // survey WebView traffic to man-in-the-middle interception.
+            completionHandler(.performDefaultHandling, nil)
         }
     }
 }
