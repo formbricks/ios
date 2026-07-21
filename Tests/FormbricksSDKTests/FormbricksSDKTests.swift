@@ -547,18 +547,8 @@ final class FormbricksSDKTests: XCTestCase {
         }
 
         // The payload is base64-encoded and embedded as atob("...") (see ENG-1813).
-        // Extract the base64 blob, decode it, and parse the JSON.
-        guard let markerRange = html.range(of: "atob(\"") else {
-            XCTFail("Marker not found")
-            return
-        }
-        let start = markerRange.upperBound
-        guard let end = html[start...].firstIndex(of: "\"") else {
-            XCTFail("End quote not found")
-            return
-        }
-        let base64String = String(html[start..<end])
-        guard let data = Data(base64Encoded: base64String),
+        guard let blob = webviewDataBase64(from: html),
+              let data = Data(base64Encoded: blob),
               let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
             XCTFail("Invalid JSON in WEBVIEW_DATA")
             return
@@ -758,6 +748,22 @@ final class FormbricksSDKTests: XCTestCase {
     /// server certificate. Force-trusting any certificate disables chain
     /// validation and exposes survey traffic to man-in-the-middle interception.
     func testWebViewAuthChallengeUsesDefaultHandlingAndDoesNotForceTrust() {
+        assertChallengeUsesDefaultHandling(authenticationMethod: NSURLAuthenticationMethodServerTrust)
+    }
+
+    /// The challenge handler is now unconditional (always `.performDefaultHandling`).
+    /// Guard that non-serverTrust challenges (HTTP Basic auth, client-certificate) also
+    /// fall through to OS default handling rather than being answered with a credential.
+    func testWebViewAuthChallengeUsesDefaultHandlingForNonServerTrustChallenges() {
+        assertChallengeUsesDefaultHandling(authenticationMethod: NSURLAuthenticationMethodHTTPBasic)
+        assertChallengeUsesDefaultHandling(authenticationMethod: NSURLAuthenticationMethodClientCertificate)
+    }
+
+    private func assertChallengeUsesDefaultHandling(
+        authenticationMethod: String,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
         let coordinator = SurveyWebView.Coordinator()
         let webView = WKWebView()
         let protectionSpace = URLProtectionSpace(
@@ -765,7 +771,7 @@ final class FormbricksSDKTests: XCTestCase {
             port: 443,
             protocol: NSURLProtectionSpaceHTTPS,
             realm: nil,
-            authenticationMethod: NSURLAuthenticationMethodServerTrust
+            authenticationMethod: authenticationMethod
         )
         let challenge = URLAuthenticationChallenge(
             protectionSpace: protectionSpace,
@@ -787,9 +793,34 @@ final class FormbricksSDKTests: XCTestCase {
         wait(for: [handlerCalled], timeout: 1.0)
 
         XCTAssertEqual(capturedDisposition, .performDefaultHandling,
-                       "WebView must let the OS validate the certificate chain, not override it.")
+                       "WebView must let the OS validate the challenge (\(authenticationMethod)), not override it.",
+                       file: file, line: line)
         XCTAssertNil(capturedCredential,
-                     "WebView must not supply a credential that force-trusts the server certificate (MITM risk).")
+                     "WebView must not supply a credential for \(authenticationMethod) (MITM / force-trust risk).",
+                     file: file, line: line)
+    }
+
+    /// Security regression guard (ENG-1812): the allowlist must be enforced on *direct*
+    /// WebView navigation (a `<a href>`, `window.location`, meta-refresh or form POST from
+    /// survey markup), not only the JS bridge. Only the in-memory survey document loads
+    /// in-frame; every other navigation is cancelled and routed through the http/https
+    /// allowlist, so `tel:`/`sms:`/custom schemes can't reach WKWebView's native handling.
+    func testWebViewNavigationPolicyOnlyLoadsInMemoryDocumentInFrame() {
+        // The survey's own in-memory document (about:blank, i.e. nil base URL) loads in-frame.
+        XCTAssertTrue(JsMessageHandler.shouldAllowInWebViewNavigation(to: URL(string: "about:blank")))
+        XCTAssertTrue(JsMessageHandler.shouldAllowInWebViewNavigation(to: nil))
+
+        // Nothing else navigates in-frame — including web links (they open externally instead).
+        for external in ["https://formbricks.com", "http://example.com/x",
+                         "tel:+123456789", "sms:+1", "mailto:a@b.com", "facetime:a@b.com",
+                         "itms-apps://apple.com", "myapp://do-something"] {
+            XCTAssertFalse(JsMessageHandler.shouldAllowInWebViewNavigation(to: URL(string: external)!),
+                           "\(external) must not load in the survey frame")
+        }
+
+        // Of the cancelled navigations, only http/https are actually opened; the rest are blocked.
+        XCTAssertTrue(JsMessageHandler.isAllowedExternalURL(URL(string: "https://formbricks.com")!))
+        XCTAssertFalse(JsMessageHandler.isAllowedExternalURL(URL(string: "tel:+123456789")!))
     }
 
     /// Security regression guard (ENG-1812): external URLs coming from survey
@@ -839,11 +870,9 @@ final class FormbricksSDKTests: XCTestCase {
                        "Payload must not be spliced into a JS template literal (script-injection risk).")
 
         // The payload must be delivered via atob("...") and the blob must be pure base64.
-        guard let start = html.range(of: "atob(\"")?.upperBound,
-              let end = html[start...].firstIndex(of: "\"") else {
+        guard let blob = webviewDataBase64(from: html) else {
             XCTFail("Base64 payload marker not found"); return
         }
-        let blob = String(html[start..<end])
         XCTAssertFalse(blob.isEmpty, "Payload blob should not be empty")
         let base64Charset = CharacterSet(charactersIn: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=")
         XCTAssertTrue(blob.unicodeScalars.allSatisfy { base64Charset.contains($0) },
@@ -852,6 +881,55 @@ final class FormbricksSDKTests: XCTestCase {
         XCTAssertNotNil(Data(base64Encoded: blob).flatMap { try? JSONSerialization.jsonObject(with: $0) },
                         "Base64 payload must decode to valid JSON.")
     }
+
+    /// Regression guard (ENG-1813): removing the old `\"`->`'` mangling must not corrupt
+    /// survey content. The mock survey embeds HTML with double-quoted attributes
+    /// (`<p class="fb-editor-paragraph">`); after the base64 round-trip those double quotes
+    /// (and the angle brackets) must survive verbatim — not be rewritten to single quotes.
+    func testWebViewPayloadPreservesQuotesAndAngleBrackets() throws {
+        // Configure appUrl/workspaceId (the survey-script URL, and thus htmlString, need it).
+        Formbricks.setup(with: FormbricksConfig.Builder(appUrl: appUrl, workspaceId: workspaceId)
+            .service(mockService)
+            .build())
+
+        // Build the workspace straight from the fixture with `responseString` populated —
+        // getSurveyJson reads the raw survey JSON from it (the production APIClient path sets
+        // this; the mock service does not), so the survey's HTML question lands in the payload.
+        guard let fixtureUrl = Bundle.module.url(forResource: "Environment", withExtension: "json"),
+              let fixtureData = try? Data(contentsOf: fixtureUrl),
+              let raw = String(data: fixtureData, encoding: .utf8) else {
+            XCTFail("Missing Environment.json fixture"); return
+        }
+        var workspace = try JSONDecoder.iso8601Full.decode(WorkspaceResponse.self, from: fixtureData)
+        workspace.responseString = raw
+
+        guard let html = FormbricksViewModel(workspaceResponse: workspace, surveyId: surveyID).htmlString,
+              let blob = webviewDataBase64(from: html),
+              let data = Data(base64Encoded: blob),
+              let decoded = String(data: data, encoding: .utf8) else {
+            XCTFail("Could not decode WEBVIEW_DATA"); return
+        }
+
+        // Sanity: the survey's HTML question content actually made it into the payload.
+        XCTAssertTrue(decoded.contains("fb-editor-paragraph"),
+                      "survey HTML content should be present in the payload")
+
+        // Double quotes survive as JSON-escaped quotes (\"), i.e. the \"->' workaround is gone.
+        XCTAssertTrue(decoded.contains(#"class=\"fb-editor-paragraph\""#),
+                      "Double quotes in survey content must survive the round-trip (\\\"->' mangling must not return).")
+        XCTAssertFalse(decoded.contains("class='fb-editor-paragraph'"),
+                       "Survey content quotes must not be mangled into single quotes.")
+        // Angle brackets are delivered intact by base64 (they'd be a script-injection risk if raw).
+        XCTAssertTrue(decoded.contains("<p "),
+                      "Angle brackets in survey content must survive the base64 round-trip.")
+    }
+}
+
+/// Extracts the base64 survey payload embedded as `atob("...")` in the WebView HTML.
+private func webviewDataBase64(from html: String) -> String? {
+    guard let start = html.range(of: "atob(\"")?.upperBound,
+          let end = html[start...].firstIndex(of: "\"") else { return nil }
+    return String(html[start..<end])
 }
 
 /// Minimal sender so a `URLAuthenticationChallenge` can be constructed in tests.

@@ -102,6 +102,25 @@ extension SurveyWebView {
             // survey WebView traffic to man-in-the-middle interception.
             completionHandler(.performDefaultHandling, nil)
         }
+
+        func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+            let url = navigationAction.request.url
+            // The survey is an in-memory document (loaded via loadHTMLString) rendered by the
+            // JS library; it never legitimately navigates its own frame. Allow that base
+            // document, and treat any other navigation — a link tap, window.location, meta
+            // refresh or form submit from survey markup — as an attempt to leave the survey.
+            // Route those through the same http/https allowlist as the JS bridge so a
+            // `<a href="tel:...">` (etc.) can't reach WKWebView's native scheme handling and
+            // trigger unexpected native actions.
+            if JsMessageHandler.shouldAllowInWebViewNavigation(to: url) {
+                decisionHandler(.allow)
+            } else {
+                decisionHandler(.cancel)
+                if let url {
+                    JsMessageHandler.openExternalURL(url)
+                }
+            }
+        }
     }
 }
 
@@ -121,6 +140,25 @@ final class JsMessageHandler: NSObject, WKScriptMessageHandler {
     static func isAllowedExternalURL(_ url: URL) -> Bool {
         guard let scheme = url.scheme?.lowercased() else { return false }
         return scheme == "http" || scheme == "https"
+    }
+
+    /// Whether a WebView navigation to `url` may proceed in-place. Only the in-memory
+    /// survey document (`about:blank`, i.e. loaded with a nil base URL) loads in-frame;
+    /// every other navigation is handled as an external link (see `openExternalURL`).
+    static func shouldAllowInWebViewNavigation(to url: URL?) -> Bool {
+        guard let scheme = url?.scheme?.lowercased() else { return true }
+        return scheme == "about"
+    }
+
+    /// Opens an external URL through the http/https allowlist, or blocks and logs it.
+    /// Shared by the JS bridge (`onOpenExternalURL`) and the navigation delegate so the
+    /// scheme allowlist is enforced on both paths.
+    static func openExternalURL(_ url: URL) {
+        guard isAllowedExternalURL(url) else {
+            Formbricks.logger?.warning("Blocked external URL with disallowed scheme: \(url.scheme ?? "nil")")
+            return
+        }
+        UIApplication.shared.open(url)
     }
 
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
@@ -145,11 +183,7 @@ final class JsMessageHandler: NSObject, WKScriptMessageHandler {
             case .onOpenExternalURL:
                 if let message = try? JSONDecoder().decode(OpenExternalUrlMessage.self, from: data),
                    let url = URL(string: message.onOpenExternalURLParams.url) {
-                    if JsMessageHandler.isAllowedExternalURL(url) {
-                        UIApplication.shared.open(url)
-                    } else {
-                        Formbricks.logger?.warning("Blocked external URL with disallowed scheme: \(url.scheme ?? "nil")")
-                    }
+                    JsMessageHandler.openExternalURL(url)
                 }
                 
             /// Happens when the survey library fails to load.
