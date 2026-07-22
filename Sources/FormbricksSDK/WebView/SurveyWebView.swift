@@ -103,7 +103,7 @@ extension SurveyWebView {
             completionHandler(.performDefaultHandling, nil)
         }
 
-        func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+        func webView(_: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
             let url = navigationAction.request.url
             // The survey is an in-memory document (loaded via loadHTMLString) rendered by the
             // JS library; it never legitimately navigates its own frame. Allow that base
