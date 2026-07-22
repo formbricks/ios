@@ -10,7 +10,12 @@ final class FormbricksViewModel: ObservableObject {
         self.surveyId = surveyId
         if let webviewDataJson = WebViewData(workspaceResponse: workspaceResponse, surveyId: surveyId).getJsonString(),
            let surveyScriptUrl = FormbricksWorkspace.surveyScriptUrlString {
-            htmlString = htmlTemplate.replacingOccurrences(of: "{{WEBVIEW_DATA}}", with: webviewDataJson)
+            // Base64-encode the payload before injecting it into the HTML. Base64 output is
+            // limited to [A-Za-z0-9+/=], so survey content can no longer contain characters
+            // (backticks, `${...}`, quotes) that would break out of the surrounding JS string
+            // literal and execute as code. The WebView decodes it back to JSON at runtime.
+            let webviewDataBase64 = Data(webviewDataJson.utf8).base64EncodedString()
+            htmlString = htmlTemplate.replacingOccurrences(of: "{{WEBVIEW_DATA}}", with: webviewDataBase64)
                 .replacingOccurrences(of: "{{SURVEY_SCRIPT_URL}}", with: surveyScriptUrl)
         }
     }
@@ -33,7 +38,9 @@ private extension FormbricksViewModel {
             </body>
 
             <script type="text/javascript">
-                const json = `{{WEBVIEW_DATA}}`
+                // {{WEBVIEW_DATA}} is a base64-encoded JSON string (see FormbricksViewModel).
+                // Decode it as UTF-8 and parse it as JSON; it is never interpreted as code.
+                const json = new TextDecoder().decode(Uint8Array.from(atob("{{WEBVIEW_DATA}}"), c => c.charCodeAt(0)));
                 let surveyProps = '';
 
                 function onClose() {
@@ -130,7 +137,10 @@ private class WebViewData {
     func getJsonString() -> String? {
         do {
             let jsonData = try JSONSerialization.data(withJSONObject: data, options: [])
-            return String(data: jsonData, encoding: .utf8)?.replacingOccurrences(of: "\\\"", with: "'")
+            // Return valid JSON as-is. It is base64-encoded before being embedded in the
+            // WebView HTML, so there is no need to mangle embedded quotes here (doing so
+            // previously corrupted survey text that legitimately contained double quotes).
+            return String(data: jsonData, encoding: .utf8)
         } catch {
             Formbricks.logger?.error(error.message)
             return nil
