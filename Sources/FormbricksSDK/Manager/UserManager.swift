@@ -144,13 +144,20 @@ final class UserManager: UserManagerSyncable {
                 }
                 
                 self?.updateQueue?.reset()
+                // `reset()` clears the in-flight lock, but only this drains a refresh that
+                // arrived while the request was out — that interaction happened after this
+                // response was computed, so it still needs its own sync.
+                self?.updateQueue?.syncDidFinish()
                 self?.surveyManager?.filterSurveys()
                 self?.startSyncTimer()
             case .failure(let error):
-                // Release the in-flight lock so a later refresh nudge isn't swallowed.
-                // `reset()` already does this on the success path.
+                // Release the in-flight lock so a later refresh nudge isn't swallowed, and
+                // replay one that arrived mid-sync. `reset()` clears the lock on the success
+                // path, but only this call drains a queued refresh.
                 self?.updateQueue?.syncDidFinish()
                 Formbricks.logger?.error(error)
+                // Re-arm, otherwise the refresh cycle ends here for the whole process.
+                self?.scheduleSyncRetry()
             }
         }
     }
@@ -203,32 +210,56 @@ private extension UserManager {
     /// `Formbricks.setup()`. Build the timer unscheduled and add it to the main run loop
     /// instead, the same way `UpdateQueue` hops to main for its debounce timer.
     func startSyncTimer() {
-        syncTimer?.invalidate()
-        syncTimer = nil
-
         guard let expiresAt = expiresAt, let id = userId else { return }
 
         // A device clock running ahead of the server makes every `expiresAt` we receive
         // already in the past, which would otherwise sync in a tight loop.
         let interval = max(expiresAt.timeIntervalSinceNow, Config.User.minimumSyncIntervalInSeconds)
+        scheduleSync(after: interval, for: id)
+    }
 
-        let timer = Timer(timeInterval: interval, repeats: false) { [weak self] _ in
-            // The user may have been logged out or swapped while this was pending.
-            guard let self = self, self.userId == id else { return }
-            self.syncUser(withId: id)
-        }
-        syncTimer = timer
-
-        // `.common` so an expiry that lands mid-scroll isn't postponed until the gesture ends.
-        onMain { RunLoop.main.add(timer, forMode: .common) }
+    /// Re-arms the sync after a failed request.
+    ///
+    /// Without this, one transient network failure ends the refresh cycle for the rest of the
+    /// process: the timer that fired is spent, and `startSyncTimer()` is otherwise only reached
+    /// from a successful sync. `expiresAt` still holds the value from the last success, so it is
+    /// not a usable cadence here — back off by the same interval the workspace-state path uses
+    /// for its errors instead of retrying at the minimum sync interval.
+    func scheduleSyncRetry() {
+        guard let id = userId else { return }
+        scheduleSync(after: Double(Config.User.retryAfterFailureInMinutes) * 60.0, for: id)
     }
 
     /// Cancels a pending user-state sync. Safe to call from any thread.
     func stopSyncTimer() {
-        let timer = syncTimer
-        syncTimer = nil
-        guard let timer = timer else { return }
-        onMain { timer.invalidate() }
+        onMain { [weak self] in
+            self?.syncTimer?.invalidate()
+            self?.syncTimer = nil
+        }
+    }
+
+    /// Replaces any pending sync with one scheduled `interval` from now.
+    ///
+    /// Every read and write of `syncTimer` happens inside `onMain`. `startSyncTimer()` is called
+    /// from `syncUser`'s completion on URLSession's background delegate queue while
+    /// `stopSyncTimer()` can run from the main thread, so leaving the property unsynchronised
+    /// let the two writes race — and a lost `nil` write strands a live timer that nothing can
+    /// cancel afterwards.
+    func scheduleSync(after interval: TimeInterval, for id: String) {
+        onMain { [weak self] in
+            guard let self = self else { return }
+            self.syncTimer?.invalidate()
+
+            let timer = Timer(timeInterval: interval, repeats: false) { [weak self] _ in
+                // The user may have been logged out or swapped while this was pending.
+                guard let self = self, self.userId == id else { return }
+                self.syncUser(withId: id)
+            }
+            self.syncTimer = timer
+
+            // `.common` so an expiry that lands mid-scroll isn't postponed until the gesture ends.
+            RunLoop.main.add(timer, forMode: .common)
+        }
     }
 
     /// Runs `work` on the main thread, immediately if we are already there. `Timer` and

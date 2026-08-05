@@ -20,6 +20,10 @@ final class UpdateQueue {
     /// concurrent `POST /user` calls would race and whichever response landed last would
     /// overwrite `segments` / `displays` / `responses` wholesale.
     private var isSyncInFlight = false
+    /// A refresh that arrived while a sync was already airborne, replayed once that sync
+    /// finishes. The in-flight request was built *before* this interaction, so its response
+    /// cannot reflect it — dropping the nudge would leave segments stale until the next trigger.
+    private var pendingRefreshUserId: String?
 
     private weak var userManager: UserManagerSyncable?
 
@@ -74,13 +78,17 @@ final class UpdateQueue {
     }
     
     /// Asks for the user state to be re-read from the server. Carries no new data — it exists
-    /// so an interaction that can change segment membership doesn't have to wait for the
-    /// state to expire. Dropped while a sync is already in flight, because that sync's
-    /// response already brings fresh segments.
+    /// so an interaction that can change segment membership doesn't have to wait for the state
+    /// to expire.
+    ///
+    /// While a sync is airborne the nudge is deferred rather than sent, because two concurrent
+    /// `POST /user` calls would race and the later response would overwrite `segments` /
+    /// `displays` / `responses` wholesale. It is replayed by `syncDidFinish()`.
     func requestUserStateRefresh(userId: String) {
         syncQueue.sync {
             guard !isSyncInFlight else {
-                Formbricks.logger?.debug("UpdateQueue - refresh skipped, a sync is already in flight")
+                Formbricks.logger?.debug("UpdateQueue - refresh deferred, a sync is already in flight")
+                pendingRefreshUserId = userId
                 return
             }
             self.userId = userId
@@ -88,11 +96,20 @@ final class UpdateQueue {
         }
     }
 
-    /// Called by the user manager once a sync finishes, so the next nudge can start a request.
+    /// Called by the user manager once a sync finishes. Releases the in-flight lock and replays
+    /// a refresh that arrived while the request was out.
     func syncDidFinish() {
+        var deferredUserId: String?
         syncQueue.sync {
             isSyncInFlight = false
+            deferredUserId = pendingRefreshUserId
+            pendingRefreshUserId = nil
         }
+
+        guard let deferredUserId = deferredUserId else { return }
+        Formbricks.logger?.debug("UpdateQueue - replaying a refresh that arrived mid-sync")
+        // Outside the block above: `requestUserStateRefresh` takes the same queue.
+        requestUserStateRefresh(userId: deferredUserId)
     }
 
     func reset() {
@@ -167,6 +184,8 @@ extension UpdateQueue {
             attributes = nil
             language = nil
             isSyncInFlight = false
+            // Teardown, unlike `reset()`: drop the deferred refresh instead of replaying it.
+            pendingRefreshUserId = nil
         }
     }
 }

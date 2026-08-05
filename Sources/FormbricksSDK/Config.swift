@@ -12,5 +12,10 @@ struct Config {
         /// in the device's past and an unclamped timer would sync in a tight loop.
         /// A `var` only so tests can shorten it; the SDK never writes to it.
         static var minimumSyncIntervalInSeconds: TimeInterval = 60
+
+        /// How long to wait before retrying a user-state sync that failed. Deliberately much
+        /// longer than the minimum interval so a sustained outage doesn't turn into a
+        /// fixed-rate request stream. Mirrors `Environment.refreshStateOnErrorTimeoutInMinutes`.
+        static var retryAfterFailureInMinutes = 10
     }
 }

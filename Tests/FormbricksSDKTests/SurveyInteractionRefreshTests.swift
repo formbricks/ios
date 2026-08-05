@@ -18,9 +18,12 @@ private final class FakeScriptMessage: WKScriptMessage {
 /// Counts `postUser` calls so the interaction gate can be asserted end to end.
 private final class CountingMockService: MockFormbricksService {
     var postUserCallCount = 0
+    /// Lets a test wait on the real request instead of guessing how long the debounce takes.
+    var onPostUser: ((Int) -> Void)?
 
     override func postUser(id: String, attributes: [String: AttributeValue]?, completion: @escaping (ResultType<PostUserRequest.Response>) -> Void) {
         postUserCallCount += 1
+        onPostUser?(postUserCallCount)
         super.postUser(id: id, attributes: attributes, completion: completion)
     }
 }
@@ -214,17 +217,19 @@ final class SurveyInteractionRefreshTests: XCTestCase {
         let userManager = UserManager(service: service)
         UserDefaults.standard.set("user-1", forKey: "userIdKey")
 
+        // Driven by the request itself rather than a fixed sleep, so a loaded machine can't
+        // make this flake. Over-fulfilment fails the test, which is the "exactly one" half.
+        let synced = expectation(description: "the gate lets one sync through")
+        synced.assertForOverFulfill = true
+        service.onPostUser = { _ in synced.fulfill() }
+
         userManager.refreshSegmentsAfterInteraction(
             survey: survey(refresh: InteractionRefresh(onDisplay: true)),
             source: .onDisplay
         )
 
-        let exp = expectation(description: "one sync")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-            XCTAssertEqual(service.postUserCallCount, 1)
-            exp.fulfill()
-        }
-        wait(for: [exp], timeout: 2.0)
+        wait(for: [synced], timeout: 5.0)
+        XCTAssertEqual(service.postUserCallCount, 1)
     }
 
     /// A display -> response -> finish burst must cost one request, not three.
@@ -233,46 +238,81 @@ final class SurveyInteractionRefreshTests: XCTestCase {
         let userManager = UserManager(service: service)
         UserDefaults.standard.set("user-1", forKey: "userIdKey")
 
+        let synced = expectation(description: "burst coalesces into one sync")
+        synced.assertForOverFulfill = true
+        service.onPostUser = { _ in synced.fulfill() }
+
         let allOn = survey(refresh: InteractionRefresh(onDisplay: true, onResponse: true, onFinished: true))
         userManager.refreshSegmentsAfterInteraction(survey: allOn, source: .onDisplay)
         userManager.refreshSegmentsAfterInteraction(survey: allOn, source: .onResponse)
         userManager.refreshSegmentsAfterInteraction(survey: allOn, source: .onFinished)
 
-        let exp = expectation(description: "burst coalesces")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
-            XCTAssertEqual(service.postUserCallCount, 1)
-            exp.fulfill()
-        }
-        wait(for: [exp], timeout: 2.0)
+        wait(for: [synced], timeout: 5.0)
+        XCTAssertEqual(service.postUserCallCount, 1)
     }
 
-    // MARK: - UpdateQueue in-flight join
+    // MARK: - UpdateQueue in-flight handling
 
-    func testRefreshIsDroppedWhileSyncIsInFlightAndResumesAfter() {
+    /// A nudge that lands mid-sync must be deferred and then replayed — not dropped. The
+    /// in-flight request was built before that interaction, so its response cannot reflect it.
+    func testRefreshDuringAnInFlightSyncIsDeferredThenReplayed() {
         let mockUserManager = MockUserManager()
         let queue = UpdateQueue(userManager: mockUserManager)
         defer { queue.cleanup() }
 
         queue.requestUserStateRefresh(userId: "user-1")
 
-        let firstCommit = expectation(description: "first commit")
+        let done = expectation(description: "deferred refresh is replayed")
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
             // MockUserManager never reports completion, so the queue is still "in flight".
             XCTAssertEqual(mockUserManager.syncCallCount, 1)
 
             queue.requestUserStateRefresh(userId: "user-1")
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-                XCTAssertEqual(mockUserManager.syncCallCount, 1, "Nudge during an in-flight sync must be dropped")
+                XCTAssertEqual(
+                    mockUserManager.syncCallCount, 1,
+                    "A nudge during an in-flight sync must not start a second request"
+                )
 
+                // Completing the sync must replay the deferred nudge on its own — without any
+                // further interaction.
                 queue.syncDidFinish()
-                queue.requestUserStateRefresh(userId: "user-1")
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-                    XCTAssertEqual(mockUserManager.syncCallCount, 2, "Nudge after completion must sync again")
-                    firstCommit.fulfill()
+                    XCTAssertEqual(
+                        mockUserManager.syncCallCount, 2,
+                        "The deferred refresh must be replayed once the sync finishes"
+                    )
+                    done.fulfill()
                 }
             }
         }
-        wait(for: [firstCommit], timeout: 5.0)
+        wait(for: [done], timeout: 5.0)
+    }
+
+    /// Only one deferred refresh is kept, so a long sync with many interactions behind it
+    /// still costs a single follow-up request.
+    func testMultipleDeferredRefreshesCollapseIntoOneReplay() {
+        let mockUserManager = MockUserManager()
+        let queue = UpdateQueue(userManager: mockUserManager)
+        defer { queue.cleanup() }
+
+        queue.requestUserStateRefresh(userId: "user-1")
+
+        let done = expectation(description: "one replay")
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+            XCTAssertEqual(mockUserManager.syncCallCount, 1)
+
+            queue.requestUserStateRefresh(userId: "user-1")
+            queue.requestUserStateRefresh(userId: "user-1")
+            queue.requestUserStateRefresh(userId: "user-1")
+
+            queue.syncDidFinish()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                XCTAssertEqual(mockUserManager.syncCallCount, 2)
+                done.fulfill()
+            }
+        }
+        wait(for: [done], timeout: 5.0)
     }
 
     /// A commit with no user id must not leave the in-flight flag stuck, or every later
@@ -446,6 +486,35 @@ final class SurveyInteractionRefreshTests: XCTestCase {
 
         wait(for: [exp], timeout: 5.0)
         XCTAssertGreaterThanOrEqual(service.postUserCallCount, 2)
+    }
+
+    /// A failed sync must still leave a timer armed. Otherwise one transient network error ends
+    /// the refresh cycle for the rest of the process — the timer that fired is spent, and
+    /// `startSyncTimer()` is only reached from a successful sync.
+    func testFailedSyncReArmsTheTimer() {
+        let service = MockFormbricksService()
+        service.isErrorResponseNeeded = true
+        let userManager = UserManager(service: service)
+        UserDefaults.standard.set("user-1", forKey: "userIdKey")
+
+        userManager.syncUser(withId: "user-1")
+
+        let exp = expectation(description: "a retry is armed after the failure")
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            XCTAssertNotNil(userManager.syncTimer, "A failed sync must leave a retry scheduled")
+            XCTAssertEqual(userManager.syncTimer?.isValid, true)
+            exp.fulfill()
+        }
+        wait(for: [exp], timeout: 3.0)
+    }
+
+    /// The retry backs off rather than hammering at the minimum sync interval, so a sustained
+    /// outage doesn't turn into a fixed-rate request stream.
+    func testFailureRetryBacksOffFurtherThanTheMinimumInterval() {
+        XCTAssertGreaterThan(
+            Double(Config.User.retryAfterFailureInMinutes) * 60.0,
+            Config.User.minimumSyncIntervalInSeconds
+        )
     }
 
     /// A device clock ahead of the server makes every `expiresAt` land in the past. Without
