@@ -55,6 +55,13 @@ private extension FormbricksViewModel {
                     window.webkit.messageHandlers.jsMessage.postMessage(JSON.stringify({ event: "onResponseCreated" }));
                 };
 
+                // Fires once the finished response has been accepted by the backend — the
+                // surveys library gates this on `isResponseSendingFinished`, and we supply
+                // `getSetIsResponseSendingFinished` below, so it starts out false.
+                function onFinished() {
+                    window.webkit.messageHandlers.jsMessage.postMessage(JSON.stringify({ event: "onFinished" }));
+                };
+
                 function onOpenExternalURL(url) {
                     window.webkit.messageHandlers.jsMessage.postMessage(JSON.stringify({ event: "onOpenExternalURL", onOpenExternalURLParams: { url: url } }));
                 };
@@ -71,6 +78,7 @@ private extension FormbricksViewModel {
                         getSetIsResponseSendingFinished,
                         onDisplayCreated,
                         onResponseCreated,
+                        onFinished,
                         onClose,
                         onOpenExternalURL,
                     };

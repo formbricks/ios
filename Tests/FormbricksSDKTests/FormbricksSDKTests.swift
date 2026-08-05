@@ -258,7 +258,8 @@ final class FormbricksSDKTests: XCTestCase {
                 SurveyLanguage(enabled: true, isDefault: false, language: LanguageDetail(id: "2", code: "de", alias: "german", projectId: "p1")),
                 SurveyLanguage(enabled: false, isDefault: false, language: LanguageDetail(id: "3", code: "fr", alias: nil, projectId: "p1"))
             ],
-            projectOverwrites: nil
+            projectOverwrites: nil,
+            interactionRefresh: nil
         )
         // No language provided
         XCTAssertEqual(manager.getLanguageCode(survey: survey, language: nil), "default")

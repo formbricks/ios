@@ -130,6 +130,13 @@ final class JsMessageHandler: NSObject, WKScriptMessageHandler {
     
     let surveyId: String
 
+    /// Interaction sources already refreshed during this presentation. One handler is created
+    /// per WebView, so this is scoped to a single survey showing. The surveys library guards
+    /// `onResponseCreated` itself, but `onFinished` is not guarded there, and a self-hosted
+    /// server may serve an older bundle — so gate the refresh on our side too. Only the
+    /// refresh is gated; the existing displays/responses bookkeeping keeps its behaviour.
+    private var refreshedSources: Set<InteractionSource> = []
+
     init(surveyId: String) {
         self.surveyId = surveyId
     }
@@ -170,11 +177,19 @@ final class JsMessageHandler: NSObject, WKScriptMessageHandler {
                 /// Happens when the user submits an answer.
             case .onResponseCreated:
                 Formbricks.surveyManager?.postResponse(surveyId: surveyId)
+                refreshSegmentsOnce(for: .onResponse)
 
                 /// Happens when a survey is shown.
             case .onDisplayCreated:
                 Formbricks.surveyManager?.onNewDisplay(surveyId: surveyId)
-            
+                refreshSegmentsOnce(for: .onDisplay)
+
+            /// Happens when the survey is completed and the finished response has been
+            /// accepted by the backend. Only used to refresh interaction-based segments —
+            /// the survey window is still closed by `onClose`.
+            case .onFinished:
+                refreshSegmentsOnce(for: .onFinished)
+
             /// Happens when the user closes the survey view with the close button.
             case .onClose:
                 Formbricks.surveyManager?.dismissSurveyWebView()
@@ -195,6 +210,15 @@ final class JsMessageHandler: NSObject, WKScriptMessageHandler {
             let error = FormbricksSDKError(type: .invalidJavascriptMessage)
             Formbricks.logger?.error("\(error.message): \(message.body)")
         }
+    }
+
+    /// Forwards an interaction to the survey manager at most once per source per showing.
+    /// `WKScriptMessageHandler` callbacks arrive on the main thread, so the unsynchronised
+    /// set is safe here.
+    private func refreshSegmentsOnce(for source: InteractionSource) {
+        guard !refreshedSources.contains(source) else { return }
+        refreshedSources.insert(source)
+        Formbricks.surveyManager?.onSurveyInteraction(surveyId: surveyId, source: source)
     }
 }
 

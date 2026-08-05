@@ -15,7 +15,12 @@ final class UpdateQueue {
     private var attributes: [String : AttributeValue]?
     private var language: String?
     private var timer: Timer?
-    
+    /// True while a commit-triggered sync is airborne. A repeat nudge joins that request
+    /// instead of starting a second one: `APIClient` does not serialise requests, so two
+    /// concurrent `POST /user` calls would race and whichever response landed last would
+    /// overwrite `segments` / `displays` / `responses` wholesale.
+    private var isSyncInFlight = false
+
     private weak var userManager: UserManagerSyncable?
 
     init(userManager: UserManagerSyncable) {
@@ -68,11 +73,34 @@ final class UpdateQueue {
         }
     }
     
+    /// Asks for the user state to be re-read from the server. Carries no new data — it exists
+    /// so an interaction that can change segment membership doesn't have to wait for the
+    /// state to expire. Dropped while a sync is already in flight, because that sync's
+    /// response already brings fresh segments.
+    func requestUserStateRefresh(userId: String) {
+        syncQueue.sync {
+            guard !isSyncInFlight else {
+                Formbricks.logger?.debug("UpdateQueue - refresh skipped, a sync is already in flight")
+                return
+            }
+            self.userId = userId
+            startDebounceTimer()
+        }
+    }
+
+    /// Called by the user manager once a sync finishes, so the next nudge can start a request.
+    func syncDidFinish() {
+        syncQueue.sync {
+            isSyncInFlight = false
+        }
+    }
+
     func reset() {
         syncQueue.sync {
             userId = nil
             attributes = nil
             language = nil
+            isSyncInFlight = false
         }
     }
     
@@ -103,16 +131,29 @@ private extension UpdateQueue {
         syncQueue.sync {
             effectiveUserId = self.userId ?? Formbricks.userManager?.userId
             effectiveAttributes = self.attributes
+            // Only mark a sync in flight when one is actually about to be sent. The guard
+            // below decides that, so mirror its condition here — otherwise an anonymous
+            // commit would leave the flag stuck and swallow every later refresh nudge.
+            if effectiveUserId != nil {
+                isSyncInFlight = true
+            }
         }
-        
+
         guard let userId = effectiveUserId else {
             let error = FormbricksSDKError(type: .userIdIsNotSetYet)
             Formbricks.logger?.error(error.message)
             return
         }
         
+        // Nothing will call `syncDidFinish()` if there is no user manager left to run the
+        // request, so clear the flag here rather than leaving it stuck.
+        guard let userManager = userManager else {
+            syncQueue.sync { isSyncInFlight = false }
+            return
+        }
+
         Formbricks.logger?.debug("UpdateQueue - commit() called on UpdateQueue with \(userId) and \(effectiveAttributes ?? [:])")
-        userManager?.syncUser(withId: userId, attributes: effectiveAttributes)
+        userManager.syncUser(withId: userId, attributes: effectiveAttributes)
     }
 }
 
@@ -125,6 +166,7 @@ extension UpdateQueue {
             userId = nil
             attributes = nil
             language = nil
+            isSyncInFlight = false
         }
     }
 }
