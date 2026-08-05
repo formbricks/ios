@@ -372,6 +372,11 @@
             },
             "showResponseCount": false,
             "timeToFinish": false
+          },
+          "interactionRefresh": {
+            "onDisplay": true,
+            "onResponse": true,
+            "onFinished": true
           }
         }
       ]

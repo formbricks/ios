@@ -65,4 +65,7 @@ struct Survey: Codable {
     let styling: Styling?
     let languages: [SurveyLanguage]?
     let projectOverwrites: ProjectOverwrites?
+    /// Whether interacting with this survey can change some live survey's segment
+    /// membership. Absent unless the workspace uses survey-interaction targeting.
+    let interactionRefresh: InteractionRefresh?
 }

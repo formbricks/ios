@@ -69,6 +69,28 @@ final class UserManager: UserManagerSyncable {
         responses = newResponses
         surveyManager?.filterSurveys()
     }
+
+    /// Pulls fresh server-computed `segments` after an interaction that can flip segment
+    /// membership, instead of waiting for the state to expire.
+    ///
+    /// A `surveyInteraction` segment filter ("have seen X", "have completed X", ...) can change
+    /// who a contact is the moment they interact with a survey. The local bookkeeping in
+    /// `onDisplay` / `onResponse` keeps display caps and recontact days correct on device, but
+    /// segment membership is only ever computed by the server, so it has to be refetched.
+    ///
+    /// The refresh is deliberately gated twice, because a `/user` sync is not cheap:
+    ///  - no-op for anonymous users, who never receive segments in the first place;
+    ///  - no-op unless the server set the bit for this survey and this event.
+    ///
+    /// It is routed through the `UpdateQueue` rather than calling `syncUser` directly, so a
+    /// display -> response -> finish burst is debounced into a single request.
+    func refreshSegmentsAfterInteraction(survey: Survey, source: InteractionSource) {
+        guard let userId = userId else { return }
+        guard survey.interactionRefresh?.shouldRefresh(on: source) == true else { return }
+
+        Formbricks.logger?.debug("Refreshing segments after \(source.rawValue) on survey \(survey.id)")
+        updateQueue?.requestUserStateRefresh(userId: userId)
+    }
     
     /// Syncs the user state with the server if the user id is set and the expiration date has passed.
     func syncUserStateIfNeeded() {
@@ -80,6 +102,11 @@ final class UserManager: UserManagerSyncable {
             backingSegments = nil
             backingDisplays = nil
             backingResponses = nil
+
+            // The state is still valid, but nothing has been scheduled to refresh it when it
+            // does expire — `startSyncTimer()` is otherwise only reached from a successful sync,
+            // so a launch that finds a warm cache would never refresh segments again.
+            startSyncTimer()
             return
         }
 
@@ -117,10 +144,20 @@ final class UserManager: UserManagerSyncable {
                 }
                 
                 self?.updateQueue?.reset()
+                // `reset()` clears the in-flight lock, but only this drains a refresh that
+                // arrived while the request was out — that interaction happened after this
+                // response was computed, so it still needs its own sync.
+                self?.updateQueue?.syncDidFinish()
                 self?.surveyManager?.filterSurveys()
                 self?.startSyncTimer()
             case .failure(let error):
+                // Release the in-flight lock so a later refresh nudge isn't swallowed, and
+                // replay one that arrived mid-sync. `reset()` clears the lock on the success
+                // path, but only this call drains a queued refresh.
+                self?.updateQueue?.syncDidFinish()
                 Formbricks.logger?.error(error)
+                // Re-arm, otherwise the refresh cycle ends here for the whole process.
+                self?.scheduleSyncRetry()
             }
         }
     }
@@ -145,10 +182,9 @@ final class UserManager: UserManagerSyncable {
         backingExpiresAt = nil
         Formbricks.language = "default"
         
-        syncTimer?.invalidate()
-        syncTimer = nil
+        stopSyncTimer()
         updateQueue?.cleanup()
-        
+
         // Re-filter surveys for logged out user
         surveyManager?.filterSurveys()
     }
@@ -165,14 +201,77 @@ final class UserManager: UserManagerSyncable {
 
 // MARK: - Timer -
 private extension UserManager {
+    /// Schedules the next user-state sync for when the cached state expires.
+    ///
+    /// This runs inside `syncUser`'s completion, which `APIClient` delivers on URLSession's
+    /// background delegate queue — a pooled thread with no run loop. `Timer.scheduledTimer`
+    /// installs on `RunLoop.current`, so scheduling it there produced a timer that could never
+    /// fire, and the user state was in practice only ever refreshed by the lazy check inside
+    /// `Formbricks.setup()`. Build the timer unscheduled and add it to the main run loop
+    /// instead, the same way `UpdateQueue` hops to main for its debounce timer.
     func startSyncTimer() {
         guard let expiresAt = expiresAt, let id = userId else { return }
-        syncTimer?.invalidate()
-        syncTimer = Timer.scheduledTimer(withTimeInterval: expiresAt.timeIntervalSinceNow, repeats: false) { [weak self] _ in
-            self?.syncUser(withId: id)
+
+        // A device clock running ahead of the server makes every `expiresAt` we receive
+        // already in the past, which would otherwise sync in a tight loop.
+        let interval = max(expiresAt.timeIntervalSinceNow, Config.User.minimumSyncIntervalInSeconds)
+        scheduleSync(after: interval, for: id)
+    }
+
+    /// Re-arms the sync after a failed request.
+    ///
+    /// Without this, one transient network failure ends the refresh cycle for the rest of the
+    /// process: the timer that fired is spent, and `startSyncTimer()` is otherwise only reached
+    /// from a successful sync. `expiresAt` still holds the value from the last success, so it is
+    /// not a usable cadence here — back off by the same interval the workspace-state path uses
+    /// for its errors instead of retrying at the minimum sync interval.
+    func scheduleSyncRetry() {
+        guard let id = userId else { return }
+        scheduleSync(after: Double(Config.User.retryAfterFailureInMinutes) * 60.0, for: id)
+    }
+
+    /// Cancels a pending user-state sync. Safe to call from any thread.
+    func stopSyncTimer() {
+        onMain { [weak self] in
+            self?.syncTimer?.invalidate()
+            self?.syncTimer = nil
         }
     }
 
+    /// Replaces any pending sync with one scheduled `interval` from now.
+    ///
+    /// Every read and write of `syncTimer` happens inside `onMain`. `startSyncTimer()` is called
+    /// from `syncUser`'s completion on URLSession's background delegate queue while
+    /// `stopSyncTimer()` can run from the main thread, so leaving the property unsynchronised
+    /// let the two writes race — and a lost `nil` write strands a live timer that nothing can
+    /// cancel afterwards.
+    func scheduleSync(after interval: TimeInterval, for id: String) {
+        onMain { [weak self] in
+            guard let self = self else { return }
+            self.syncTimer?.invalidate()
+
+            let timer = Timer(timeInterval: interval, repeats: false) { [weak self] _ in
+                // The user may have been logged out or swapped while this was pending.
+                guard let self = self, self.userId == id else { return }
+                self.syncUser(withId: id)
+            }
+            self.syncTimer = timer
+
+            // `.common` so an expiry that lands mid-scroll isn't postponed until the gesture ends.
+            RunLoop.main.add(timer, forMode: .common)
+        }
+    }
+
+    /// Runs `work` on the main thread, immediately if we are already there. `Timer` and
+    /// `RunLoop` are bound to the thread that scheduled them, so all timer bookkeeping has to
+    /// funnel through the main run loop.
+    func onMain(_ work: @escaping () -> Void) {
+        if Thread.isMainThread {
+            work()
+        } else {
+            DispatchQueue.main.async(execute: work)
+        }
+    }
 }
 
 // MARK: - Getters -

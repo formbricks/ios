@@ -182,6 +182,15 @@ extension SurveyManager {
     func onNewDisplay(surveyId: String) {
         userManager.onDisplay(surveyId: surveyId)
     }
+
+    /// Forwards an in-survey interaction so the user manager can pull fresh `segments` when
+    /// the server flagged this survey/source pair as able to change segment membership.
+    func onSurveyInteraction(surveyId: String, source: InteractionSource) {
+        guard let survey = workspaceResponse?.data.data.surveys?.first(where: { $0.id == surveyId }) else {
+            return
+        }
+        userManager.refreshSegmentsAfterInteraction(survey: survey, source: source)
+    }
 }
 
 // MARK: - Present and dismiss survey window -
