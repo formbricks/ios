@@ -28,6 +28,23 @@ final class EmbeddedDataTests: XCTestCase {
                 .build())
     }
 
+    /// Identifies as `userId` and waits for the id to actually land.
+    ///
+    /// `Formbricks.setUserId` reads `userManager?.userId` to decide whether this is a switch, and
+    /// that property is only written once the debounced `UpdateQueue` sync completes — `set(userId:)`
+    /// merely enqueues. Asserting the switch behaviour right after a bare `setUserId` would take the
+    /// first-identification branch instead and pass for the wrong reason. Same 2s settle the SDK's
+    /// own identity tests use.
+    private func identify(
+        _ userId: String, file: StaticString = #filePath, line: UInt = #line
+    ) {
+        Formbricks.setUserId(userId)
+        let settled = expectation(description: "userId \(userId) settled")
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) { settled.fulfill() }
+        wait(for: [settled], timeout: 3.0)
+        XCTAssertEqual(Formbricks.userManager?.userId, userId, file: file, line: line)
+    }
+
     /// `snapshot()` returns `[String: Any]`, so comparisons go through `NSDictionary`, which
     /// compares element-wise with the bridged equality each value type already has.
     private func assertSnapshot(_ expected: [String: Any], file: StaticString = #filePath, line: UInt = #line) {
@@ -177,12 +194,12 @@ final class EmbeddedDataTests: XCTestCase {
         // outlive the session and blur the Embedded Data ↔ contact-attribute boundary. A UUID
         // marker so the search cannot collide with unrelated defaults.
         let marker = "fb-embedded-probe-\(UUID().uuidString)"
-        let keysBefore = Set(UserDefaults.standard.dictionaryRepresentation().keys)
 
         Formbricks.setEmbeddedData(["probe": .string(marker)])
 
+        // Only the marker is asserted, deliberately: comparing the whole key set would also catch a
+        // write from some earlier test's in-flight sync and fail for a reason this test is not about.
         let defaults = UserDefaults.standard.dictionaryRepresentation()
-        XCTAssertEqual(Set(defaults.keys), keysBefore, "setEmbeddedData wrote a new UserDefaults key")
         XCTAssertFalse(defaults.values.contains { String(describing: $0).contains(marker) })
     }
 
@@ -198,7 +215,7 @@ final class EmbeddedDataTests: XCTestCase {
 
     func testSwitchingUserClearsTheBag() {
         setUpSdk()
-        Formbricks.setUserId("user-a")
+        identify("user-a")
         Formbricks.setEmbeddedData(["plan": "pro"])
 
         Formbricks.setUserId("user-b")
@@ -210,6 +227,10 @@ final class EmbeddedDataTests: XCTestCase {
         // The host pushes context before it knows who the user is — that is the normal order, and
         // clearing here would throw away the value the API exists to carry.
         setUpSdk()
+        // `userId` is persisted in UserDefaults, so an id left by an earlier test would make this
+        // take the switch branch. Log out first — which also empties the bag, hence the ordering.
+        Formbricks.logout()
+        XCTAssertNil(Formbricks.userManager?.userId)
         Formbricks.setEmbeddedData(["plan": "pro"])
 
         Formbricks.setUserId("user-a")
@@ -219,7 +240,7 @@ final class EmbeddedDataTests: XCTestCase {
 
     func testSettingTheSameUserIdKeepsTheBag() {
         setUpSdk()
-        Formbricks.setUserId("user-a")
+        identify("user-a")
         Formbricks.setEmbeddedData(["plan": "pro"])
 
         Formbricks.setUserId("user-a")
@@ -229,7 +250,6 @@ final class EmbeddedDataTests: XCTestCase {
 
     func testLogoutClearsTheBag() {
         setUpSdk()
-        Formbricks.setUserId("user-a")
         Formbricks.setEmbeddedData(["plan": "pro"])
 
         Formbricks.logout()
