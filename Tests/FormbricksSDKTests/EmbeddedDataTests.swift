@@ -9,13 +9,25 @@ final class EmbeddedDataTests: XCTestCase {
     override func setUp() {
         super.setUp()
         Formbricks.cleanup()
+        clearPersistedUserId()
         EmbeddedDataManager.shared.removeAll()
     }
 
     override func tearDown() {
+        clearPersistedUserId()
         EmbeddedDataManager.shared.removeAll()
         Formbricks.cleanup()
         super.tearDown()
+    }
+
+    /// Removes a seeded identity on both sides of every test.
+    ///
+    /// `Formbricks.cleanup()` clears it only when a `UserManager` exists to log out, which it does
+    /// not before the first `setup`. Without this, a seeded id would outlive this class — which
+    /// runs first alphabetically — and `FormbricksSDKTests` asserts `userManager?.userId` is nil
+    /// before setup.
+    private func clearPersistedUserId() {
+        UserDefaults.standard.removeObject(forKey: "userIdKey")
     }
 
     /// Initializes the SDK against the mock service, so identity changes can be exercised without
@@ -28,21 +40,21 @@ final class EmbeddedDataTests: XCTestCase {
                 .build())
     }
 
-    /// Identifies as `userId` and waits for the id to actually land.
+    /// Seeds a persisted identity, the way a previous app session would have left one.
     ///
-    /// `Formbricks.setUserId` reads `userManager?.userId` to decide whether this is a switch, and
-    /// that property is only written once the debounced `UpdateQueue` sync completes — `set(userId:)`
-    /// merely enqueues. Asserting the switch behaviour right after a bare `setUserId` would take the
-    /// first-identification branch instead and pass for the wrong reason. Same 2s settle the SDK's
-    /// own identity tests use.
-    private func identify(
-        _ userId: String, file: StaticString = #filePath, line: UInt = #line
-    ) {
-        Formbricks.setUserId(userId)
-        let settled = expectation(description: "userId \(userId) settled")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) { settled.fulfill() }
-        wait(for: [settled], timeout: 3.0)
-        XCTAssertEqual(Formbricks.userManager?.userId, userId, file: file, line: line)
+    /// Not `Formbricks.setUserId`: that only enqueues into the debounced `UpdateQueue`, so
+    /// `userManager?.userId` stays nil until a network sync lands, and a test driving it that way
+    /// would silently take the first-identification branch and pass for the wrong reason. Writing
+    /// the same `UserDefaults` key the getter falls back to is exact, needs no timer or request, and
+    /// models the honest scenario — the app relaunches already identified, then a different user
+    /// signs in.
+    ///
+    /// Must be called **before** `setUpSdk()`: `UserManager` caches `backingUserId` on first read,
+    /// so the value has to be in place when the fresh manager is created. The key is
+    /// `UserManager`'s own private constant, repeated here because that is the storage contract
+    /// this seeds.
+    private func seedPersistedUserId(_ userId: String) {
+        UserDefaults.standard.set(userId, forKey: "userIdKey")
     }
 
     /// `snapshot()` returns `[String: Any]`, so comparisons go through `NSDictionary`, which
@@ -214,8 +226,9 @@ final class EmbeddedDataTests: XCTestCase {
     // MARK: - Identity changes
 
     func testSwitchingUserClearsTheBag() {
+        seedPersistedUserId("user-a")
         setUpSdk()
-        identify("user-a")
+        XCTAssertEqual(Formbricks.userManager?.userId, "user-a")
         Formbricks.setEmbeddedData(["plan": "pro"])
 
         Formbricks.setUserId("user-b")
@@ -239,8 +252,9 @@ final class EmbeddedDataTests: XCTestCase {
     }
 
     func testSettingTheSameUserIdKeepsTheBag() {
+        seedPersistedUserId("user-a")
         setUpSdk()
-        identify("user-a")
+        XCTAssertEqual(Formbricks.userManager?.userId, "user-a")
         Formbricks.setEmbeddedData(["plan": "pro"])
 
         Formbricks.setUserId("user-a")
