@@ -135,6 +135,11 @@ import Network
         if let existing = userManager?.userId, !existing.isEmpty {
             logger?.debug("Different userId is being set, cleaning up previous user state")
             userManager?.logout()
+            // An identity switch: the ambient Embedded Data bag may carry the previous user's
+            // context, which must not ride onto the next user's responses on a shared device.
+            // First-time identification keeps the bag — a host legitimately pushes context before
+            // it knows who the user is.
+            EmbeddedDataManager.shared.removeAll()
         }
         
         userManager?.set(userId: userId)
@@ -280,6 +285,71 @@ import Network
     }
     
     /**
+     Attaches Embedded Data to future responses without tying it to a trigger.
+
+     Merges into an in-memory bag — last write wins per key, and an explicit `nil` removes a key.
+     Values land only on the survey's declared *ingested* fields; anything else is dropped and
+     logged by the survey renderer, never fatal.
+
+     **`nil` removes; there is no "leave this alone" value.** Swift has no `undefined`, so this SDK
+     maps `nil` onto the JS SDK's `{ key: null }` (remove) and has nothing that spells its
+     `{ key: undefined }` (no-op). A host porting the cross-platform idiom of passing every field
+     unconditionally — `["plan": user.plan.map(EmbeddedDataValue.string)]` — therefore *clears*
+     `plan` here whenever the optional is empty, where the same code on web would leave the previous
+     value standing. Build the dictionary from the keys you actually have, or use
+     `clearEmbeddedData(_:)` when you mean to remove one.
+
+     Deliberately callable **before** `setup(with:)`, unlike the methods above: a host that pushes
+     context at launch must not have that value silently dropped because initialization had not
+     finished. The bag is pure memory — nothing here needs the SDK to be running.
+
+     The bag is snapshotted when a survey is displayed and frozen for its lifetime, so a value set
+     while a survey is on screen reaches the *next* response, not that one. It is never persisted:
+     a cold app start begins empty and the host re-pushes.
+
+     Example:
+     ```swift
+     Formbricks.setEmbeddedData([
+         "plan": "pro",
+         "seats": 25,
+         "isTrial": false,
+         "screen": nil,   // removes the key
+     ])
+     ```
+     */
+    public static func setEmbeddedData(_ data: [String: EmbeddedDataValue?]) {
+        EmbeddedDataManager.shared.set(data)
+    }
+
+    /**
+     Removes one Embedded Data key. A key that was never set is a no-op.
+
+     The single-key and clear-everything forms are separate overloads on purpose: a `String` that
+     cannot be `nil` means a host reading the key from its own state cannot accidentally wipe the
+     whole bag.
+
+     Example:
+     ```swift
+     Formbricks.clearEmbeddedData("plan")
+     ```
+     */
+    public static func clearEmbeddedData(_ key: String) {
+        EmbeddedDataManager.shared.remove(key: key)
+    }
+
+    /**
+     Clears the whole Embedded Data bag — logout, or a hard context switch.
+
+     Example:
+     ```swift
+     Formbricks.clearEmbeddedData()
+     ```
+     */
+    public static func clearEmbeddedData() {
+        EmbeddedDataManager.shared.removeAll()
+    }
+
+    /**
      Logs out the current user. This will clear the user attributes and the user id.
      The SDK must be initialized before calling this method.
           
@@ -296,6 +366,9 @@ import Network
         }
 
         userManager?.logout()
+        // Same identity-switch rule as setUserId: logout must not let the previous user's ambient
+        // context leak onto whoever uses the app next.
+        EmbeddedDataManager.shared.removeAll()
     }
     
     /**
@@ -332,6 +405,10 @@ import Network
     }
 
     private static func performCleanup() {
+        // An explicit full reset of the SDK, so the host-supplied context goes too. This is a
+        // stronger teardown than the JS SDK's internal one, which deliberately preserves the bag
+        // across a setup retry — `cleanup()` is not a retry, it is the host saying "forget it all".
+        EmbeddedDataManager.shared.removeAll()
         userManager?.logout()
         userManager?.cleanupUpdateQueue()
         presentSurveyManager?.dismissView()

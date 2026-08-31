@@ -117,6 +117,12 @@ private class WebViewData {
         data["environmentId"] = Formbricks.workspaceId
         data["contactId"] = Formbricks.userManager?.contactId
         data["isWebEnvironment"] = false
+        // The Embedded Data bag, snapshotted here — this initializer runs when the survey is
+        // actually presented, after any configured delay — and frozen for the survey's life. Passed
+        // raw and unfiltered: the ingest contract (allow-list, coercion, `locked`, size caps) lives
+        // in the renderer, so all four mobile SDKs inherit the same rules without each shipping a
+        // copy, and the server re-runs all of it on ingest.
+        data["hiddenFieldsRecord"] = EmbeddedDataManager.shared.snapshot()
         data["isBrandingEnabled"] = settings.inAppSurveyBranding ?? true
 
         if let placementEnum = matchedSurvey?.projectOverwrites?.placement {
