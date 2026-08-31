@@ -45,10 +45,14 @@ final class EmbeddedDataManager {
     /// value for this screen. `nil` is the deliberate "remove this" spelling, matching the JS SDK's
     /// `{ key: null }`.
     func set(_ data: [String: EmbeddedDataValue?]) {
+        var setKeys: [String] = []
+        var removedKeys: [String] = []
+        var held: [String] = []
         syncQueue.sync {
             for (key, value) in data {
                 guard let value = value else {
                     self.data.removeValue(forKey: key)
+                    removedKeys.append(key)
                     continue
                 }
                 // Refused rather than stored: `JSONSerialization` throws on a non-finite Double, and
@@ -60,22 +64,56 @@ final class EmbeddedDataManager {
                     continue
                 }
                 self.data[key] = value
+                setKeys.append(key)
             }
+            held = Array(self.data.keys)
         }
+        // Built and logged outside the queue, so a log write never holds it.
+        Formbricks.logger?.debug(
+            EmbeddedDataManager.setTrace(set: setKeys, removed: removedKeys, held: held))
+    }
+
+    /// The success trace, because the bag is otherwise invisible: it lives in memory (nothing in
+    /// `UserDefaults` to inspect) and the API has no getter, so without this line a host wiring up
+    /// `setEmbeddedData` gets no confirmation until a survey happens to display. Logged at `.debug`,
+    /// so it is silent at the default log level.
+    ///
+    /// Keys only, never values: the documented use of this bag includes hashed identity fields.
+    /// Separated from the logging call so that property is directly assertable in a test.
+    ///
+    /// Every list is sorted, unlike the other three SDKs, which preserve insertion order: the bag
+    /// and the caller's argument are both Swift `Dictionary`s, whose iteration order is not
+    /// specified and varies per process. Sorting is the only way this line reads the same twice.
+    static func setTrace(set setKeys: [String], removed removedKeys: [String], held: [String])
+        -> String
+    {
+        let removed =
+            removedKeys.isEmpty ? "" : ", removed [\(removedKeys.sorted().joined(separator: ", "))]"
+        return "setEmbeddedData: set [\(setKeys.sorted().joined(separator: ", "))]\(removed) — the "
+            + "bag now holds [\(held.sorted().joined(separator: ", "))]. Keys land on a response "
+            + "only if the survey declares them as ingested Embedded Data fields."
     }
 
     /// Removes one key. A key that is not set is a no-op.
     func remove(key: String) {
+        var held: [String] = []
         syncQueue.sync {
             _ = data.removeValue(forKey: key)
+            held = Array(data.keys)
         }
+        Formbricks.logger?.debug(
+            "clearEmbeddedData: removed \"\(key)\" — the bag now holds "
+                + "[\(held.sorted().joined(separator: ", "))]")
     }
 
     /// Removes everything — logout, or a hard context switch.
     func removeAll() {
+        var clearedCount = 0
         syncQueue.sync {
+            clearedCount = data.count
             data.removeAll()
         }
+        Formbricks.logger?.debug("clearEmbeddedData: cleared the whole bag (\(clearedCount) keys)")
     }
 
     /// A detached, JSON-safe copy for the display-time snapshot: mutating the bag after a survey has

@@ -271,6 +271,39 @@ final class EmbeddedDataTests: XCTestCase {
         assertSnapshot([:])
     }
 
+    // MARK: - The debug success trace
+
+    func testTheSuccessTraceNamesKeysAndNeverValues() {
+        // The bag is otherwise invisible — memory-only, no getter — so this trace is a host's only
+        // confirmation that a write landed. Its one hard rule: the documented use of this bag
+        // includes hashed identity fields, so a value must never reach a log line.
+        let message = EmbeddedDataManager.setTrace(
+            set: ["plan", "hashedEmail"], removed: ["screen"], held: ["hashedEmail", "plan"])
+
+        XCTAssertTrue(message.contains("set [hashedEmail, plan]"))
+        XCTAssertTrue(message.contains("removed [screen]"))
+        XCTAssertTrue(message.contains("the bag now holds [hashedEmail, plan]"))
+        XCTAssertTrue(message.contains("only if the survey declares them"))
+    }
+
+    func testTheSuccessTraceOmitsTheRemovedListWhenNothingWasRemoved() {
+        let message = EmbeddedDataManager.setTrace(set: ["plan"], removed: [], held: ["plan"])
+
+        XCTAssertFalse(message.contains("removed"))
+    }
+
+    func testTheSuccessTraceIsStableAcrossCalls() {
+        // Swift dictionaries iterate in an unspecified order that varies per process, so the trace
+        // sorts every list. Without that, the same bag would print differently run to run.
+        let first = EmbeddedDataManager.setTrace(
+            set: ["b", "a", "c"], removed: [], held: ["c", "a", "b"])
+        let second = EmbeddedDataManager.setTrace(
+            set: ["c", "b", "a"], removed: [], held: ["a", "b", "c"])
+
+        XCTAssertEqual(first, second)
+        XCTAssertTrue(first.contains("set [a, b, c]"))
+    }
+
     // MARK: - Thread safety
 
     func testConcurrentWritesDoNotCrash() {

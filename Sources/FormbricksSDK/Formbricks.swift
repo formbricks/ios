@@ -291,6 +291,14 @@ import Network
      Values land only on the survey's declared *ingested* fields; anything else is dropped and
      logged by the survey renderer, never fatal.
 
+     **`nil` removes; there is no "leave this alone" value.** Swift has no `undefined`, so this SDK
+     maps `nil` onto the JS SDK's `{ key: null }` (remove) and has nothing that spells its
+     `{ key: undefined }` (no-op). A host porting the cross-platform idiom of passing every field
+     unconditionally — `["plan": user.plan.map(EmbeddedDataValue.string)]` — therefore *clears*
+     `plan` here whenever the optional is empty, where the same code on web would leave the previous
+     value standing. Build the dictionary from the keys you actually have, or use
+     `clearEmbeddedData(_:)` when you mean to remove one.
+
      Deliberately callable **before** `setup(with:)`, unlike the methods above: a host that pushes
      context at launch must not have that value silently dropped because initialization had not
      finished. The bag is pure memory — nothing here needs the SDK to be running.
