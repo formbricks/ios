@@ -35,6 +35,10 @@ final class SurveyManager {
             )
         }
 
+    /// The server-delivered JS brain. When present and healthy, it owns the
+    /// survey-selection decision; the native logic below remains as fallback.
+    internal var mobileCoreRuntime: MobileCoreRuntime?
+
     internal static let workspaceResponseObjectKey = "workspaceResponseObjectKey"
     /// Pre-workspace-rename storage key. Read on first access so existing installs can be migrated.
     internal static let legacyEnvironmentResponseObjectKey = "environmentResponseObjectKey"
@@ -89,6 +93,14 @@ final class SurveyManager {
     func track(_ action: String, completion: (() -> Void)? = nil) {
         guard !isShowingSurvey else { return }
 
+        // When the server-delivered brain is available, it owns the decision.
+        // Any failure inside the remote path returns nil and we fall through
+        // to the built-in logic below.
+        if let decision = remoteDecision(for: action) {
+            handleRemoteDecision(decision, completion: completion)
+            return
+        }
+
         let actionClasses = workspaceResponse?.data.data.actionClasses ?? []
         let codeActionClasses = actionClasses.filter { $0.type == "code" }
         guard let actionClass = codeActionClasses.first(where: { $0.key == action }) else {
@@ -139,6 +151,65 @@ final class SurveyManager {
                     self.isShowingSurvey = false
                     completion?()
                 }
+            }
+        }
+    }
+}
+
+// MARK: - Remote mobile core (server-delivered decision logic) -
+extension SurveyManager {
+    /// Asks the JS brain for a display decision. Returns nil when the brain is
+    /// unavailable or errors, in which case the caller uses the native logic.
+    private func remoteDecision(for action: String) -> MobileCoreDecision? {
+        guard let runtime = mobileCoreRuntime else { return nil }
+        guard let workspaceResponse = workspaceResponse,
+              let workspaceData = try? JSONEncoder().encode(workspaceResponse),
+              let workspaceJSON = String(data: workspaceData, encoding: .utf8) else { return nil }
+
+        let userState = MobileCoreUserState(
+            userId: userManager.userId,
+            segments: userManager.segments,
+            displays: userManager.displays,
+            responses: userManager.responses,
+            lastDisplayedAtMs: userManager.lastDisplayedAt.map { $0.timeIntervalSince1970 * 1000 }
+        )
+
+        return runtime.selectSurvey(
+            action: action,
+            workspaceStateJSON: workspaceJSON,
+            userState: userState,
+            language: Formbricks.language
+        )
+    }
+
+    /// Executes a brain decision. The shell keeps only the native-only parts:
+    /// delay scheduling, language propagation, and presenting the WebView.
+    private func handleRemoteDecision(_ decision: MobileCoreDecision, completion: (() -> Void)? = nil) {
+        guard decision.shouldDisplay, let surveyId = decision.surveyId else {
+            Formbricks.logger?.info("Mobile core decided not to display a survey: \(decision.reason ?? "no reason given")")
+            return
+        }
+
+        Formbricks.logger?.info("Mobile core selected survey \(surveyId): \(decision.reason ?? "no reason given")")
+
+        if let languageCode = decision.languageCode {
+            Formbricks.language = languageCode
+        }
+
+        isShowingSurvey = true
+        let timeout = decision.delaySeconds ?? 0
+        DispatchQueue.global().asyncAfter(deadline: .now() + timeout) { [weak self] in
+            guard let self = self else { return }
+            if let workspaceResponse = self.workspaceResponse {
+                self.presentSurveyManager.present(workspaceResponse: workspaceResponse, id: surveyId) { success in
+                    if !success {
+                        self.isShowingSurvey = false
+                    }
+                    completion?()
+                }
+            } else {
+                self.isShowingSurvey = false
+                completion?()
             }
         }
     }

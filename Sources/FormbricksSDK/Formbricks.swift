@@ -100,7 +100,24 @@ import Network
         
         surveyManager?.refreshWorkspaceIfNeeded(force: force)
         userManager?.syncUserStateIfNeeded()
-        
+
+        // Fetch the server-delivered decision logic (the mobile core "brain").
+        // Until it arrives — or if it never does — the SDK runs on its built-in
+        // native logic, so this is a progressive enhancement, not a dependency.
+        MobileCoreLoader().load(appUrl: config.appUrl) { source in
+            guard let source = source else {
+                Formbricks.logger?.debug("No mobile core bundle available; using built-in survey logic.")
+                return
+            }
+            let runtime = MobileCoreRuntime(bundleSource: source)
+            DispatchQueue.main.async {
+                surveyManager?.mobileCoreRuntime = runtime
+                if runtime != nil {
+                    Formbricks.logger?.debug("Mobile core bundle loaded; server-delivered survey logic active.")
+                }
+            }
+        }
+
         self.isInitialized = true
     }
     
