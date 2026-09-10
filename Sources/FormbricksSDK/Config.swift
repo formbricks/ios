@@ -17,5 +17,16 @@ struct Config {
         /// longer than the minimum interval so a sustained outage doesn't turn into a
         /// fixed-rate request stream. Mirrors `Environment.refreshStateOnErrorTimeoutInMinutes`.
         static var retryAfterFailureInMinutes = 10
+
+        /// Window over which `setUserId` / `setAttribute` calls are coalesced into a single
+        /// `POST /user`. A `var` only so tests can shorten it; the SDK never writes to it.
+        static var updateDebounceIntervalInSeconds: TimeInterval = 0.5
+
+        /// Ceiling on how long `track()` will wait for a queued user update to land before it
+        /// gives up and evaluates targeting anyway. Bounds the delay a dead network can add to
+        /// a track call — without it a host that tracks right after `setAttribute` would hang on
+        /// a request that is never going to answer.
+        /// A `var` only so tests can shorten it; the SDK never writes to it.
+        static var pendingUpdateTimeoutInSeconds: TimeInterval = 5
     }
 }
