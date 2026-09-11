@@ -157,11 +157,21 @@ final class UserManager: UserManagerSyncable {
                     }
                 }
                 
-                // Settles the request: releases the in-flight lock, resolves anyone waiting on
-                // it, and replays a refresh that arrived while it was out — that interaction
-                // happened after this response was computed, so it needs its own sync.
-                self?.updateQueue?.syncDidFinish(success: true)
                 self?.surveyManager?.filterSurveys()
+
+                // Strictly after the re-filter, and that order is load-bearing. A waiter's whole
+                // purpose is to read `filteredSurveys`, and it is resolved onto the main queue
+                // while this block runs on URLSession's background queue — so releasing it first
+                // let it read the list computed from the *previous* user state, which is the
+                // staleness the wait exists to remove. `filterSurveys()` is not quick enough to
+                // win that race either (the `displays` getter decodes JSON from UserDefaults on
+                // every access), so it lost reliably rather than intermittently.
+                // Resolving after the write also gives the main queue a happens-before edge on it.
+                //
+                // Beyond that this releases the in-flight lock and replays a refresh that arrived
+                // while the request was out — that interaction happened after this response was
+                // computed, so it needs its own sync.
+                self?.updateQueue?.syncDidFinish(success: true)
                 self?.startSyncTimer()
             case .failure(let error):
                 // Release the in-flight lock so a later refresh nudge isn't swallowed, hand the
