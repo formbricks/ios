@@ -129,7 +129,7 @@ final class SurveyManager {
             DispatchQueue.global().asyncAfter(deadline: .now() + Double(timeout)) { [weak self] in
                 guard let self = self else { return }
                 if let workspaceResponse = self.workspaceResponse {
-                    self.presentSurveyManager.present(workspaceResponse: workspaceResponse, id: survey.id) { success in
+                    self.presentSurveyManager.present(workspaceResponse: workspaceResponse, id: survey.id, overlay: self.resolveOverlay(for: survey)) { success in
                         if !success {
                             self.isShowingSurvey = false
                         }
@@ -208,7 +208,9 @@ private extension SurveyManager {
     /// The view controller is presented over the current context.
     func showSurvey(withId id: String) {
         if let workspaceResponse = workspaceResponse {
-            presentSurveyManager.present(workspaceResponse: workspaceResponse, id: id)
+            let survey = workspaceResponse.data.data.surveys?.first(where: { $0.id == id })
+            presentSurveyManager.present(
+                workspaceResponse: workspaceResponse, id: id, overlay: resolveOverlay(for: survey))
         }
     }
 
@@ -383,6 +385,22 @@ extension SurveyManager {
 
         // 6) Otherwise return its code
         return entry.language.code
+    }
+
+    /// The overlay this survey will actually render with.
+    ///
+    /// Deliberately the same precedence as the WebView payload builds
+    /// (`FormbricksViewModel.WebViewData`): survey override, then workspace setting, then `none`.
+    /// The two have to agree — the payload decides what the renderer paints, this decides whether
+    /// the native side blocks touches, and a mismatch means either a backdrop you can tap through
+    /// or a corner card that freezes the app.
+    ///
+    /// Note `none` is the default, so most workspaces take the pass-through path.
+    func resolveOverlay(for survey: Survey?) -> SurveyOverlay {
+        if let surveyOverlay = survey?.projectOverwrites?.overlay {
+            return surveyOverlay
+        }
+        return workspaceResponse?.data.data.settings.overlay ?? .none
     }
 
     /// Filters the surveys based on the user's segments.
