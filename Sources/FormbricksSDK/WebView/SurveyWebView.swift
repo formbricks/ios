@@ -7,6 +7,8 @@ import SafariServices
 struct SurveyWebView: UIViewRepresentable {
     let surveyId: String
     let htmlString: String
+    /// Only set for a no-overlay survey — see `FormbricksView`.
+    var layoutRelay: SurveyLayoutRelay?
     
     /// Assemble the WKWebView with the necessary configuration.
     public func makeUIView(context: Context) -> WKWebView {
@@ -15,7 +17,7 @@ struct SurveyWebView: UIViewRepresentable {
         // Add javascript message handlers
         let userContentController = WKUserContentController()
         userContentController.add(LoggingMessageHandler(), name: "logging")
-        userContentController.add(JsMessageHandler(surveyId: surveyId), name: "jsMessage")
+        userContentController.add(JsMessageHandler(surveyId: surveyId, layoutRelay: layoutRelay), name: "jsMessage")
         userContentController.addUserScript(WKUserScript(source: overrideConsole, injectionTime: .atDocumentStart, forMainFrameOnly: true))
         
         let webViewConfig = WKWebViewConfiguration()
@@ -129,6 +131,8 @@ extension SurveyWebView {
 final class JsMessageHandler: NSObject, WKScriptMessageHandler {
     
     let surveyId: String
+    /// Where card rects go. Nil for an overlaid survey, whose backdrop blocks the host app anyway.
+    private let layoutRelay: SurveyLayoutRelay?
 
     /// Interaction sources already refreshed during this presentation. One handler is created
     /// per WebView, so this is scoped to a single survey showing. The surveys library guards
@@ -137,8 +141,9 @@ final class JsMessageHandler: NSObject, WKScriptMessageHandler {
     /// refresh is gated; the existing displays/responses bookkeeping keeps its behaviour.
     private var refreshedSources: Set<InteractionSource> = []
 
-    init(surveyId: String) {
+    init(surveyId: String, layoutRelay: SurveyLayoutRelay? = nil) {
         self.surveyId = surveyId
+        self.layoutRelay = layoutRelay
     }
 
     /// Whether an external URL from survey content is safe to hand to the OS.
@@ -204,6 +209,12 @@ final class JsMessageHandler: NSObject, WKScriptMessageHandler {
             /// Happens when the survey library fails to load.
             case .onSurveyLibraryLoadError:
                 Formbricks.surveyManager?.dismissSurveyWebView()
+
+            /// Happens whenever the survey card moves or resizes, and once more with no rect when it
+            /// leaves the screen. Only a no-overlay survey acts on it; see `SurveyTouchRegion`.
+            case .onCardRectChange:
+                let rect = (try? JSONDecoder().decode(CardRectMessage.self, from: data))?.rect
+                layoutRelay?.onCardRectChange?(rect)
             }
             
         } else {
