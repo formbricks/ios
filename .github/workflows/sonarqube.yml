@@ -24,6 +24,10 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0 # Shallow clones should be disabled for better SonarQube analysis
+          # This workflow runs on pull_request and then executes project code
+          # (swift package resolve, xcodebuild test). Leaving the token in
+          # .git/config would put it within reach of that code.
+          persist-credentials: false
 
       - name: Select Xcode
         uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1.7.0

@@ -17,6 +17,10 @@ jobs:
       # 1. Checkout repository
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Nothing here needs git credentials: pod trunk push authenticates with
+          # COCOAPODS_TRUNK_TOKEN and re-fetches the public repo itself.
+          persist-credentials: false
 
       # 2. Install a recent Ruby
       - uses: ruby/setup-ruby@95ef2b042f9d7a56d8268cba8559e2842e2ad01b # v1.321.0
