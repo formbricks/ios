@@ -53,7 +53,15 @@ jobs:
 
       # Run SonarCloud scan, pointing at the Cobertura report
       - name: SonarCloud Scan
-        uses: SonarSource/sonarqube-scan-action@22918119ff8e1ca75a623e15c8296b6ea4fbe28f # v8.2.1
+        # Held at v6.0.0 deliberately — do not bump to v8 without re-testing.
+        # v8 verifies the scanner binary's GPG signature by fetching SonarSource's
+        # public key from a keyserver, and on this macOS runner gpg cannot reach
+        # either keyserver (`keyserver receive failed: Invalid argument` from both
+        # hkps://keyserver.ubuntu.com and hkps://keys.openpgp.org, in under a second).
+        # dirmngr resolves keyservers over SRV records, which harden-runner's DNS
+        # proxy does not answer. v6.0.0 already carries the fixes for CVE-2025-58178
+        # and CVE-2025-59844, so this pin is current on security.
+        uses: SonarSource/sonarqube-scan-action@fd88b7d7ccbaefd23d8f36f73b59db7a3d246602 # v6.0.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
