@@ -86,9 +86,18 @@ final class SurveyManager {
 
     /// Checks if there are any surveys to display, based in the track action, and if so, displays the first one.
     /// Handles the display percentage and the delay of the survey.
+    ///
+    /// Survey selection is deferred until any queued user update has landed. Attribute writes are
+    /// debounced, so a host doing `setAttribute(...)` immediately followed by `track(...)` would
+    /// otherwise be matched against the segment membership it had *before* the write — the survey
+    /// it was trying to trigger simply would not show. Worse for a first `setUserId`: the id is
+    /// not persisted until the response lands, so `filterSurveys()` still sees an anonymous user
+    /// and drops every segment-targeted survey.
     func track(_ action: String, completion: (() -> Void)? = nil) {
         guard !isShowingSurvey else { return }
 
+        // Resolved before the wait: action classes come from workspace state, not user state, so
+        // a typo'd action name is knowable now and should not cost the caller a network round trip.
         let actionClasses = workspaceResponse?.data.data.actionClasses ?? []
         let codeActionClasses = actionClasses.filter { $0.type == "code" }
         guard let actionClass = codeActionClasses.first(where: { $0.key == action }) else {
@@ -96,49 +105,80 @@ final class SurveyManager {
             return
         }
 
+        // Claimed before the wait, not after. Two tracks in quick succession would both clear the
+        // guard above while the first was still waiting, and both go on to present. Every bail-out
+        // below has to release it again.
+        isShowingSurvey = true
+        userManager.waitForPendingUpdates { [weak self] didIdentify in
+            self?.evaluate(actionClass: actionClass, didIdentify: didIdentify, completion: completion)
+        }
+    }
+
+    /// The half of `track` that needs current user state: pick a survey for the action and show it.
+    /// Runs once the update queue has settled, so `filteredSurveys` reflects the writes the host
+    /// made just before tracking.
+    private func evaluate(actionClass: ActionClass, didIdentify: Bool, completion: (() -> Void)?) {
         let firstSurveyWithActionClass = filteredSurveys.first { survey in
             return survey.triggers?.contains(where: { $0.actionClass?.name == actionClass.name }) ?? false
+        }
+
+        // The update never landed, so `segments` is whatever it was before the host's write. A
+        // survey with no segment filters is unaffected and still shows; one that targets a segment
+        // would be a coin flip on stale membership, so it is skipped rather than shown wrongly.
+        if let survey = firstSurveyWithActionClass, !didIdentify, survey.segment?.hasFilters == true {
+            Formbricks.logger?.info("Skipping survey \(survey.id): the pending user update did not land, so segment membership is stale.")
+            isShowingSurvey = false
+            return
         }
 
         // Display percentage
         let shouldDisplay = shouldDisplayBasedOnPercentage(firstSurveyWithActionClass?.displayPercentage)
         if let survey = firstSurveyWithActionClass, !shouldDisplay {
             Formbricks.logger?.info("Skipping survey \(survey.id) due to display percentage restriction.")
+            isShowingSurvey = false
             return
         }
         let isMultiLangSurvey = firstSurveyWithActionClass?.languages?.count ?? 0 > 1
 
         if isMultiLangSurvey {
-            guard let survey = firstSurveyWithActionClass else {return}
+            guard let survey = firstSurveyWithActionClass else {
+                isShowingSurvey = false
+                return
+            }
             let currentLanguage = Formbricks.language
             guard let languageCode = getLanguageCode(survey: survey, language: currentLanguage) else {
                 Formbricks.logger?.error("Survey \(survey.id) is not available in language “\(currentLanguage)”. Skipping.")
+                isShowingSurvey = false
                 return
             }
 
             Formbricks.language = languageCode
         }
 
+        // Nothing matched the action, or the percentage roll lost: release the latch `track`
+        // claimed and leave the state as it was.
+        guard let survey = firstSurveyWithActionClass, shouldDisplay else {
+            isShowingSurvey = false
+            return
+        }
+
         // Display and delay it if needed
-        if let survey = firstSurveyWithActionClass, shouldDisplay {
-            isShowingSurvey = true
-            let timeout = survey.delay ?? 0
-            if timeout > 0 {
-                Formbricks.logger?.info("Delaying survey \(survey.id) by \(timeout) seconds")
-            }
-            DispatchQueue.global().asyncAfter(deadline: .now() + Double(timeout)) { [weak self] in
-                guard let self = self else { return }
-                if let workspaceResponse = self.workspaceResponse {
-                    self.presentSurveyManager.present(workspaceResponse: workspaceResponse, id: survey.id) { success in
-                        if !success {
-                            self.isShowingSurvey = false
-                        }
-                        completion?()
+        let timeout = survey.delay ?? 0
+        if timeout > 0 {
+            Formbricks.logger?.info("Delaying survey \(survey.id) by \(timeout) seconds")
+        }
+        DispatchQueue.global().asyncAfter(deadline: .now() + Double(timeout)) { [weak self] in
+            guard let self = self else { return }
+            if let workspaceResponse = self.workspaceResponse {
+                self.presentSurveyManager.present(workspaceResponse: workspaceResponse, id: survey.id) { success in
+                    if !success {
+                        self.isShowingSurvey = false
                     }
-                } else {
-                    self.isShowingSurvey = false
                     completion?()
                 }
+            } else {
+                self.isShowingSurvey = false
+                completion?()
             }
         }
     }

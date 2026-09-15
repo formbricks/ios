@@ -84,6 +84,20 @@ final class UserManager: UserManagerSyncable {
     ///
     /// It is routed through the `UpdateQueue` rather than calling `syncUser` directly, so a
     /// display -> response -> finish burst is debounced into a single request.
+    /// Calls `completion` once any queued `setUserId` / `setAttribute` has reached the server,
+    /// so targeting can be evaluated against the resulting state instead of the state that
+    /// predates it. `false` means the update did not land and `segments` is still stale.
+    ///
+    /// Resolves immediately when there is nothing queued, which is the overwhelmingly common
+    /// case — a host that is not identifying right now pays nothing for this.
+    func waitForPendingUpdates(completion: @escaping (Bool) -> Void) {
+        guard let updateQueue = updateQueue else {
+            completion(true)
+            return
+        }
+        updateQueue.waitForPendingWork(completion: completion)
+    }
+
     func refreshSegmentsAfterInteraction(survey: Survey, source: InteractionSource) {
         guard let userId = userId else { return }
         guard survey.interactionRefresh?.shouldRefresh(on: source) == true else { return }
@@ -143,18 +157,27 @@ final class UserManager: UserManagerSyncable {
                     }
                 }
                 
-                self?.updateQueue?.reset()
-                // `reset()` clears the in-flight lock, but only this drains a refresh that
-                // arrived while the request was out — that interaction happened after this
-                // response was computed, so it still needs its own sync.
-                self?.updateQueue?.syncDidFinish()
                 self?.surveyManager?.filterSurveys()
+
+                // Strictly after the re-filter, and that order is load-bearing. A waiter's whole
+                // purpose is to read `filteredSurveys`, and it is resolved onto the main queue
+                // while this block runs on URLSession's background queue — so releasing it first
+                // let it read the list computed from the *previous* user state, which is the
+                // staleness the wait exists to remove. `filterSurveys()` is not quick enough to
+                // win that race either (the `displays` getter decodes JSON from UserDefaults on
+                // every access), so it lost reliably rather than intermittently.
+                // Resolving after the write also gives the main queue a happens-before edge on it.
+                //
+                // Beyond that this releases the in-flight lock and replays a refresh that arrived
+                // while the request was out — that interaction happened after this response was
+                // computed, so it needs its own sync.
+                self?.updateQueue?.syncDidFinish(success: true)
                 self?.startSyncTimer()
             case .failure(let error):
-                // Release the in-flight lock so a later refresh nudge isn't swallowed, and
-                // replay one that arrived mid-sync. `reset()` clears the lock on the success
-                // path, but only this call drains a queued refresh.
-                self?.updateQueue?.syncDidFinish()
+                // Release the in-flight lock so a later refresh nudge isn't swallowed, hand the
+                // failed request's values back to the queue to be retried, and tell anyone
+                // waiting on it that segment membership could not be refreshed.
+                self?.updateQueue?.syncDidFinish(success: false)
                 Formbricks.logger?.error(error)
                 // Re-arm, otherwise the refresh cycle ends here for the whole process.
                 self?.scheduleSyncRetry()
