@@ -243,17 +243,6 @@ extension SurveyManager {
 }
 
 private extension SurveyManager {
-    /// Presents the survey window with the given id. It is called when a survey is triggered.
-    /// The survey is displayed based on the `FormbricksView`.
-    /// The view controller is presented over the current context.
-    func showSurvey(withId id: String) {
-        if let workspaceResponse = workspaceResponse {
-            let survey = workspaceResponse.data.data.surveys?.first(where: { $0.id == id })
-            presentSurveyManager.present(
-                workspaceResponse: workspaceResponse, id: id, overlay: resolveOverlay(for: survey))
-        }
-    }
-
     /// Starts a timer to refresh the workspace state after the given timeout (`expiresAt`).
     func startRefreshTimer(expiresAt: Date) {
         let timeout = expiresAt.timeIntervalSinceNow
@@ -427,6 +416,17 @@ extension SurveyManager {
         return entry.language.code
     }
 
+    /// Filters the surveys based on the user's segments.
+    func filterSurveysBasedOnSegments(_ surveys: [Survey], segments: [String]) -> [Survey] {
+        return surveys.filter { survey in
+            guard let segmentId = survey.segment?.id else { return false }
+            return segments.contains(segmentId)
+        }
+    }
+}
+
+// Internal rather than private so the precedence can be unit-tested.
+extension SurveyManager {
     /// The overlay this survey will actually render with.
     ///
     /// Deliberately the same precedence as the WebView payload builds
@@ -441,13 +441,5 @@ extension SurveyManager {
             return surveyOverlay
         }
         return workspaceResponse?.data.data.settings.overlay ?? .none
-    }
-
-    /// Filters the surveys based on the user's segments.
-    func filterSurveysBasedOnSegments(_ surveys: [Survey], segments: [String]) -> [Survey] {
-        return surveys.filter { survey in
-            guard let segmentId = survey.segment?.id else { return false }
-            return segments.contains(segmentId)
-        }
     }
 }

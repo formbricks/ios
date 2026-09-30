@@ -98,4 +98,19 @@ final class SurveyTouchRegionTests: XCTestCase {
         XCTAssertNil(message.rect)
         XCTAssertEqual(SurveyTouchRegion.forReported(rect: message.rect), .nothing)
     }
+
+    // MARK: - PassthroughWindow hit testing
+
+    /// `nil` from `hitTest` is what hands a touch to the host app's window, so this is the fix itself.
+    func testPassthroughWindowOnlyClaimsTouchesOnTheCard() {
+        let window = PassthroughWindow(frame: CGRect(x: 0, y: 0, width: 400, height: 800))
+        window.isHidden = false
+        window.touchRegion = .card(CGRect(x: 16, y: 500, width: 368, height: 280))
+
+        XCTAssertNotNil(window.hitTest(CGPoint(x: 200, y: 600), with: nil))
+        XCTAssertNil(window.hitTest(CGPoint(x: 200, y: 100), with: nil))
+
+        window.touchRegion = .nothing
+        XCTAssertNil(window.hitTest(CGPoint(x: 200, y: 600), with: nil))
+    }
 }

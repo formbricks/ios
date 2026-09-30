@@ -16,6 +16,10 @@ final class PresentSurveyManager {
     /// for the no-overlay path, where the survey cannot be a presented view controller.
     private var passthroughWindow: PassthroughWindow?
 
+    /// Where a survey is shown. Swappable because unit tests run with no window scene, where the
+    /// real lookup always comes back empty.
+    var keyWindow: () -> UIWindow? = { UIApplication.safeKeyWindow }
+
     /// Walks the active presentation/navigation/tab hierarchy and returns the leaf VC.
     /// Mirrors UIKit's own `presentedViewController` traversal so a single walker is enough.
     private func topMostViewController(from viewController: UIViewController) -> UIViewController {
@@ -65,13 +69,26 @@ final class PresentSurveyManager {
     private func presentPassthrough(
         workspaceResponse: WorkspaceResponse, id: String, completion: ((Bool) -> Void)?
     ) {
-        guard let scene = UIApplication.safeKeyWindow?.windowScene else {
+        guard let scene = keyWindow()?.windowScene else {
             Formbricks.logger?.error(
                 "Survey present aborted: no window scene available.")
             completion?(false)
             return
         }
 
+        installPassthroughWindow(
+            PassthroughWindow(windowScene: scene), workspaceResponse: workspaceResponse, id: id)
+        completion?(true)
+    }
+
+    /// Puts the survey into `window`, wires the card rect to its touch region and shows it.
+    ///
+    /// Split out of `presentPassthrough` because unit tests run without a window scene: they hand in
+    /// a frame-based window instead. Returns the relay so a test can play the renderer's part.
+    @discardableResult
+    func installPassthroughWindow(
+        _ window: PassthroughWindow, workspaceResponse: WorkspaceResponse, id: String
+    ) -> SurveyLayoutRelay {
         let relay = SurveyLayoutRelay()
         let view = FormbricksView(
             viewModel: FormbricksViewModel(workspaceResponse: workspaceResponse, surveyId: id),
@@ -79,7 +96,6 @@ final class PresentSurveyManager {
         let hosting = UIHostingController(rootView: view)
         hosting.view.backgroundColor = .clear
 
-        let window = PassthroughWindow(windowScene: scene)
         window.rootViewController = hosting
         window.backgroundColor = .clear
         window.isOpaque = false
@@ -102,14 +118,14 @@ final class PresentSurveyManager {
 
         self.passthroughWindow = window
         self.viewController = hosting
-        completion?(true)
+        return relay
     }
 
     /// The overlay path, unchanged: a modal over the top-most view controller.
     private func presentModal(
         workspaceResponse: WorkspaceResponse, id: String, completion: ((Bool) -> Void)?
     ) {
-        guard let window = UIApplication.safeKeyWindow,
+        guard let window = keyWindow(),
             let rootVC = window.rootViewController
         else {
             Formbricks.logger?.error(
