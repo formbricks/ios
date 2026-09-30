@@ -16,17 +16,21 @@ jobs:
 
     steps:
       - name: Harden the runner (Audit all outbound calls)
-        uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
         with:
           egress-policy: audit
 
       - name: Checkout repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0 # Shallow clones should be disabled for better SonarQube analysis
+          # This workflow runs on pull_request and then executes project code
+          # (swift package resolve, xcodebuild test). Leaving the token in
+          # .git/config would put it within reach of that code.
+          persist-credentials: false
 
       - name: Select Xcode
-        uses: maxim-lobanov/setup-xcode@60606e260d2fc5762a71e64e74b2174e8ea3c8bd # v1.6.0
+        uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1.7.0
         with:
           xcode-version: latest-stable
 
@@ -53,6 +57,14 @@ jobs:
 
       # Run SonarCloud scan, pointing at the Cobertura report
       - name: SonarCloud Scan
+        # Held at v6.0.0 deliberately — do not bump to v8 without re-testing.
+        # v8 verifies the scanner binary's GPG signature by fetching SonarSource's
+        # public key from a keyserver, and on this macOS runner gpg cannot reach
+        # either keyserver (`keyserver receive failed: Invalid argument` from both
+        # hkps://keyserver.ubuntu.com and hkps://keys.openpgp.org, in under a second).
+        # dirmngr resolves keyservers over SRV records, which harden-runner's DNS
+        # proxy does not answer. v6.0.0 already carries the fixes for CVE-2025-58178
+        # and CVE-2025-59844, so this pin is current on security.
         uses: SonarSource/sonarqube-scan-action@fd88b7d7ccbaefd23d8f36f73b59db7a3d246602 # v6.0.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

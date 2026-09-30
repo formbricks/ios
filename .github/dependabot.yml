@@ -1,0 +1,23 @@
+# Keeps the workflow action pins current.
+#
+# Every action is pinned to a full commit SHA (required by the repo's supply-chain
+# posture), which means nothing here updates on its own — a pinned SHA never moves,
+# so a published advisory against it stays live until someone repins by hand.
+# Without this file the pins drifted far enough behind to sit on three open
+# harden-runner advisories. Dependabot reads the `# vX.Y.Z` comment beside each SHA
+# to know the current version, and repins the SHA and the comment together.
+#
+# No Swift entry: the SDK has no third-party package dependencies (Package.swift
+# declares none and the podspec declares none), so there is nothing for Dependabot
+# to track there. Add one if that ever changes.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    # One PR for all routine bumps; security updates still open on their own.
+    groups:
+      github-actions:
+        patterns:
+          - "*"
