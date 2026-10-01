@@ -170,7 +170,7 @@ final class SurveyManager {
         DispatchQueue.global().asyncAfter(deadline: .now() + Double(timeout)) { [weak self] in
             guard let self = self else { return }
             if let workspaceResponse = self.workspaceResponse {
-                self.presentSurveyManager.present(workspaceResponse: workspaceResponse, id: survey.id) { success in
+                self.presentSurveyManager.present(workspaceResponse: workspaceResponse, id: survey.id, overlay: self.resolveOverlay(for: survey)) { success in
                     if !success {
                         self.isShowingSurvey = false
                     }
@@ -243,15 +243,6 @@ extension SurveyManager {
 }
 
 private extension SurveyManager {
-    /// Presents the survey window with the given id. It is called when a survey is triggered.
-    /// The survey is displayed based on the `FormbricksView`.
-    /// The view controller is presented over the current context.
-    func showSurvey(withId id: String) {
-        if let workspaceResponse = workspaceResponse {
-            presentSurveyManager.present(workspaceResponse: workspaceResponse, id: id)
-        }
-    }
-
     /// Starts a timer to refresh the workspace state after the given timeout (`expiresAt`).
     func startRefreshTimer(expiresAt: Date) {
         let timeout = expiresAt.timeIntervalSinceNow
@@ -431,5 +422,24 @@ extension SurveyManager {
             guard let segmentId = survey.segment?.id else { return false }
             return segments.contains(segmentId)
         }
+    }
+}
+
+// Internal rather than private so the precedence can be unit-tested.
+extension SurveyManager {
+    /// The overlay this survey will actually render with.
+    ///
+    /// Deliberately the same precedence as the WebView payload builds
+    /// (`FormbricksViewModel.WebViewData`): survey override, then workspace setting, then `none`.
+    /// The two have to agree — the payload decides what the renderer paints, this decides whether
+    /// the native side blocks touches, and a mismatch means either a backdrop you can tap through
+    /// or a corner card that freezes the app.
+    ///
+    /// Note `none` is the default, so most workspaces take the pass-through path.
+    func resolveOverlay(for survey: Survey?) -> SurveyOverlay {
+        if let surveyOverlay = survey?.projectOverwrites?.overlay {
+            return surveyOverlay
+        }
+        return workspaceResponse?.data.data.settings.overlay ?? .none
     }
 }

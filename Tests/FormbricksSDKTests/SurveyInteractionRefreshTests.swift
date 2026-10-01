@@ -4,7 +4,7 @@ import WebKit
 
 /// `WKScriptMessage` cannot be constructed with a payload, but `body` is overridable, so the
 /// real `JsMessageHandler` can be driven end to end without a live WebView.
-private final class FakeScriptMessage: WKScriptMessage {
+final class FakeScriptMessage: WKScriptMessage {
     private let payload: Any
 
     init(payload: Any) {

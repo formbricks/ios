@@ -66,6 +66,17 @@ private extension FormbricksViewModel {
                     window.webkit.messageHandlers.jsMessage.postMessage(JSON.stringify({ event: "onOpenExternalURL", onOpenExternalURLParams: { url: url } }));
                 };
 
+                // Where the survey card is. The native side cannot work this out for itself — CSS
+                // decides it inside the page — and it needs it to pass touches outside the card
+                // through to the host app. `rect` is null when no card is on screen.
+                //
+                // Only the renderer shipped with Formbricks 6.0+ calls this. Against an older
+                // self-hosted server it simply never fires, and the native side keeps its previous
+                // behaviour of taking every touch.
+                function onCardRectChange(rect) {
+                    window.webkit.messageHandlers.jsMessage.postMessage(JSON.stringify({ event: "onCardRectChange", rect: rect }));
+                };
+
                 let setResponseFinished = null;
                 function getSetIsResponseSendingFinished(callback) {
                     setResponseFinished = callback;
@@ -81,6 +92,7 @@ private extension FormbricksViewModel {
                         onFinished,
                         onClose,
                         onOpenExternalURL,
+                        onCardRectChange,
                     };
                     window.formbricksSurveys.renderSurvey(surveyProps);
                 }
