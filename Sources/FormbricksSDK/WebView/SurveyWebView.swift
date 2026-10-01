@@ -213,8 +213,14 @@ final class JsMessageHandler: NSObject, WKScriptMessageHandler {
             /// Happens whenever the survey card moves or resizes, and once more with no rect when it
             /// leaves the screen. Only a no-overlay survey acts on it; see `SurveyTouchRegion`.
             case .onCardRectChange:
-                let rect = (try? JSONDecoder().decode(CardRectMessage.self, from: data))?.rect
-                layoutRelay?.onCardRectChange?(rect)
+                // A payload that does not decode says nothing about where the card is. Passing it on
+                // as `nil` would read as "the card left the screen" and make the visible card
+                // untappable, so it is logged and the current region kept.
+                guard let cardRectMessage = try? JSONDecoder().decode(CardRectMessage.self, from: data) else {
+                    Formbricks.logger?.error("Ignoring an onCardRectChange payload that does not decode: \(body)")
+                    return
+                }
+                layoutRelay?.onCardRectChange?(cardRectMessage.rect)
             }
             
         } else {

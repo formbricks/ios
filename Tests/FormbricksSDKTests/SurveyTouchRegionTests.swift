@@ -1,3 +1,4 @@
+import WebKit
 import XCTest
 @testable import FormbricksSDK
 
@@ -97,6 +98,32 @@ final class SurveyTouchRegionTests: XCTestCase {
 
         XCTAssertNil(message.rect)
         XCTAssertEqual(SurveyTouchRegion.forReported(rect: message.rect), .nothing)
+    }
+
+    /// A payload that does not decode is not "the card left the screen". Forwarding it as `nil`
+    /// would make the visible card untappable, so the relay must not hear about it at all.
+    func testIgnoresACardRectPayloadThatDoesNotDecode() {
+        let relay = SurveyLayoutRelay()
+        var reported: [CardRect?] = []
+        relay.onCardRectChange = { reported.append($0) }
+        let handler = JsMessageHandler(surveyId: "survey", layoutRelay: relay)
+        let controller = WKUserContentController()
+
+        handler.userContentController(
+            controller,
+            didReceive: FakeScriptMessage(
+                payload: #"{"event":"onCardRectChange","rect":{"x":"12","y":600,"width":390,"height":240}}"#
+            )
+        )
+        XCTAssertTrue(reported.isEmpty)
+
+        // The same bridge still forwards a well-formed "no card" report.
+        handler.userContentController(
+            controller,
+            didReceive: FakeScriptMessage(payload: #"{"event":"onCardRectChange","rect":null}"#)
+        )
+        XCTAssertEqual(reported.count, 1)
+        XCTAssertNil(reported.first ?? nil)
     }
 
     // MARK: - PassthroughWindow hit testing
