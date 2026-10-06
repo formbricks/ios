@@ -22,7 +22,7 @@ enum SurveyTextScale {
 
     /// The largest factor applied — Android's largest font scale, and WCAG 1.4.4's 200%. Choice, rating,
     /// NPS and text questions still fit a phone-width card at 2×. iOS's accessibility sizes go up to
-    /// about 3.1×, where the NPS labels clip and the scroll button covers the question, so those sizes
+    /// about 3×, where the NPS labels clip and the scroll button covers the question, so those sizes
     /// get the same 2× Android users get.
     static let maximumFactor: CGFloat = 2
 

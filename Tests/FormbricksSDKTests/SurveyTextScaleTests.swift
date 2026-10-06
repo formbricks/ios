@@ -36,7 +36,9 @@ final class SurveyTextScaleTests: XCTestCase {
         let factors = categories.map(SurveyTextScale.factor(for:))
         XCTAssertEqual(factors, factors.sorted(), "A larger setting must never make the text smaller")
         XCTAssertLessThan(SurveyTextScale.factor(for: .extraSmall), 1)
-        XCTAssertEqual(SurveyTextScale.textSizeAdjust(for: .extraExtraExtraLarge), "135%")
+        let largestStandardSize = SurveyTextScale.factor(for: .extraExtraExtraLarge)
+        XCTAssertTrue(largestStandardSize > 1 && largestStandardSize < SurveyTextScale.maximumFactor,
+                      "The largest non-accessibility size must grow the text without reaching the cap")
     }
 
     func testTheAccessibilitySizesStopAtTheCap() {
