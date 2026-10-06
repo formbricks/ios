@@ -4,12 +4,14 @@ import UIKit
 ///
 /// WKWebView never applies Dynamic Type to web content, and the survey renderer sizes its text in CSS
 /// pixels, so without this every respondent sees the default size whatever they chose in Settings.
-/// Android's WebView already scales page text by the system font scale, and this mirrors it: the text
-/// grows, the layout around it does not.
+/// Android's WebView already scales page text by the system font scale; this is the iOS counterpart.
 ///
 /// The factor reaches the page as `-webkit-text-size-adjust` on the root element (see
-/// `FormbricksViewModel.htmlTemplate`). WebKit multiplies it into every computed font size, which is
-/// what Android's text zoom does. It is inherited, and the renderer never sets it on the survey.
+/// `FormbricksViewModel.htmlTemplate`). It is inherited, and the renderer never sets it on the survey.
+/// WebKit multiplies it into every computed font size, and `em` lengths resolve against that adjusted
+/// size. The renderer compiles its spacing to `em`, so padding and gaps grow with the text while
+/// pixel-sized parts (borders, the theme's fixed paddings) keep their size. Android's text zoom grows
+/// the text alone.
 ///
 /// WebKit honours the percentage in mobile content mode, which every iPhone and the iPad mini use.
 /// Larger iPads load the WebView in desktop-class mode, where WebKit ignores it and the text stays at
@@ -18,9 +20,10 @@ enum SurveyTextScale {
     /// Body text at the default ("Large") size: the reference the factor is measured against.
     private static let defaultBodyPointSize: CGFloat = 17
 
-    /// The largest factor applied — Android's largest font scale, and WCAG 1.4.4's 200%. iOS's
-    /// accessibility sizes go up to about 3.1×, where fixed-width rows such as the 0–10 NPS scale no
-    /// longer fit a phone-width card, so those sizes get the same 2× Android users get.
+    /// The largest factor applied — Android's largest font scale, and WCAG 1.4.4's 200%. Choice, rating,
+    /// NPS and text questions still fit a phone-width card at 2×. iOS's accessibility sizes go up to
+    /// about 3.1×, where the NPS labels clip and the scroll button covers the question, so those sizes
+    /// get the same 2× Android users get.
     static let maximumFactor: CGFloat = 2
 
     /// How much larger than default the user's setting makes body text, capped at `maximumFactor`.
