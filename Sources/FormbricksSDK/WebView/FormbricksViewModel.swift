@@ -6,7 +6,12 @@ final class FormbricksViewModel: ObservableObject {
     @Published var htmlString: String?
     let surveyId: String
 
-    init(workspaceResponse: WorkspaceResponse, surveyId: String) {
+    /// - Parameter contentSizeCategory: The user's Dynamic Type setting, which sizes the survey's text
+    ///   (see `SurveyTextScale`). Read once, when the survey is presented.
+    init(
+        workspaceResponse: WorkspaceResponse, surveyId: String,
+        contentSizeCategory: UIContentSizeCategory = UIApplication.safeShared?.preferredContentSizeCategory ?? .unspecified
+    ) {
         self.surveyId = surveyId
         if let webviewDataJson = WebViewData(workspaceResponse: workspaceResponse, surveyId: surveyId).getJsonString(),
            let surveyScriptUrl = FormbricksWorkspace.surveyScriptUrlString {
@@ -17,6 +22,8 @@ final class FormbricksViewModel: ObservableObject {
             let webviewDataBase64 = Data(webviewDataJson.utf8).base64EncodedString()
             htmlString = htmlTemplate.replacingOccurrences(of: "{{WEBVIEW_DATA}}", with: webviewDataBase64)
                 .replacingOccurrences(of: "{{SURVEY_SCRIPT_URL}}", with: surveyScriptUrl)
+                .replacingOccurrences(
+                    of: "{{TEXT_SIZE_ADJUST}}", with: SurveyTextScale.textSizeAdjust(for: contentSizeCategory))
         }
     }
 }
@@ -31,6 +38,10 @@ private extension FormbricksViewModel {
 
             <head>
                 <title>Formbricks WebView Survey</title>
+                <style>
+                    /* Follows Dynamic Type; see SurveyTextScale. */
+                    html { -webkit-text-size-adjust: {{TEXT_SIZE_ADJUST}}; }
+                </style>
             </head>
 
             <body style="overflow: hidden; height: 100vh; margin: 0; background: transparent;">
