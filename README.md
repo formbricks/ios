@@ -82,3 +82,19 @@ Formbricks.cleanup(waitForOperations: true) {
     print("SDK torn down")
 }
 ```
+
+### Dark mode
+
+Surveys render light by default. Call `setAppearance` to change it:
+
+```swift
+Formbricks.setAppearance(.dark) // .light, .dark or .system
+```
+
+- Works before or after `setup`, or pass it in the config with `.set(appearance: .dark)`. Objective-C: `[Formbricks setAppearance:@"dark"]`.
+- An open survey switches in place; the typed answer and current question stay.
+- `.system` follows **your app's** theme (including `overrideUserInterfaceStyle`), not the phone's, and updates live.
+- Kept across `logout()`, forgotten on app restart, never sent to the server. An unknown value is logged and falls back to light.
+- Needs a Formbricks server that supports dark mode; an older server keeps surveys light.
+
+Custom CSS configured in Formbricks needs no SDK call; it arrives with the workspace state.

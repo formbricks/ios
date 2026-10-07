@@ -7,6 +7,8 @@ import SafariServices
 struct SurveyWebView: UIViewRepresentable {
     let surveyId: String
     let htmlString: String
+    /// What the survey opened with (`light` / `dark`), so the first change is only sent when it differs.
+    var initialAppearance: String = "light"
     /// Only set for a no-overlay survey — see `FormbricksView`.
     var layoutRelay: SurveyLayoutRelay?
     
@@ -23,7 +25,7 @@ struct SurveyWebView: UIViewRepresentable {
         let webViewConfig = WKWebViewConfiguration()
         webViewConfig.userContentController = userContentController
         
-        let webView = WKWebView(frame: .zero, configuration: webViewConfig)
+        let webView = SurveyWKWebView(frame: .zero, configuration: webViewConfig)
         webView.configuration.defaultWebpagePreferences.allowsContentJavaScript = true
         webView.isOpaque = false
         webView.backgroundColor = UIColor.clear
@@ -39,10 +41,15 @@ struct SurveyWebView: UIViewRepresentable {
         webView.uiDelegate = context.coordinator
         webView.scrollView.isScrollEnabled = false
         webView.scrollView.contentInsetAdjustmentBehavior = .never
+        context.coordinator.attach(to: webView, appliedAppearance: initialAppearance)
         return webView
     }
     
     func updateUIView(_ webView: WKWebView, context: Context) {
+        // SwiftUI calls this on every update, and loading again restarts the survey and loses the
+        // respondent's answers. Load once per document.
+        guard context.coordinator.loadedHTML != htmlString else { return }
+        context.coordinator.loadedHTML = htmlString
         webView.loadHTMLString(htmlString, baseURL: nil)
     }
     
@@ -56,6 +63,7 @@ struct SurveyWebView: UIViewRepresentable {
        userContentController.removeScriptMessageHandler(forName: "logging")
        userContentController.removeScriptMessageHandler(forName: "jsMessage")
 
+       coordinator.detach()
        uiView.navigationDelegate = nil
        uiView.uiDelegate = nil
        Formbricks.logger?.debug("SurveyWebView: Dismantled")
@@ -84,6 +92,37 @@ struct SurveyWebView: UIViewRepresentable {
 
 extension SurveyWebView {
     class Coordinator: NSObject, WKUIDelegate, WKNavigationDelegate {
+        var loadedHTML: String?
+        private weak var webView: SurveyWKWebView?
+        private var appliedAppearance = "light"
+        private var observer: NSObjectProtocol?
+
+        /// Follows `Formbricks.setAppearance` and, for `system`, the app's theme. Both listeners
+        /// live exactly as long as the WebView: `detach` runs when the survey is dismantled.
+        func attach(to webView: SurveyWKWebView, appliedAppearance: String) {
+            self.webView = webView
+            self.appliedAppearance = appliedAppearance
+            webView.onTraitChange = { [weak self] in self?.syncAppearance() }
+            observer = NotificationCenter.default.addObserver(
+                forName: AppearanceState.didChange, object: nil, queue: .main
+            ) { [weak self] _ in self?.syncAppearance() }
+        }
+
+        func detach() {
+            if let observer { NotificationCenter.default.removeObserver(observer) }
+            observer = nil
+            webView?.onTraitChange = nil
+        }
+
+        /// Sends the resolved value into the open survey, only when it actually changed.
+        func syncAppearance() {
+            guard let webView else { return }
+            let resolved = AppearanceState.resolved(traits: webView.traitCollection)
+            guard resolved != appliedAppearance else { return }
+            appliedAppearance = resolved
+            webView.evaluateJavaScript(AppearanceState.switchScript(for: resolved), completionHandler: nil)
+        }
+
         // webView function handles Javascipt alert
         func webView(_ webView: WKWebView, runJavaScriptAlertPanelWithMessage message: String, initiatedByFrame frame: WKFrameInfo,  completionHandler: @escaping () -> Void) {
             let alertController = UIAlertController(title: "", message: message, preferredStyle: .alert)
@@ -276,5 +315,17 @@ private extension SurveyWebView {
             log("💥", "Uncaught", [`${e.message} at ${e.filename}:${e.lineno}:${e.colno}`])
         })
     """
+    }
+}
+
+/// A `WKWebView` that reports changes of the app's theme, which is how `system` appearance stays live.
+final class SurveyWKWebView: WKWebView {
+    var onTraitChange: (() -> Void)?
+
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        if previousTraitCollection?.userInterfaceStyle != traitCollection.userInterfaceStyle {
+            onTraitChange?()
+        }
     }
 }
