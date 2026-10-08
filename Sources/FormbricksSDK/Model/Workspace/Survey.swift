@@ -63,6 +63,7 @@ struct Survey: Codable {
     let displayOption: DisplayOptionType?
     let segment: Segment?
     let styling: Styling?
+    var customCss: CustomCss?
     let languages: [SurveyLanguage]?
     let projectOverwrites: ProjectOverwrites?
     /// Whether interacting with this survey can change some live survey's segment

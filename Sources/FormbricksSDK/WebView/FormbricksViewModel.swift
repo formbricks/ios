@@ -6,9 +6,20 @@ final class FormbricksViewModel: ObservableObject {
     @Published var htmlString: String?
     let surveyId: String
 
-    init(workspaceResponse: WorkspaceResponse, surveyId: String) {
+    /// The appearance the survey opened with, `light` or `dark`. The HTML is built once and never
+    /// rebuilt (a new `htmlString` reloads the WebView and loses the answers), so later changes
+    /// reach the open survey through `evaluateJavaScript` instead.
+    let initialAppearance: String
+
+    /// Where `.system` reads the app's theme: the host key window (no overlay) or the presenting
+    /// view controller (overlay). Not the WebView, whose own window ignores the host's override.
+    private(set) weak var traitSource: UITraitEnvironment?
+
+    init(workspaceResponse: WorkspaceResponse, surveyId: String, traitSource: UITraitEnvironment? = nil) {
         self.surveyId = surveyId
-        if let webviewDataJson = WebViewData(workspaceResponse: workspaceResponse, surveyId: surveyId).getJsonString(),
+        self.traitSource = traitSource
+        self.initialAppearance = AppearanceState.resolved(traits: traitSource?.traitCollection)
+        if let webviewDataJson = WebViewData(workspaceResponse: workspaceResponse, surveyId: surveyId, appearance: initialAppearance).getJsonString(),
            let surveyScriptUrl = FormbricksWorkspace.surveyScriptUrlString {
             // Base64-encode the payload before injecting it into the HTML. Base64 output is
             // limited to [A-Za-z0-9+/=], so survey content can no longer contain characters
@@ -95,6 +106,7 @@ private extension FormbricksViewModel {
                         onCardRectChange,
                     };
                     window.formbricksSurveys.renderSurvey(surveyProps);
+                    window.webkit.messageHandlers.jsMessage.postMessage(JSON.stringify({ event: "onSurveyRendered" }));
                 }
 
                 const script = document.createElement("script");
@@ -117,7 +129,7 @@ private extension FormbricksViewModel {
 private class WebViewData {
     var data: [String: Any] = [:]
 
-    init(workspaceResponse: WorkspaceResponse, surveyId: String) {
+    init(workspaceResponse: WorkspaceResponse, surveyId: String, appearance: String) {
         let matchedSurvey = workspaceResponse.data.data.surveys?.first(where: {$0.id == surveyId})
         let settings = workspaceResponse.data.data.settings
 
@@ -129,6 +141,10 @@ private class WebViewData {
         data["environmentId"] = Formbricks.workspaceId
         data["contactId"] = Formbricks.userManager?.contactId
         data["isWebEnvironment"] = false
+        data["appearance"] = appearance
+        if let customCss = CustomCss.props(workspace: settings.customCss, survey: matchedSurvey?.customCss) {
+            data["customCss"] = customCss
+        }
         // The Embedded Data bag, snapshotted here — this initializer runs when the survey is
         // actually presented, after any configured delay — and frozen for the survey's life. Passed
         // raw and unfiltered: the ingest contract (allow-list, coercion, `locked`, size caps) lives

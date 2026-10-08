@@ -45,6 +45,12 @@ import Network
      ```
      */
     @objc public static func setup(with config: FormbricksConfig, force: Bool = false) {
+        // Local state, not part of the SDK config, and must be in place before the first survey
+        // renders, so it is applied ahead of everything else, even on a repeat setup.
+        if let appearance = config.appearance {
+            AppearanceState.set(appearance)
+        }
+
         logger = Logger()
         apiQueue = OperationQueue()
 
@@ -258,6 +264,30 @@ import Network
         }
     }
     
+    /**
+     Sets how surveys render: `light` (default), `dark`, or `system` to follow the app's own theme
+     (including `overrideUserInterfaceStyle`), not the phone's.
+
+     Works before or after `setup`, and switches an open survey in place without losing answers.
+     Kept across `logout`, forgotten on app restart, and never sent to the server.
+     An unknown value is logged and falls back to light.
+
+     Example:
+     ```swift
+     Formbricks.setAppearance("dark")
+     ```
+     */
+    @objc public static func setAppearance(_ appearance: String) {
+        if !AppearanceState.set(appearance) {
+            logger?.error("Unknown appearance \"\(appearance)\", falling back to light")
+        }
+    }
+
+    /// Swift overload of ``setAppearance(_:)-swift.type.method`` taking a typed value.
+    public static func setAppearance(_ appearance: FormbricksAppearance) {
+        AppearanceState.set(appearance)
+    }
+
     /**
      Tracks an action with the given `String`. The SDK will process the action and it will present the survey if any of them can be triggered.
      The SDK must be initialized before calling this method.

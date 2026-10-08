@@ -6,4 +6,5 @@ struct Settings: Codable {
     let placement: String?
     let inAppSurveyBranding: Bool?
     let styling: Styling?
+    var customCss: CustomCss?
 }
