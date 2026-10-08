@@ -93,7 +93,7 @@ final class PresentSurveyManager {
         let view = FormbricksView(
             viewModel: FormbricksViewModel(
                 workspaceResponse: workspaceResponse, surveyId: id,
-                traits: keyWindow()?.traitCollection),
+                traitSource: keyWindow()),
             layoutRelay: relay)
         let hosting = UIHostingController(rootView: view)
         hosting.view.backgroundColor = .clear
@@ -151,7 +151,7 @@ final class PresentSurveyManager {
 
         let view = FormbricksView(
             viewModel: FormbricksViewModel(
-                workspaceResponse: workspaceResponse, surveyId: id, traits: presenter.traitCollection))
+                workspaceResponse: workspaceResponse, surveyId: id, traitSource: presenter))
         let vc = UIHostingController(rootView: view)
         vc.modalPresentationStyle = .overFullScreen
         vc.modalTransitionStyle = .crossDissolve

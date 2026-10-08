@@ -9,6 +9,8 @@ struct SurveyWebView: UIViewRepresentable {
     let htmlString: String
     /// What the survey opened with (`light` / `dark`), so the first change is only sent when it differs.
     var initialAppearance: String = "light"
+    /// Where `.system` reads the app's theme — see `FormbricksViewModel.traitSource`.
+    weak var traitSource: UITraitEnvironment?
     /// Only set for a no-overlay survey — see `FormbricksView`.
     var layoutRelay: SurveyLayoutRelay?
     
@@ -42,7 +44,7 @@ struct SurveyWebView: UIViewRepresentable {
         webView.uiDelegate = context.coordinator
         webView.scrollView.isScrollEnabled = false
         webView.scrollView.contentInsetAdjustmentBehavior = .never
-        context.coordinator.attach(to: webView, appliedAppearance: initialAppearance)
+        context.coordinator.attach(to: webView, appliedAppearance: initialAppearance, traitSource: traitSource)
         return webView
     }
     
@@ -99,29 +101,47 @@ extension SurveyWebView {
         /// Until the survey has rendered there is no `formbricksSurveys.setAppearance` to call;
         /// changes wait, and `surveyDidRender` sends the latest one.
         private var surveyRendered = false
-        private var observer: NSObjectProtocol?
+        private weak var traitSource: UITraitEnvironment?
+        private var observers: [NSObjectProtocol] = []
+        private var stopObservingTraitSource: (() -> Void)?
 
-        /// Follows `Formbricks.setAppearance` and, for `system`, the app's theme. Both listeners
-        /// live exactly as long as the WebView: `detach` runs when the survey is dismantled.
-        func attach(to webView: SurveyWKWebView, appliedAppearance: String) {
+        /// Follows `Formbricks.setAppearance` and, for `system`, the app's theme. Every listener
+        /// lives exactly as long as the WebView: `detach` runs when the survey is dismantled.
+        func attach(to webView: SurveyWKWebView, appliedAppearance: String, traitSource: UITraitEnvironment? = nil) {
             self.webView = webView
             self.appliedAppearance = appliedAppearance
+            self.traitSource = traitSource
             webView.onTraitChange = { [weak self] in self?.syncAppearance() }
-            observer = NotificationCenter.default.addObserver(
-                forName: AppearanceState.didChange, object: nil, queue: .main
-            ) { [weak self] _ in self?.syncAppearance() }
+            observers = [AppearanceState.didChange, UIScene.willEnterForegroundNotification].map { name in
+                NotificationCenter.default.addObserver(forName: name, object: nil, queue: .main) { [weak self] _ in
+                    self?.syncAppearance()
+                }
+            }
+            // A no-overlay survey sits in its own window, which does not inherit the host window's
+            // `overrideUserInterfaceStyle`, so the WebView's trait changes miss the app's theme.
+            // iOS 16 has no API for this; the foreground observer above re-syncs there instead.
+            if #available(iOS 17.0, *), let observable = traitSource as? UITraitChangeObservable {
+                let registration = observable.registerForTraitChanges([UITraitUserInterfaceStyle.self]) {
+                    [weak self] (_: UITraitEnvironment, _: UITraitCollection) in self?.syncAppearance()
+                }
+                stopObservingTraitSource = { [weak traitSource] in
+                    (traitSource as? UITraitChangeObservable)?.unregisterForTraitChanges(registration)
+                }
+            }
         }
 
         func detach() {
-            if let observer { NotificationCenter.default.removeObserver(observer) }
-            observer = nil
+            observers.forEach(NotificationCenter.default.removeObserver)
+            observers = []
+            stopObservingTraitSource?()
+            stopObservingTraitSource = nil
             webView?.onTraitChange = nil
         }
 
         /// Sends the resolved value into the open survey, only when it actually changed.
         func syncAppearance() {
             guard surveyRendered, let webView else { return } // hold until the renderer exists
-            let resolved = AppearanceState.resolved(traits: webView.traitCollection)
+            let resolved = AppearanceState.resolved(traits: traitSource?.traitCollection ?? webView.traitCollection)
             guard resolved != appliedAppearance else { return }
             appliedAppearance = resolved
             webView.evaluateJavaScript(AppearanceState.switchScript(for: resolved), completionHandler: nil)

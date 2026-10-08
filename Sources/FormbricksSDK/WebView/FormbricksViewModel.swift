@@ -11,9 +11,14 @@ final class FormbricksViewModel: ObservableObject {
     /// reach the open survey through `evaluateJavaScript` instead.
     let initialAppearance: String
 
-    init(workspaceResponse: WorkspaceResponse, surveyId: String, traits: UITraitCollection? = nil) {
+    /// Where `.system` reads the app's theme: the host key window (no overlay) or the presenting
+    /// view controller (overlay). Not the WebView, whose own window ignores the host's override.
+    private(set) weak var traitSource: UITraitEnvironment?
+
+    init(workspaceResponse: WorkspaceResponse, surveyId: String, traitSource: UITraitEnvironment? = nil) {
         self.surveyId = surveyId
-        self.initialAppearance = AppearanceState.resolved(traits: traits)
+        self.traitSource = traitSource
+        self.initialAppearance = AppearanceState.resolved(traits: traitSource?.traitCollection)
         if let webviewDataJson = WebViewData(workspaceResponse: workspaceResponse, surveyId: surveyId, appearance: initialAppearance).getJsonString(),
            let surveyScriptUrl = FormbricksWorkspace.surveyScriptUrlString {
             // Base64-encode the payload before injecting it into the HTML. Base64 output is

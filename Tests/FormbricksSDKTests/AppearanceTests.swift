@@ -83,6 +83,30 @@ final class AppearanceTests: XCTestCase {
         XCTAssertLessThan(render.upperBound, rendered.lowerBound)
     }
 
+    // MARK: - The app's theme for `.system`
+
+    /// The host app can pin its window dark on a light phone; `.system` must follow the window.
+    func testSystemFollowsTheTraitSourceOverride() throws {
+        Formbricks.setAppearance(.system)
+        let hostWindow = UIWindow(frame: .zero)
+        hostWindow.overrideUserInterfaceStyle = .dark
+        XCTAssertNotEqual(UIView().traitCollection.userInterfaceStyle, .dark, "precondition: default traits are not dark")
+
+        let workspace = try workspace()
+        let surveyId = try XCTUnwrap(workspace.data.data.surveys?.first?.id)
+        let viewModel = FormbricksViewModel(workspaceResponse: workspace, surveyId: surveyId, traitSource: hostWindow)
+        XCTAssertEqual(viewModel.initialAppearance, "dark")
+    }
+
+    func testTraitSourceIsNotRetained() throws {
+        let workspace = try workspace()
+        let surveyId = try XCTUnwrap(workspace.data.data.surveys?.first?.id)
+        var hostWindow: UIWindow? = UIWindow(frame: .zero)
+        let viewModel = FormbricksViewModel(workspaceResponse: workspace, surveyId: surveyId, traitSource: hostWindow)
+        hostWindow = nil
+        XCTAssertNil(viewModel.traitSource)
+    }
+
     private func workspace() throws -> WorkspaceResponse {
         Formbricks.setup(with: FormbricksConfig.Builder(appUrl: "https://example.com", workspaceId: "workspaceId")
             .service(MockFormbricksService())
