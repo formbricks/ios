@@ -101,6 +101,7 @@ private extension FormbricksViewModel {
                         onCardRectChange,
                     };
                     window.formbricksSurveys.renderSurvey(surveyProps);
+                    window.webkit.messageHandlers.jsMessage.postMessage(JSON.stringify({ event: "onSurveyRendered" }));
                 }
 
                 const script = document.createElement("script");

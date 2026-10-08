@@ -19,7 +19,8 @@ struct SurveyWebView: UIViewRepresentable {
         // Add javascript message handlers
         let userContentController = WKUserContentController()
         userContentController.add(LoggingMessageHandler(), name: "logging")
-        userContentController.add(JsMessageHandler(surveyId: surveyId, layoutRelay: layoutRelay), name: "jsMessage")
+        let coordinator = context.coordinator
+        userContentController.add(JsMessageHandler(surveyId: surveyId, layoutRelay: layoutRelay, onSurveyRendered: { [weak coordinator] in coordinator?.surveyDidRender() }), name: "jsMessage")
         userContentController.addUserScript(WKUserScript(source: overrideConsole, injectionTime: .atDocumentStart, forMainFrameOnly: true))
         
         let webViewConfig = WKWebViewConfiguration()
@@ -95,6 +96,9 @@ extension SurveyWebView {
         var loadedHTML: String?
         private weak var webView: SurveyWKWebView?
         private var appliedAppearance = "light"
+        /// Until the survey has rendered there is no `formbricksSurveys.setAppearance` to call;
+        /// changes wait, and `surveyDidRender` sends the latest one.
+        private var surveyRendered = false
         private var observer: NSObjectProtocol?
 
         /// Follows `Formbricks.setAppearance` and, for `system`, the app's theme. Both listeners
@@ -116,11 +120,16 @@ extension SurveyWebView {
 
         /// Sends the resolved value into the open survey, only when it actually changed.
         func syncAppearance() {
-            guard let webView else { return }
+            guard surveyRendered, let webView else { return } // hold until the renderer exists
             let resolved = AppearanceState.resolved(traits: webView.traitCollection)
             guard resolved != appliedAppearance else { return }
             appliedAppearance = resolved
             webView.evaluateJavaScript(AppearanceState.switchScript(for: resolved), completionHandler: nil)
+        }
+
+        func surveyDidRender() {
+            surveyRendered = true
+            syncAppearance() // sends only if the value changed while loading
         }
 
         // webView function handles Javascipt alert
@@ -172,6 +181,7 @@ final class JsMessageHandler: NSObject, WKScriptMessageHandler {
     let surveyId: String
     /// Where card rects go. Nil for an overlaid survey, whose backdrop blocks the host app anyway.
     private let layoutRelay: SurveyLayoutRelay?
+    private let onSurveyRendered: (() -> Void)?
 
     /// Interaction sources already refreshed during this presentation. One handler is created
     /// per WebView, so this is scoped to a single survey showing. The surveys library guards
@@ -180,9 +190,10 @@ final class JsMessageHandler: NSObject, WKScriptMessageHandler {
     /// refresh is gated; the existing displays/responses bookkeeping keeps its behaviour.
     private var refreshedSources: Set<InteractionSource> = []
 
-    init(surveyId: String, layoutRelay: SurveyLayoutRelay? = nil) {
+    init(surveyId: String, layoutRelay: SurveyLayoutRelay? = nil, onSurveyRendered: (() -> Void)? = nil) {
         self.surveyId = surveyId
         self.layoutRelay = layoutRelay
+        self.onSurveyRendered = onSurveyRendered
     }
 
     /// Whether an external URL from survey content is safe to hand to the OS.
@@ -248,6 +259,10 @@ final class JsMessageHandler: NSObject, WKScriptMessageHandler {
             /// Happens when the survey library fails to load.
             case .onSurveyLibraryLoadError:
                 Formbricks.surveyManager?.dismissSurveyWebView()
+
+            /// renderSurvey returned: appearance changes held back while loading can now be sent.
+            case .onSurveyRendered:
+                onSurveyRendered?()
 
             /// Happens whenever the survey card moves or resizes, and once more with no rect when it
             /// leaves the screen. Only a no-overlay survey acts on it; see `SurveyTouchRegion`.

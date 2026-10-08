@@ -66,6 +66,31 @@ final class AppearanceTests: XCTestCase {
             "window.formbricksSurveys?.setAppearance?.('dark');")
     }
 
+    // MARK: - Changes made while the survey loads
+
+    func testSurveyRenderedEventDecodes() throws {
+        let message = try JSONDecoder().decode(JsMessageData.self, from: Data(#"{"event":"onSurveyRendered"}"#.utf8))
+        XCTAssertEqual(message.event, .onSurveyRendered)
+    }
+
+    /// The handshake must fire after `renderSurvey`, or a held-back change is sent to no renderer.
+    func testHtmlAnnouncesTheRenderAfterRenderSurvey() throws {
+        let workspace = try workspace()
+        let surveyId = try XCTUnwrap(workspace.data.data.surveys?.first?.id)
+        let html = try XCTUnwrap(FormbricksViewModel(workspaceResponse: workspace, surveyId: surveyId).htmlString)
+        let render = try XCTUnwrap(html.range(of: "window.formbricksSurveys.renderSurvey(surveyProps);"))
+        let rendered = try XCTUnwrap(html.range(of: #"event: "onSurveyRendered""#))
+        XCTAssertLessThan(render.upperBound, rendered.lowerBound)
+    }
+
+    private func workspace() throws -> WorkspaceResponse {
+        Formbricks.setup(with: FormbricksConfig.Builder(appUrl: "https://example.com", workspaceId: "workspaceId")
+            .service(MockFormbricksService())
+            .build())
+        let url = try XCTUnwrap(Bundle.module.url(forResource: "Environment", withExtension: "json"))
+        return try JSONDecoder.iso8601Full.decode(WorkspaceResponse.self, from: Data(contentsOf: url))
+    }
+
     // MARK: - customCss
 
     func testNoCustomCssSendsNoKey() {
