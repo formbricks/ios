@@ -11,12 +11,14 @@ import Foundation
     let customService: FormbricksServiceProtocol?
     /// True if this config was built using the deprecated `environmentId` parameter.
     let usedDeprecatedEnvironmentId: Bool
+    /// How surveys render; nil leaves whatever `Formbricks.setAppearance` already set.
+    let appearance: FormbricksAppearance?
 
     /// Backward-compatible alias for `workspaceId`.
     @available(*, deprecated, renamed: "workspaceId", message: "Use workspaceId instead. environmentId will be removed in a future version.")
     @objc public var environmentId: String { workspaceId }
 
-    init(appUrl: String, workspaceId: String, userId: String?, attributes: [String: AttributeValue]?, logLevel: LogLevel, customService: FormbricksServiceProtocol?, usedDeprecatedEnvironmentId: Bool = false) {
+    init(appUrl: String, workspaceId: String, userId: String?, attributes: [String: AttributeValue]?, logLevel: LogLevel, customService: FormbricksServiceProtocol?, usedDeprecatedEnvironmentId: Bool = false, appearance: FormbricksAppearance? = nil) {
             self.appUrl = appUrl
             self.workspaceId = workspaceId
             self.userId = userId
@@ -24,6 +26,7 @@ import Foundation
             self.logLevel = logLevel
             self.customService = customService
             self.usedDeprecatedEnvironmentId = usedDeprecatedEnvironmentId
+            self.appearance = appearance
     }
 
     /// The builder class for the FormbricksConfig object.
@@ -36,6 +39,7 @@ import Foundation
         /// Optional custom service, injected via Builder
         var customService: FormbricksServiceProtocol?
         var usedDeprecatedEnvironmentId: Bool = false
+        var appearance: FormbricksAppearance?
 
         /// Initializes the builder with the workspace ID.
         @objc public init(appUrl: String, workspaceId: String) {
@@ -83,6 +87,19 @@ import Foundation
             return self
         }
 
+        /// Sets how surveys render: `light`, `dark` or `system`.
+        public func set(appearance: FormbricksAppearance) -> Builder {
+            self.appearance = appearance
+            return self
+        }
+
+        /// Sets how surveys render from a string: "light", "dark" or "system" (Obj-C compatible).
+        /// An unknown value is ignored.
+        @objc public func set(appearanceString: String) -> Builder {
+            self.appearance = FormbricksAppearance(rawValue: appearanceString)
+            return self
+        }
+
         /// Sets the log level for the Builder object.
         @objc public func setLogLevel(_ logLevel: LogLevel) -> Builder {
             self.logLevel = logLevel
@@ -96,7 +113,7 @@ import Foundation
 
         /// Builds the FormbricksConfig object from the Builder object.
         @objc public func build() -> FormbricksConfig {
-            return FormbricksConfig(appUrl: appUrl, workspaceId: workspaceId, userId: userId, attributes: attributes, logLevel: logLevel, customService: customService, usedDeprecatedEnvironmentId: usedDeprecatedEnvironmentId)
+            return FormbricksConfig(appUrl: appUrl, workspaceId: workspaceId, userId: userId, attributes: attributes, logLevel: logLevel, customService: customService, usedDeprecatedEnvironmentId: usedDeprecatedEnvironmentId, appearance: appearance)
         }
     }
 }
