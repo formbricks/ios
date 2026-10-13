@@ -11,19 +11,19 @@ final class FormbricksViewModel: ObservableObject {
     /// reach the open survey through `evaluateJavaScript` instead.
     let initialAppearance: String
 
-    /// Where `.system` reads the app's theme: the host key window (no overlay) or the presenting
-    /// view controller (overlay). Not the WebView, whose own window ignores the host's override.
+    /// Where the survey reads the app's traits — its theme for `.system`, and its Dynamic Type size:
+    /// the host key window (no overlay) or the presenting view controller (overlay). Not the WebView,
+    /// whose own window ignores the host's overrides.
     private(set) weak var traitSource: UITraitEnvironment?
 
-    /// - Parameter contentSizeCategory: The user's Dynamic Type setting, which sizes the survey's text
-    ///   (see `SurveyTextScale`). Read once, when the survey is presented.
-    init(
-        workspaceResponse: WorkspaceResponse, surveyId: String, traitSource: UITraitEnvironment? = nil,
-        contentSizeCategory: UIContentSizeCategory = UIApplication.safeShared?.preferredContentSizeCategory ?? .unspecified
-    ) {
+    init(workspaceResponse: WorkspaceResponse, surveyId: String, traitSource: UITraitEnvironment? = nil) {
         self.surveyId = surveyId
         self.traitSource = traitSource
         self.initialAppearance = AppearanceState.resolved(traits: traitSource?.traitCollection)
+        // Read once, at presentation; a Dynamic Type change while the survey is open applies to the
+        // next one. Without a trait source the page keeps the default size (see `SurveyTextScale`).
+        let textSizeAdjust = SurveyTextScale.textSizeAdjust(
+            for: traitSource?.traitCollection.preferredContentSizeCategory ?? .unspecified)
         if let webviewDataJson = WebViewData(workspaceResponse: workspaceResponse, surveyId: surveyId, appearance: initialAppearance).getJsonString(),
            let surveyScriptUrl = FormbricksWorkspace.surveyScriptUrlString {
             // Base64-encode the payload before injecting it into the HTML. Base64 output is
@@ -33,8 +33,7 @@ final class FormbricksViewModel: ObservableObject {
             let webviewDataBase64 = Data(webviewDataJson.utf8).base64EncodedString()
             htmlString = htmlTemplate.replacingOccurrences(of: "{{WEBVIEW_DATA}}", with: webviewDataBase64)
                 .replacingOccurrences(of: "{{SURVEY_SCRIPT_URL}}", with: surveyScriptUrl)
-                .replacingOccurrences(
-                    of: "{{TEXT_SIZE_ADJUST}}", with: SurveyTextScale.textSizeAdjust(for: contentSizeCategory))
+                .replacingOccurrences(of: "{{TEXT_SIZE_ADJUST}}", with: textSizeAdjust)
         }
     }
 }
