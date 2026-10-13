@@ -13,9 +13,8 @@ import UIKit
 /// pixel-sized parts (borders, the theme's fixed paddings) keep their size. Android's text zoom grows
 /// the text alone.
 ///
-/// WebKit honours the percentage in mobile content mode, which every iPhone and the iPad mini use.
-/// Larger iPads load the WebView in desktop-class mode, where WebKit ignores it and the text stays at
-/// the default size, as it did before.
+/// WebKit honours the percentage only in mobile content mode, so the survey WebView asks for it (see
+/// `SurveyWebView.makeUIView`); larger iPads would otherwise load it in desktop-class mode.
 enum SurveyTextScale {
     /// Body text at the default ("Large") size: the reference the factor is measured against.
     private static let defaultBodyPointSize: CGFloat = 17

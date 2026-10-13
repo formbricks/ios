@@ -27,6 +27,10 @@ struct SurveyWebView: UIViewRepresentable {
         
         let webViewConfig = WKWebViewConfiguration()
         webViewConfig.userContentController = userContentController
+        // Full-size iPads would otherwise load the survey in desktop-class mode, where WebKit ignores
+        // the page's `-webkit-text-size-adjust` and the text stops following Dynamic Type
+        // (see `SurveyTextScale`). iPhones and the iPad mini are in mobile mode already.
+        webViewConfig.defaultWebpagePreferences.preferredContentMode = .mobile
         
         let webView = SurveyWKWebView(frame: .zero, configuration: webViewConfig)
         webView.configuration.defaultWebpagePreferences.allowsContentJavaScript = true

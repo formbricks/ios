@@ -1,4 +1,5 @@
 import UIKit
+import WebKit
 import XCTest
 @testable import FormbricksSDK
 
@@ -60,6 +61,20 @@ final class SurveyTextScaleTests: XCTestCase {
                       "Without a presenter the page must not depend on the device's setting")
     }
 
+    /// WebKit ignores the percentage in desktop-class content mode, which full-size iPads would
+    /// otherwise load the survey in.
+    func testTheSurveyWebViewAsksForMobileContent() throws {
+        let workspace = try setUpWorkspace()
+        let window = PassthroughWindow(frame: CGRect(x: 0, y: 0, width: 400, height: 800))
+        let manager = PresentSurveyManager()
+        manager.installPassthroughWindow(window, workspaceResponse: workspace, id: surveyId)
+        addTeardownBlock { manager.dismissView() }
+        window.layoutIfNeeded()
+
+        let webView = try XCTUnwrap(firstWebView(in: window))
+        XCTAssertEqual(webView.configuration.defaultWebpagePreferences.preferredContentMode, .mobile)
+    }
+
     private let surveyId = "cm6ovw6j7000gsf0kduf4oo4i"
 
     /// Sets the SDK up for building a survey page, and tears it down after the test.
@@ -73,4 +88,7 @@ final class SurveyTextScaleTests: XCTestCase {
         return try JSONDecoder.iso8601Full.decode(WorkspaceResponse.self, from: Data(contentsOf: fixtureUrl))
     }
 
+    private func firstWebView(in view: UIView) -> WKWebView? {
+        (view as? WKWebView) ?? view.subviews.lazy.compactMap(firstWebView(in:)).first
+    }
 }
