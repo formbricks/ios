@@ -21,3 +21,9 @@ updates:
       github-actions:
         patterns:
           - "*"
+    ignore:
+      # Held at v6.0.0: v8 fetches SonarSource's GPG key from keyservers this macOS runner
+      # cannot reach, which fails every scan. See the comment on the pin in
+      # .github/workflows/sonarqube.yml. Minor and patch releases of v6 still come through.
+      - dependency-name: SonarSource/sonarqube-scan-action
+        update-types: ["version-update:semver-major"]
