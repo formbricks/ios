@@ -7,31 +7,27 @@ The iOS SDK for Formbricks
 ### Swift Package Manager
 
 1. In Xcode choose **File → Add Packages…**
-2. Enter your repo URL (e.g. `https://github.com/formbricks/ios.git`)
+2. Enter `https://github.com/formbricks/ios.git`.
 3. Choose version rule (e.g. "Up to Next Major" starting at `2.3.0`).
-4. Import in your code:
+4. Add the **FormbricksSDK** library product to your app target.
+5. Import in your code:
    ```swift
    import FormbricksSDK
    ```
 
-### CocoaPods
+### Migrating from CocoaPods
 
-1. Add the following to your `Podfile`:
+New FormbricksSDK releases are distributed through Swift Package Manager only.
+[CocoaPods Trunk is becoming read-only](https://blog.cocoapods.org/CocoaPods-Specs-Repo/),
+with a test period on November 1–7, 2026 and a permanent switch on December 2, 2026.
+Previously published pod versions remain available; migrate to receive future SDK updates.
 
-   ```ruby
-   platform :ios, '16.6'
-   use_frameworks! :linkage => :static
-
-   target 'YourTargetName' do
-     pod 'FormbricksSDK', '2.3.0 (or the latest version)'
-   end
-   ```
-
-2. Run `pod install` in your project directory
-3. Import in your code:
-   ```swift
-   import FormbricksSDK
-   ```
+1. Remove the `pod 'FormbricksSDK', ...` entry from every target in your `Podfile`.
+2. Run `pod install` to update the workspace and lockfile. Keep any other pods your app uses.
+3. Follow the Swift Package Manager instructions above and add **FormbricksSDK** to each app target that uses it.
+   Do not link both the pod and the Swift package in the same target.
+4. Keep `import FormbricksSDK` and your existing SDK calls. Build and test your app after switching.
+   If you also upgrade the SDK version, review its [release notes](https://github.com/formbricks/ios/releases).
 
 ### Quickstart
 
@@ -98,3 +94,11 @@ Formbricks.setAppearance(.dark) // .light, .dark or .system
 - Needs a Formbricks server that supports dark mode; an older server keeps surveys light.
 
 Custom CSS configured in Formbricks needs no SDK call; it arrives with the workspace state.
+
+## Releasing
+
+1. Confirm the SonarQube workflow passes, including the iOS simulator tests.
+2. Create a new semantic-version Git tag (for example, `2.3.1`) on the tested commit and publish a GitHub release
+   with the changes and any upgrade instructions. Do not move existing release tags.
+3. Swift Package Manager discovers versions from Git tags; no separate registry publishing step is required.
+   Verify the new version resolves in Xcode and build an app that imports `FormbricksSDK`.
