@@ -8,7 +8,7 @@
 # to know the current version, and repins the SHA and the comment together.
 #
 # No Swift entry: the SDK has no third-party package dependencies (Package.swift
-# declares none and the podspec declares none), so there is nothing for Dependabot
+# declares none), so there is nothing for Dependabot
 # to track there. Add one if that ever changes.
 version: 2
 updates:
