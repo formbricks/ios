@@ -8,7 +8,7 @@ The iOS SDK for Formbricks
 
 1. In Xcode choose **File → Add Packages…**
 2. Enter `https://github.com/formbricks/ios.git`.
-3. Choose version rule (e.g. "Up to Next Major" starting at `2.3.0`).
+3. Choose version rule (e.g. "Up to Next Major" starting at `2.3.1`).
 4. Add the **FormbricksSDK** library product to your app target.
 5. Import in your code:
    ```swift
