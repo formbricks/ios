@@ -32,6 +32,14 @@ final class FormbricksSDKTests: XCTestCase {
         defaults.removeObject(forKey: SurveyManager.legacyEnvironmentResponseObjectKey)
     }
     
+    /// Waits for the queued `setUserId` / `setAttribute` to reach the mock server, instead of
+    /// sleeping past the update queue's debounce and hoping the sync has landed by then.
+    private func waitForUserSync() {
+        let synced = expectation(description: "Pending user updates sent")
+        Formbricks.userManager?.waitForPendingUpdates { _ in synced.fulfill() }
+        wait(for: [synced], timeout: 3.0)
+    }
+
     func testFormbricks() throws {
         // Everything should be in the default state before initialization.
         XCTAssertFalse(Formbricks.isInitialized)
@@ -80,22 +88,9 @@ final class FormbricksSDKTests: XCTestCase {
         mockService.isErrorResponseNeeded = false
         Formbricks.surveyManager?.refreshWorkspaceIfNeeded(force: true)
         
-        // Wait for environment to refresh
-        let refreshExpectation = expectation(description: "Environment refreshed")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            refreshExpectation.fulfill()
-        }
-        wait(for: [refreshExpectation])
-        
         // Authenticate the user.
         Formbricks.setUserId(userId)
-        
-        // Wait for user ID to be set with a longer timeout
-        let userSetExpectation = expectation(description: "User set")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-            userSetExpectation.fulfill()
-        }
-        wait(for: [userSetExpectation], timeout: 3.0)
+        waitForUserSync()
 
         // Verify user ID is set
         XCTAssertEqual(Formbricks.userManager?.userId, userId, "User ID should be set")
@@ -219,6 +214,45 @@ final class FormbricksSDKTests: XCTestCase {
         XCTAssertNil(Formbricks.logger, "Logger should be nil")
     }
     
+    /// `cleanup(waitForOperations:)` must not queue behind every other thread in the process.
+    /// It used to wait at `.background` QoS, the band the scheduler drops first when the CPU is
+    /// busy: on a loaded CI runner the completion took minutes (457s in one run). Saturating the
+    /// CPU with routine `.utility` work here recreates that contention.
+    func testCleanupWaitingForOperationsFinishesWhileTheCPUIsBusy() {
+        Formbricks.setup(with: FormbricksConfig.Builder(appUrl: appUrl, workspaceId: workspaceId)
+            .service(mockService)
+            .build())
+        let load = CPULoad()
+        load.start()
+        defer { load.stop() }
+
+        let cleanedUp = expectation(description: "Cleanup complete")
+        Formbricks.cleanup(waitForOperations: true) {
+            cleanedUp.fulfill()
+        }
+
+        wait(for: [cleanedUp], timeout: 2.0)
+        XCTAssertFalse(Formbricks.isInitialized)
+    }
+
+    /// `track` checks connectivity before it evaluates a survey, and that check ran at
+    /// `.background` QoS too: under the same contention a survey trigger could stall for minutes.
+    func testTrackReachesTheSurveyWhileTheCPUIsBusy() {
+        Formbricks.setup(with: FormbricksConfig.Builder(appUrl: appUrl, workspaceId: workspaceId)
+            .service(mockService)
+            .build())
+        let load = CPULoad()
+        load.start()
+        defer { load.stop() }
+
+        let tracked = expectation(description: "Track reached the survey")
+        Formbricks.track("click_demo_button") {
+            tracked.fulfill()
+        }
+
+        wait(for: [tracked], timeout: 2.0)
+    }
+
     func testSurveyManagerEdgeCases() {
         // Setup
         let userManager = UserManager()
@@ -289,18 +323,10 @@ final class FormbricksSDKTests: XCTestCase {
 
         // Refresh environment first
         Formbricks.surveyManager?.refreshWorkspaceIfNeeded(force: true)
-        let envExpectation = expectation(description: "Env loaded")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { envExpectation.fulfill() }
-        wait(for: [envExpectation])
 
         // Set userId to trigger syncUser which uses the mock with errors
         Formbricks.setUserId(userId)
-
-        let syncExpectation = expectation(description: "User synced with errors")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-            syncExpectation.fulfill()
-        }
-        wait(for: [syncExpectation], timeout: 3.0)
+        waitForUserSync()
 
         // Verify the user was still synced successfully despite errors
         XCTAssertEqual(Formbricks.userManager?.userId, userId, "User ID should be set even when response has errors")
@@ -319,18 +345,10 @@ final class FormbricksSDKTests: XCTestCase {
 
         // Refresh environment first
         Formbricks.surveyManager?.refreshWorkspaceIfNeeded(force: true)
-        let envExpectation = expectation(description: "Env loaded")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { envExpectation.fulfill() }
-        wait(for: [envExpectation])
 
         // Set userId to trigger syncUser which uses the mock with messages
         Formbricks.setUserId(userId)
-
-        let syncExpectation = expectation(description: "User synced with messages")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-            syncExpectation.fulfill()
-        }
-        wait(for: [syncExpectation], timeout: 3.0)
+        waitForUserSync()
 
         // Verify the user was synced successfully
         XCTAssertEqual(Formbricks.userManager?.userId, userId, "User ID should be set when response has messages")
@@ -349,18 +367,10 @@ final class FormbricksSDKTests: XCTestCase {
 
         // Refresh environment first
         Formbricks.surveyManager?.refreshWorkspaceIfNeeded(force: true)
-        let envExpectation = expectation(description: "Env loaded")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { envExpectation.fulfill() }
-        wait(for: [envExpectation])
 
         // Set userId to trigger syncUser which uses the mock with both errors and messages
         Formbricks.setUserId(userId)
-
-        let syncExpectation = expectation(description: "User synced with errors and messages")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-            syncExpectation.fulfill()
-        }
-        wait(for: [syncExpectation], timeout: 3.0)
+        waitForUserSync()
 
         // Verify the user was synced successfully despite having both errors and messages
         XCTAssertEqual(Formbricks.userManager?.userId, userId, "User ID should be set when response has both errors and messages")
@@ -378,15 +388,10 @@ final class FormbricksSDKTests: XCTestCase {
 
         // Refresh environment first
         Formbricks.surveyManager?.refreshWorkspaceIfNeeded(force: true)
-        let envExpectation = expectation(description: "Env loaded")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { envExpectation.fulfill() }
-        wait(for: [envExpectation])
 
         // Set userId
         Formbricks.setUserId(userId)
-        let setExpectation = expectation(description: "User set")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) { setExpectation.fulfill() }
-        wait(for: [setExpectation], timeout: 3.0)
+        waitForUserSync()
 
         XCTAssertEqual(Formbricks.userManager?.userId, userId)
 
@@ -404,15 +409,10 @@ final class FormbricksSDKTests: XCTestCase {
 
         // Refresh environment first
         Formbricks.surveyManager?.refreshWorkspaceIfNeeded(force: true)
-        let envExpectation = expectation(description: "Env loaded")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { envExpectation.fulfill() }
-        wait(for: [envExpectation])
 
         // Set initial userId and wait for sync to complete
         Formbricks.setUserId(userId)
-        let setExpectation = expectation(description: "First user set")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) { setExpectation.fulfill() }
-        wait(for: [setExpectation], timeout: 3.0)
+        waitForUserSync()
 
         XCTAssertEqual(Formbricks.userManager?.userId, userId)
 
@@ -500,9 +500,6 @@ final class FormbricksSDKTests: XCTestCase {
         Formbricks.setup(with: config)
 
         Formbricks.surveyManager?.refreshWorkspaceIfNeeded(force: true)
-        let loadExpectation = expectation(description: "Env loaded")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { loadExpectation.fulfill() }
-        wait(for: [loadExpectation])
 
         guard let workspace = Formbricks.surveyManager?.workspaceResponse else {
             XCTFail("Missing workspaceResponse")
@@ -531,9 +528,6 @@ final class FormbricksSDKTests: XCTestCase {
 
         // Force refresh and wait briefly for async fetch
         Formbricks.surveyManager?.refreshWorkspaceIfNeeded(force: true)
-        let expectation = self.expectation(description: "Env loaded")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { expectation.fulfill() }
-        wait(for: [expectation])
 
         guard let workspace = Formbricks.surveyManager?.workspaceResponse else {
             XCTFail("Missing workspaceResponse")
@@ -855,9 +849,6 @@ final class FormbricksSDKTests: XCTestCase {
         Formbricks.setup(with: config)
 
         Formbricks.surveyManager?.refreshWorkspaceIfNeeded(force: true)
-        let loaded = expectation(description: "Env loaded")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { loaded.fulfill() }
-        wait(for: [loaded])
 
         guard let workspace = Formbricks.surveyManager?.workspaceResponse else {
             XCTFail("Missing workspaceResponse"); return
@@ -940,4 +931,33 @@ private final class NoopChallengeSender: NSObject, URLAuthenticationChallengeSen
     func use(_ credential: URLCredential, for challenge: URLAuthenticationChallenge) {}
     func continueWithoutCredential(for challenge: URLAuthenticationChallenge) {}
     func cancel(_ challenge: URLAuthenticationChallenge) {}
+}
+
+/// Keeps every core busy with `.utility` work until stopped: routine work a busy host app does.
+private final class CPULoad {
+    private let lock = NSLock()
+    private var running = false
+
+    private var isRunning: Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        return running
+    }
+
+    func start() {
+        lock.lock()
+        running = true
+        lock.unlock()
+        for _ in 0..<ProcessInfo.processInfo.activeProcessorCount {
+            DispatchQueue.global(qos: .utility).async { [self] in
+                while isRunning {}
+            }
+        }
+    }
+
+    func stop() {
+        lock.lock()
+        running = false
+        lock.unlock()
+    }
 }

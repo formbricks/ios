@@ -420,10 +420,13 @@ import Network
     
     @objc public static func cleanup(waitForOperations: Bool = false, completion: (() -> Void)? = nil) {
         if waitForOperations, let queue = apiQueue {
-            DispatchQueue.global(qos: .background).async {
+            // Not `.background`: that band is the first the scheduler starves when the device is
+            // busy, which held a caller's completion back for minutes. The wait is blocking, so it
+            // stays off the main thread, but the host is waiting on it.
+            DispatchQueue.global(qos: .userInitiated).async {
                 queue.waitUntilAllOperationsAreFinished()
-                performCleanup()
                 DispatchQueue.main.async {
+                    performCleanup()
                     completion?()
                 }
             }
@@ -458,7 +461,9 @@ import Network
 private extension Formbricks {
     static func isInternetAvailabile(completion: @escaping (Bool) -> Void) {
         let monitor = NWPathMonitor()
-        let queue = DispatchQueue.global(qos: .background)
+        // `track` waits on this before it can show a survey, so it runs at the caller's urgency;
+        // `.background` work can be held back for minutes on a busy device.
+        let queue = DispatchQueue.global(qos: .userInitiated)
         
         monitor.pathUpdateHandler = { path in
             completion(path.status == .satisfied)
