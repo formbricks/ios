@@ -34,10 +34,8 @@ final class GoldenJourneyUITests: XCTestCase {
         ]
         app.launch()
 
-        if environment["E2E_EXPERIMENT_ANON"] == nil {
-            try tap(app.buttons["setUserIdButton"], in: app)
-            try tap(app.buttons["setAttributeButton"], in: app)
-        }
+        try tap(app.buttons["setUserIdButton"], in: app)
+        try tap(app.buttons["setAttributeButton"], in: app)
 
         let survey = try trackUntilTheSurveyAppears(in: app)
 
