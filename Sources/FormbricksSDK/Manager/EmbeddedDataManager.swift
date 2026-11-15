@@ -32,10 +32,8 @@ final class EmbeddedDataManager {
     private var data: [String: EmbeddedDataValue] = [:]
 
     private init() {
-        /*
-         Private so the bag cannot be instantiated a second time: a host holding its own copy would
-         write into a store the survey payload never reads.
-        */
+        // Private so the bag cannot be instantiated a second time: a host holding its own copy would
+        // write into a store the survey payload never reads.
     }
 
     /// Merge — never replace — so refreshing a volatile field (`screen`) cannot wipe the stable ones

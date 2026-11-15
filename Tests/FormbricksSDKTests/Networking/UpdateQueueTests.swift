@@ -1,11 +1,12 @@
 import XCTest
+
 @testable import FormbricksSDK
 
 class MockUserManager: UserManagerSyncable {
     var lastSyncedUserId: String?
     var lastSyncedAttributes: [String: AttributeValue]?
     var syncCallCount = 0
-    func syncUser(withId id: String, attributes: [String : AttributeValue]?) {
+    func syncUser(withId id: String, attributes: [String: AttributeValue]?) {
         lastSyncedUserId = id
         lastSyncedAttributes = attributes
         syncCallCount += 1
@@ -15,7 +16,7 @@ class MockUserManager: UserManagerSyncable {
 final class UpdateQueueTests: XCTestCase {
     var queue: UpdateQueue!
     var mockUserManager: MockUserManager!
-    
+
     private var originalDebounce: TimeInterval = 0.5
     private var originalTimeout: TimeInterval = 5
 
@@ -26,7 +27,7 @@ final class UpdateQueueTests: XCTestCase {
         originalDebounce = Config.User.updateDebounceIntervalInSeconds
         originalTimeout = Config.User.pendingUpdateTimeoutInSeconds
     }
-    
+
     override func tearDown() {
         Config.User.updateDebounceIntervalInSeconds = originalDebounce
         Config.User.pendingUpdateTimeoutInSeconds = originalTimeout
@@ -152,7 +153,7 @@ final class UpdateQueueTests: XCTestCase {
         queue.syncDidFinish(success: true)
         wait(for: [flushed, second], timeout: 1.0)
     }
-    
+
     func testSetUserIdTriggersDebounceAndCommit() {
         let exp = expectation(description: "Debounce triggers commit")
         queue.set(userId: "user123")
@@ -162,7 +163,7 @@ final class UpdateQueueTests: XCTestCase {
         }
         wait(for: [exp], timeout: 1.0)
     }
-    
+
     func testSetAttributesTriggersDebounceAndCommit() {
         let exp = expectation(description: "Debounce triggers commit for attributes")
         queue.set(userId: "user123")
@@ -173,7 +174,7 @@ final class UpdateQueueTests: XCTestCase {
         }
         wait(for: [exp], timeout: 1.0)
     }
-    
+
     func testAddAttributeToExisting() {
         let exp = expectation(description: "Add attribute to existing attributes")
         queue.set(userId: "user123")
@@ -186,7 +187,7 @@ final class UpdateQueueTests: XCTestCase {
         }
         wait(for: [exp], timeout: 1.0)
     }
-    
+
     func testAddAttributeToNew() {
         let exp = expectation(description: "Add attribute to new attributes")
         queue.set(userId: "user123")
@@ -208,7 +209,7 @@ final class UpdateQueueTests: XCTestCase {
         }
         wait(for: [exp], timeout: 1.0)
     }
-    
+
     func testSetLanguageWithUserId() {
         let exp = expectation(description: "Set language with userId triggers commit")
         queue.set(userId: "user123")
@@ -219,7 +220,7 @@ final class UpdateQueueTests: XCTestCase {
         }
         wait(for: [exp], timeout: 1.0)
     }
-    
+
     func testSetLanguageWithoutUserId() {
         // Should not call syncUser, just log
         queue.set(language: "fr")
@@ -230,7 +231,7 @@ final class UpdateQueueTests: XCTestCase {
         }
         wait(for: [exp], timeout: 1.0)
     }
-    
+
     func testResetClearsState() {
         queue.set(userId: "user123")
         queue.set(attributes: ["foo": "bar"])
@@ -245,7 +246,7 @@ final class UpdateQueueTests: XCTestCase {
         }
         wait(for: [exp], timeout: 1.0)
     }
-    
+
     func testCleanupStopsTimerAndClearsState() {
         queue.set(userId: "user123")
         queue.set(attributes: ["foo": "bar"])
@@ -257,7 +258,7 @@ final class UpdateQueueTests: XCTestCase {
         }
         wait(for: [exp], timeout: 1.0)
     }
-    
+
     func testCommitWithoutUserIdLogsError() {
         // This will not call syncUser, but will log an error
         queue.set(attributes: ["foo": "bar"])
@@ -268,4 +269,4 @@ final class UpdateQueueTests: XCTestCase {
         }
         wait(for: [exp], timeout: 1.0)
     }
-} 
+}

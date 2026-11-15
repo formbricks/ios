@@ -1,0 +1,37 @@
+# SwiftLint checks code semantics; swift-format (`.swift-format`, `make format`) owns layout.
+# Rules that only restate layout are disabled here so the two tools never disagree.
+# CI runs `swiftlint lint --strict`: every warning fails the build. No baseline file.
+included:
+  - Package.swift
+  - Sources
+  - Tests
+  - Playground
+excluded:
+  - .build
+  - build
+
+disabled_rules:
+  # Layout, owned by swift-format.
+  - closure_parameter_position
+  - colon
+  - comma
+  - line_length
+  - opening_brace
+  - trailing_comma
+  - trailing_newline
+  - trailing_whitespace
+  - vertical_parameter_alignment
+  - vertical_whitespace
+
+identifier_name:
+  # Names that are conventional at this length: geometry, ranges, status codes.
+  excluded:
+    - id
+    - ok
+    - to
+    - x
+    - y
+
+file_length:
+  # Doc comments carry the SDK's public documentation; they do not make a file harder to read.
+  ignore_comment_only_lines: true

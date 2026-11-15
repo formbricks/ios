@@ -4,12 +4,12 @@ import Foundation
 final class UserManager: UserManagerSyncable {
     weak var surveyManager: SurveyManager?
     internal var service: FormbricksServiceProtocol
-    
+
     init(surveyManager: SurveyManager? = nil, service: FormbricksServiceProtocol = FormbricksService()) {
         self.surveyManager = surveyManager
         self.service = service
     }
-    
+
     private static let userIdKey = "userIdKey"
     private static let contactIdKey = "contactIdKey"
     private static let segmentsKey = "segmentsKey"
@@ -17,7 +17,7 @@ final class UserManager: UserManagerSyncable {
     private static let responsesKey = "responsesKey"
     private static let lastDisplayedAtKey = "lastDisplayedAtKey"
     private static let expiresAtKey = "expiresAtKey"
-    
+
     private var backingUserId: String?
     private var backingContactId: String?
     private var backingSegments: [String]?
@@ -25,43 +25,44 @@ final class UserManager: UserManagerSyncable {
     private var backingResponses: [String]?
     private var backingLastDisplayedAt: Date?
     private var backingExpiresAt: Date?
-    
+
     lazy private var updateQueue: UpdateQueue? = {
         return UpdateQueue(userManager: self)
     }()
-    
+
     internal var syncTimer: Timer?
-    
+
     /// Starts an update queue with the given user id.
     func set(userId: String) {
         updateQueue?.set(userId: userId)
     }
-    
+
     /// Starts an update queue with the given attribute.
     func add(attribute: AttributeValue, forKey key: String) {
         updateQueue?.add(attribute: attribute, forKey: key)
     }
-    
+
     /// Starts an update queue with the given attributes.
     func set(attributes: [String: AttributeValue]) {
         updateQueue?.set(attributes: attributes)
     }
-    
+
     /// Starts an update queue with the given language..
     func set(language: String) {
         updateQueue?.set(language: language)
     }
-    
+
     /// Saves `surveyId` to the `displays` property and the current date to the `lastDisplayedAt` property.
     func onDisplay(surveyId: String) {
         let lastDisplayedAt = Date()
         var newDisplays = displays ?? []
-        newDisplays.append(Display(surveyId: surveyId, createdAt: DateFormatter.isoFormatter.string(from: lastDisplayedAt)))
+        newDisplays.append(
+            Display(surveyId: surveyId, createdAt: DateFormatter.isoFormatter.string(from: lastDisplayedAt)))
         displays = newDisplays
         self.lastDisplayedAt = lastDisplayedAt
         surveyManager?.filterSurveys()
     }
-    
+
     /// Saves `surveyId` to the `responses` property.
     func onResponse(surveyId: String) {
         var newResponses = responses ?? []
@@ -105,7 +106,7 @@ final class UserManager: UserManagerSyncable {
         Formbricks.logger?.debug("Refreshing segments after \(source.rawValue) on survey \(survey.id)")
         updateQueue?.requestUserStateRefresh(userId: userId)
     }
-    
+
     /// Syncs the user state with the server if the user id is set and the expiration date has passed.
     func syncUserStateIfNeeded() {
         guard let id = userId, let expiresAt = self.expiresAt, expiresAt.timeIntervalSinceNow <= 0 else {
@@ -139,24 +140,24 @@ final class UserManager: UserManagerSyncable {
                 self?.responses = userResponse.data.state?.data?.responses
                 self?.lastDisplayedAt = userResponse.data.state?.data?.lastDisplayAt
                 self?.expiresAt = userResponse.data.state?.expiresAt
-                
+
                 let serverLanguage = userResponse.data.state?.data?.language
                 Formbricks.language = serverLanguage ?? "default"
-                
+
                 // Log errors (always visible) - e.g., invalid attribute keys, type mismatches
                 if let errors = userResponse.data.errors {
                     for error in errors {
                         Formbricks.logger?.error(error)
                     }
                 }
-                
+
                 // Log informational messages (debug only)
                 if let messages = userResponse.data.messages {
                     for message in messages {
                         Formbricks.logger?.debug("User update message: \(message)")
                     }
                 }
-                
+
                 self?.surveyManager?.filterSurveys()
 
                 // Strictly after the re-filter, and that order is load-bearing. A waiter's whole
@@ -184,11 +185,11 @@ final class UserManager: UserManagerSyncable {
             }
         }
     }
-    
+
     /// Logs out the user and clears the user state.
     func logout() {
         Formbricks.logger?.debug("Logging out and cleaning user state")
-        
+
         UserDefaults.standard.removeObject(forKey: UserManager.userIdKey)
         UserDefaults.standard.removeObject(forKey: UserManager.contactIdKey)
         UserDefaults.standard.removeObject(forKey: UserManager.segmentsKey)
@@ -204,26 +205,26 @@ final class UserManager: UserManagerSyncable {
         backingLastDisplayedAt = nil
         backingExpiresAt = nil
         Formbricks.language = "default"
-        
+
         stopSyncTimer()
         updateQueue?.cleanup()
 
         // Re-filter surveys for logged out user
         surveyManager?.filterSurveys()
     }
-    
+
     func cleanupUpdateQueue() {
         updateQueue?.cleanup()
         updateQueue = nil  // Release the instance so memory can be reclaimed.
     }
-    
+
     deinit {
         Formbricks.logger?.debug("Deinitializing \(self)")
     }
 }
 
 // MARK: - Timer -
-private extension UserManager {
+extension UserManager {
     /// Schedules the next user-state sync for when the cached state expires.
     ///
     /// This runs inside `syncUser`'s completion, which `APIClient` delivers on URLSession's
@@ -232,7 +233,7 @@ private extension UserManager {
     /// fire, and the user state was in practice only ever refreshed by the lazy check inside
     /// `Formbricks.setup()`. Build the timer unscheduled and add it to the main run loop
     /// instead, the same way `UpdateQueue` hops to main for its debounce timer.
-    func startSyncTimer() {
+    fileprivate func startSyncTimer() {
         guard let expiresAt = expiresAt, let id = userId else { return }
 
         // A device clock running ahead of the server makes every `expiresAt` we receive
@@ -248,13 +249,13 @@ private extension UserManager {
     /// from a successful sync. `expiresAt` still holds the value from the last success, so it is
     /// not a usable cadence here — back off by the same interval the workspace-state path uses
     /// for its errors instead of retrying at the minimum sync interval.
-    func scheduleSyncRetry() {
+    fileprivate func scheduleSyncRetry() {
         guard let id = userId else { return }
         scheduleSync(after: Double(Config.User.retryAfterFailureInMinutes) * 60.0, for: id)
     }
 
     /// Cancels a pending user-state sync. Safe to call from any thread.
-    func stopSyncTimer() {
+    fileprivate func stopSyncTimer() {
         onMain { [weak self] in
             self?.syncTimer?.invalidate()
             self?.syncTimer = nil
@@ -268,7 +269,7 @@ private extension UserManager {
     /// `stopSyncTimer()` can run from the main thread, so leaving the property unsynchronised
     /// let the two writes race — and a lost `nil` write strands a live timer that nothing can
     /// cancel afterwards.
-    func scheduleSync(after interval: TimeInterval, for id: String) {
+    fileprivate func scheduleSync(after interval: TimeInterval, for id: String) {
         onMain { [weak self] in
             guard let self = self else { return }
             self.syncTimer?.invalidate()
@@ -288,7 +289,7 @@ private extension UserManager {
     /// Runs `work` on the main thread, immediately if we are already there. `Timer` and
     /// `RunLoop` are bound to the thread that scheduled them, so all timer bookkeeping has to
     /// funnel through the main run loop.
-    func onMain(_ work: @escaping () -> Void) {
+    fileprivate func onMain(_ work: @escaping () -> Void) {
         if Thread.isMainThread {
             work()
         } else {
@@ -303,7 +304,8 @@ extension UserManager {
         get {
             backingUserId = backingUserId ?? UserDefaults.standard.string(forKey: UserManager.userIdKey)
             return backingUserId
-        } set {
+        }
+        set {
             UserDefaults.standard.set(newValue, forKey: UserManager.userIdKey)
             backingUserId = newValue
         }
@@ -312,7 +314,8 @@ extension UserManager {
         get {
             backingContactId = backingContactId ?? UserDefaults.standard.string(forKey: UserManager.contactIdKey)
             return backingContactId
-        } set {
+        }
+        set {
             UserDefaults.standard.set(newValue, forKey: UserManager.contactIdKey)
             backingContactId = newValue
         }
@@ -321,21 +324,26 @@ extension UserManager {
         get {
             backingSegments = backingSegments ?? UserDefaults.standard.stringArray(forKey: UserManager.segmentsKey)
             return backingSegments
-        } set {
+        }
+        set {
             UserDefaults.standard.set(newValue, forKey: UserManager.segmentsKey)
             backingSegments = newValue
         }
     }
     private(set) var displays: [Display]? {
         get {
-            guard let jsonData = UserDefaults.standard.string(forKey: UserManager.displaysKey)?.data(using: .utf8) else {
+            guard let jsonData = UserDefaults.standard.string(forKey: UserManager.displaysKey)?.data(using: .utf8)
+            else {
                 return nil
             }
             let decodedDisplays = try? JSONDecoder().decode([Display].self, from: jsonData)
             backingDisplays = decodedDisplays
             return backingDisplays
-        } set {
-            guard let jsonData = try? JSONEncoder().encode(newValue), let jsonString = String(data: jsonData, encoding: .utf8) else { return }
+        }
+        set {
+            guard let jsonData = try? JSONEncoder().encode(newValue),
+                let jsonString = String(data: jsonData, encoding: .utf8)
+            else { return }
             UserDefaults.standard.set(jsonString, forKey: UserManager.displaysKey)
             backingDisplays = newValue
         }
@@ -344,7 +352,8 @@ extension UserManager {
         get {
             backingResponses = backingResponses ?? UserDefaults.standard.stringArray(forKey: UserManager.responsesKey)
             return backingResponses
-        } set {
+        }
+        set {
             UserDefaults.standard.set(newValue, forKey: UserManager.responsesKey)
             backingResponses = newValue
         }
@@ -357,7 +366,8 @@ extension UserManager {
                 let timeInterval = UserDefaults.standard.double(forKey: UserManager.lastDisplayedAtKey)
                 return timeInterval > 0 ? Date(timeIntervalSince1970: timeInterval) : nil
             }
-        } set {
+        }
+        set {
             UserDefaults.standard.set(newValue?.timeIntervalSince1970, forKey: UserManager.lastDisplayedAtKey)
             backingLastDisplayedAt = newValue
         }
@@ -370,7 +380,8 @@ extension UserManager {
                 let timeInterval = UserDefaults.standard.double(forKey: UserManager.expiresAtKey)
                 return timeInterval > 0 ? Date(timeIntervalSince1970: timeInterval) : nil
             }
-        } set {
+        }
+        set {
             UserDefaults.standard.set(newValue?.timeIntervalSince1970, forKey: UserManager.expiresAtKey)
             backingExpiresAt = newValue
         }

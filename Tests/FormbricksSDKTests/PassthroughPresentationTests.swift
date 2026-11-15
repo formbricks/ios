@@ -1,4 +1,5 @@
 import XCTest
+
 @testable import FormbricksSDK
 
 /// The no-overlay presentation path: the survey's own window, and which overlay picks that path.
@@ -34,12 +35,18 @@ final class PassthroughPresentationTests: XCTestCase {
         let config = FormbricksConfig.Builder(appUrl: appUrl, workspaceId: workspaceId)
             .service(mockService)
             .build()
+        // The mock service answers synchronously, so the workspace is in place when setup returns.
         Formbricks.setup(with: config)
-        Formbricks.surveyManager?.refreshWorkspaceIfNeeded(force: true)
-        let loaded = expectation(description: "Workspace loaded")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { loaded.fulfill() }
-        wait(for: [loaded])
         return Formbricks.surveyManager?.workspaceResponse
+    }
+
+    /// A manager whose survey is a plain view controller. These tests are about where and how the
+    /// survey is shown, not what it renders, and rendering it starts WebKit: on a cold CI simulator
+    /// that blocked the main thread for 20+ seconds and timed the presentation test out.
+    private func makeManager() -> PresentSurveyManager {
+        let manager = PresentSurveyManager()
+        manager.makeSurveyController = { _ in UIViewController() }
+        return manager
     }
 
     // MARK: - Passthrough window
@@ -48,7 +55,7 @@ final class PassthroughPresentationTests: XCTestCase {
         let workspace = try XCTUnwrap(loadWorkspace())
         let window = PassthroughWindow(frame: CGRect(x: 0, y: 0, width: 400, height: 800))
 
-        PresentSurveyManager().installPassthroughWindow(
+        makeManager().installPassthroughWindow(
             window, workspaceResponse: workspace, id: surveyID)
 
         XCTAssertFalse(window.isHidden)
@@ -62,7 +69,7 @@ final class PassthroughPresentationTests: XCTestCase {
     func testReportedCardRectDecidesWhichTouchesTheWindowTakes() throws {
         let workspace = try XCTUnwrap(loadWorkspace())
         let window = PassthroughWindow(frame: CGRect(x: 0, y: 0, width: 400, height: 800))
-        let relay = PresentSurveyManager().installPassthroughWindow(
+        let relay = makeManager().installPassthroughWindow(
             window, workspaceResponse: workspace, id: surveyID)
 
         relay.onCardRectChange?(CardRect(x: 16, y: 500, width: 368, height: 280))
@@ -76,7 +83,7 @@ final class PassthroughPresentationTests: XCTestCase {
     func testDismissTearsTheWindowDown() throws {
         let workspace = try XCTUnwrap(loadWorkspace())
         let window = PassthroughWindow(frame: CGRect(x: 0, y: 0, width: 400, height: 800))
-        let manager = PresentSurveyManager()
+        let manager = makeManager()
         manager.installPassthroughWindow(window, workspaceResponse: workspace, id: surveyID)
 
         // On the main thread, so the teardown runs synchronously.
@@ -108,7 +115,7 @@ final class PassthroughPresentationTests: XCTestCase {
         window.makeKeyAndVisible()
         // Lay the container views out now: UIKit refuses to present from a view not yet in a window.
         window.layoutIfNeeded()
-        let manager = PresentSurveyManager()
+        let manager = makeManager()
         manager.keyWindow = { window }
         return (manager, window)
     }
@@ -120,14 +127,25 @@ final class PassthroughPresentationTests: XCTestCase {
         let tabs = UITabBarController()
         tabs.viewControllers = [UINavigationController(rootViewController: leaf)]
         let (manager, window) = manager(presentingIn: tabs)
-        // Waits on the presentation itself: the test runner's scene is never foreground-active, so
-        // UIKit sets `presentedViewController` but never calls the presentation's completion.
-        let presented = expectation(
-            for: NSPredicate { _, _ in leaf.presentedViewController != nil }, evaluatedWith: nil)
+        let survey = UIViewController()
+        // The presenter is also where the survey reads its traits from, which is the one place
+        // the walker's choice is visible: UIKit reports the modal on every controller in the chain.
+        var traitSource: UITraitEnvironment?
+        manager.makeSurveyController = { view in
+            traitSource = view.viewModel.traitSource
+            return survey
+        }
 
         manager.present(workspaceResponse: workspace, id: surveyID, overlay: .dark)
-        wait(for: [presented], timeout: 3.0)
+        // `present` hops to the main queue once; this block is queued behind it. UIKit records the
+        // presentation synchronously, but the test runner's scene is never foreground-active, so
+        // the presentation's own completion never runs and cannot be waited on.
+        let presented = expectation(description: "Present ran")
+        DispatchQueue.main.async { presented.fulfill() }
+        wait(for: [presented], timeout: 1.0)
 
+        XCTAssertIdentical(leaf.presentedViewController, survey)
+        XCTAssertIdentical(traitSource, leaf)
         manager.dismissView()
         withExtendedLifetime(window) {}
     }

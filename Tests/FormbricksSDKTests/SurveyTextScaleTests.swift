@@ -1,6 +1,7 @@
 import UIKit
 import WebKit
 import XCTest
+
 @testable import FormbricksSDK
 
 /// WKWebView ignores Dynamic Type, so the SDK hands the user's setting to the survey page itself
@@ -19,8 +20,9 @@ final class SurveyTextScaleTests: XCTestCase {
     func testTheDefaultSizeLeavesThePageUntouched() {
         XCTAssertEqual(SurveyTextScale.factor(for: .large), 1)
         XCTAssertEqual(SurveyTextScale.textSizeAdjust(for: .large), "auto")
-        XCTAssertEqual(SurveyTextScale.textSizeAdjust(for: .unspecified), "auto",
-                       "A trait collection with no setting must read as the default size")
+        XCTAssertEqual(
+            SurveyTextScale.textSizeAdjust(for: .unspecified), "auto",
+            "A trait collection with no setting must read as the default size")
     }
 
     func testTheTextFollowsTheSettingInBothDirections() {
@@ -28,8 +30,9 @@ final class SurveyTextScaleTests: XCTestCase {
         XCTAssertEqual(factors, factors.sorted(), "A larger setting must never make the text smaller")
         XCTAssertLessThan(SurveyTextScale.factor(for: .extraSmall), 1)
         let largestStandardSize = SurveyTextScale.factor(for: .extraExtraExtraLarge)
-        XCTAssertTrue(largestStandardSize > 1 && largestStandardSize < SurveyTextScale.maximumFactor,
-                      "The largest non-accessibility size must grow the text without reaching the cap")
+        XCTAssertTrue(
+            largestStandardSize > 1 && largestStandardSize < SurveyTextScale.maximumFactor,
+            "The largest non-accessibility size must grow the text without reaching the cap")
     }
 
     func testTheAccessibilitySizesStopAtTheCap() {
@@ -44,9 +47,10 @@ final class SurveyTextScaleTests: XCTestCase {
         let workspace = try setUpWorkspace()
 
         func html(presentedFrom traitSource: UITraitEnvironment?) throws -> String {
-            try XCTUnwrap(FormbricksViewModel(
-                workspaceResponse: workspace, surveyId: surveyId, traitSource: traitSource
-            ).htmlString)
+            try XCTUnwrap(
+                FormbricksViewModel(
+                    workspaceResponse: workspace, surveyId: surveyId, traitSource: traitSource
+                ).htmlString)
         }
         // Both directions, so the assertions hold whatever the simulator's own setting is.
         let largest = UIWindow(frame: .zero)
@@ -55,10 +59,12 @@ final class SurveyTextScaleTests: XCTestCase {
         smallest.traitOverrides.preferredContentSizeCategory = .extraSmall
 
         XCTAssertTrue(try html(presentedFrom: largest).contains("-webkit-text-size-adjust: 200%"))
-        XCTAssertTrue(try html(presentedFrom: smallest).contains(
-            "-webkit-text-size-adjust: \(SurveyTextScale.textSizeAdjust(for: .extraSmall))"))
-        XCTAssertTrue(try html(presentedFrom: nil).contains("-webkit-text-size-adjust: auto"),
-                      "Without a presenter the page must not depend on the device's setting")
+        XCTAssertTrue(
+            try html(presentedFrom: smallest).contains(
+                "-webkit-text-size-adjust: \(SurveyTextScale.textSizeAdjust(for: .extraSmall))"))
+        XCTAssertTrue(
+            try html(presentedFrom: nil).contains("-webkit-text-size-adjust: auto"),
+            "Without a presenter the page must not depend on the device's setting")
     }
 
     /// WebKit ignores the percentage in desktop-class content mode, which full-size iPads would
@@ -81,9 +87,10 @@ final class SurveyTextScaleTests: XCTestCase {
     private func setUpWorkspace() throws -> WorkspaceResponse {
         Formbricks.cleanup()
         addTeardownBlock { Formbricks.cleanup() }
-        Formbricks.setup(with: FormbricksConfig.Builder(appUrl: "https://example.com", workspaceId: "workspaceId")
-            .service(MockFormbricksService())
-            .build())
+        Formbricks.setup(
+            with: FormbricksConfig.Builder(appUrl: "https://example.com", workspaceId: "workspaceId")
+                .service(MockFormbricksService())
+                .build())
         let fixtureUrl = try XCTUnwrap(Bundle.module.url(forResource: "Environment", withExtension: "json"))
         return try JSONDecoder.iso8601Full.decode(WorkspaceResponse.self, from: Data(contentsOf: fixtureUrl))
     }

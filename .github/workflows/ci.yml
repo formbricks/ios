@@ -1,0 +1,312 @@
+name: CI
+
+# Every check for a change to the SDK. `PR Check Summary` at the bottom is the only required
+# check: it passes only when every job above it passed. Each job runs the same `make` target a
+# developer runs locally.
+on:
+  pull_request:
+  merge_group:
+  push:
+    branches:
+      - main
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  # Superseded PR pushes are cancelled; main and the merge queue always run to the end.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  # Pinned so the compiler, swift-format and the symbol graph match what the snapshot and the
+  # formatting were produced with. Bump together with `make format` and `make api-dump`.
+  DEVELOPER_DIR: /Applications/Xcode_26.3.app/Contents/Developer
+  SWIFTLINT_VERSION: 0.65.1
+  SWIFTLINT_SHA256: c1e429b0599cf1b516f369a2d9ec04eaf0e436f3c12b637df8851fa52ff694d0
+  ACTIONLINT_VERSION: 1.7.12
+  ACTIONLINT_SHA256: 8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8
+
+jobs:
+  lint:
+    name: lint
+    runs-on: macos-15
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: Harden the runner
+        uses: step-security/harden-runner@1d88384fd173af6ecb012dfd0264a306b711241a # v2.22.4
+        with:
+          egress-policy: audit
+
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install SwiftLint
+        run: |
+          curl -fsSL -o "$RUNNER_TEMP/swiftlint.zip" \
+            "https://github.com/realm/SwiftLint/releases/download/${SWIFTLINT_VERSION}/portable_swiftlint.zip"
+          echo "${SWIFTLINT_SHA256}  $RUNNER_TEMP/swiftlint.zip" | shasum -a 256 -c -
+          unzip -q "$RUNNER_TEMP/swiftlint.zip" swiftlint -d "$RUNNER_TEMP/swiftlint"
+          echo "$RUNNER_TEMP/swiftlint" >> "$GITHUB_PATH"
+
+      - name: Lint
+        run: make lint
+
+  format:
+    name: format
+    runs-on: macos-15
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: Harden the runner
+        uses: step-security/harden-runner@1d88384fd173af6ecb012dfd0264a306b711241a # v2.22.4
+        with:
+          egress-policy: audit
+
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Check formatting
+        run: make format-check
+
+  build:
+    name: build
+    runs-on: macos-15
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - name: Harden the runner
+        uses: step-security/harden-runner@1d88384fd173af6ecb012dfd0264a306b711241a # v2.22.4
+        with:
+          egress-policy: audit
+
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Build with warnings as errors
+        run: make build
+
+  unit-tests:
+    name: unit-tests
+    runs-on: macos-15
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - name: Harden the runner
+        uses: step-security/harden-runner@1d88384fd173af6ecb012dfd0264a306b711241a # v2.22.4
+        with:
+          egress-policy: audit
+
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Run the unit tests
+        run: make test
+
+      - name: Convert coverage for SonarQube
+        run: |
+          mkdir -p coverage
+          scripts/xccov-to-sonarqube-generic.sh .build/xcode/TestResults.xcresult > coverage/coverage.xml
+          # Repo-relative paths, so the Sonar job on another runner can match them to sources.
+          sed -i '' "s#path=\"${GITHUB_WORKSPACE}/#path=\"#" coverage/coverage.xml
+
+      - name: Upload coverage
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: coverage
+          path: coverage/coverage.xml
+          retention-days: 1
+          if-no-files-found: error
+
+  api-check:
+    name: api-check
+    runs-on: macos-15
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - name: Harden the runner
+        uses: step-security/harden-runner@1d88384fd173af6ecb012dfd0264a306b711241a # v2.22.4
+        with:
+          egress-policy: audit
+
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Test the CI and release scripts
+        run: make script-tests
+
+      - name: Compare the public API with api/FormbricksSDK.api
+        run: make api-check
+
+  package-check:
+    name: package-check
+    runs-on: macos-15
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - name: Harden the runner
+        uses: step-security/harden-runner@1d88384fd173af6ecb012dfd0264a306b711241a # v2.22.4
+        with:
+          egress-policy: audit
+
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Resolve and build the package from a scratch consumer
+        run: make package-check
+
+  sonarqube:
+    name: sonarqube
+    needs: unit-tests
+    # Fork PRs get no secrets, so there is no token to scan with; the summary allows the skip.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - name: Harden the runner
+        uses: step-security/harden-runner@1d88384fd173af6ecb012dfd0264a306b711241a # v2.22.4
+        with:
+          egress-policy: audit
+
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0 # Sonar needs history for new-code detection and blame.
+          persist-credentials: false
+
+      - name: Download coverage
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: coverage
+          path: coverage
+
+      - name: SonarQube scan
+        # Held at v6.0.0 deliberately; do not bump to v8 without re-testing. v8 verifies the
+        # scanner binary's GPG signature by fetching SonarSource's key from a keyserver, and gpg
+        # could not reach either keyserver from behind harden-runner (`keyserver receive failed:
+        # Invalid argument`): dirmngr resolves keyservers over SRV records, which harden-runner's
+        # DNS proxy does not answer. v6.0.0 already carries the fixes for CVE-2025-58178 and
+        # CVE-2025-59844, so this pin is current on security.
+        uses: SonarSource/sonarqube-scan-action@fd88b7d7ccbaefd23d8f36f73b59db7a3d246602 # v6.0.0
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          # Everything else is in sonar-project.properties. The C-family suffixes are blanked so
+          # the umbrella header does not pull in the C/Objective-C analyzer.
+          args: >
+            -Dsonar.qualitygate.wait=true
+            -Dsonar.c.file.suffixes=-
+            -Dsonar.cpp.file.suffixes=-
+            -Dsonar.objc.file.suffixes=-
+
+  dependency-review:
+    name: dependency-review
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: Harden the runner
+        uses: step-security/harden-runner@1d88384fd173af6ecb012dfd0264a306b711241a # v2.22.4
+        with:
+          egress-policy: audit
+
+      - name: Review dependency changes
+        uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
+        with:
+          # A PR compares against its base on its own. The merge queue and pushes to main carry
+          # no PR, so name the two commits being compared.
+          base-ref: ${{ github.event.merge_group.base_sha || github.event.before || '' }}
+          head-ref: ${{ github.event.merge_group.head_sha || github.event.after || '' }}
+          fail-on-severity: low
+          comment-summary-in-pr: never
+
+  workflow-lint:
+    name: workflow-lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: Harden the runner
+        uses: step-security/harden-runner@1d88384fd173af6ecb012dfd0264a306b711241a # v2.22.4
+        with:
+          egress-policy: audit
+
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install actionlint
+        run: |
+          archive="actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz"
+          curl -fsSL -o "$RUNNER_TEMP/$archive" \
+            "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/$archive"
+          echo "${ACTIONLINT_SHA256}  $RUNNER_TEMP/$archive" | sha256sum -c -
+          tar -xzf "$RUNNER_TEMP/$archive" -C "$RUNNER_TEMP" actionlint
+
+      - name: actionlint
+        run: '"$RUNNER_TEMP/actionlint" -color'
+
+      - name: zizmor
+        uses: zizmorcore/zizmor-action@45d7276c9ca790aabd705e31ca99c6185c3e76dd # v0.8.1
+        with:
+          version: 1.32.0
+          advanced-security: false
+          annotations: true
+
+  pr-check-summary:
+    name: PR Check Summary
+    if: always()
+    needs:
+      - lint
+      - format
+      - build
+      - unit-tests
+      - api-check
+      - package-check
+      - sonarqube
+      - dependency-review
+      - workflow-lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - name: Harden the runner
+        uses: step-security/harden-runner@1d88384fd173af6ecb012dfd0264a306b711241a # v2.22.4
+        with:
+          egress-policy: audit
+
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Require every check to pass
+        env:
+          NEEDS: ${{ toJSON(needs) }}
+          # Fork PRs get no secrets, so Sonar and E2E skip there by design.
+          ALLOWED_SKIPS: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository && 'sonarqube e2e-tests' || '' }}
+        run: scripts/pr-check-summary.sh

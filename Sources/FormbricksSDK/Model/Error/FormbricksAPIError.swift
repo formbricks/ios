@@ -3,7 +3,7 @@ import Foundation
 struct FormbricksAPIError: Codable, LocalizedError {
     let code: String
     let message: String
-    let details: [String:String]?
+    let details: [String: String]?
 }
 
 extension FormbricksAPIError {

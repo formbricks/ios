@@ -2,31 +2,31 @@
 import PackageDescription
 
 let package = Package(
-  name: "FormbricksSDK",
-  platforms: [
-   .iOS(.v16)
-  ],
-  products: [
-    .library(
-      name: "FormbricksSDK",
-      targets: ["FormbricksSDK"]
-    )
-  ],
-  targets: [
-    .target(
-      name: "FormbricksSDK",
-      path: "Sources/FormbricksSDK"
-    ),
-    .testTarget(
-      name: "FormbricksSDKTests",
-      dependencies: ["FormbricksSDK"],
-      resources: [
-        .process("Mock/User.json"),
-        .process("Mock/UserWithErrors.json"),
-        .process("Mock/UserWithMessages.json"),
-        .process("Mock/UserWithErrorsAndMessages.json"),
-        .process("Mock/Environment.json"),
-      ]
-    )
-  ]
+    name: "FormbricksSDK",
+    platforms: [
+        .iOS(.v16)
+    ],
+    products: [
+        .library(
+            name: "FormbricksSDK",
+            targets: ["FormbricksSDK"]
+        )
+    ],
+    targets: [
+        .target(
+            name: "FormbricksSDK",
+            path: "Sources/FormbricksSDK"
+        ),
+        .testTarget(
+            name: "FormbricksSDKTests",
+            dependencies: ["FormbricksSDK"],
+            resources: [
+                .process("Mock/User.json"),
+                .process("Mock/UserWithErrors.json"),
+                .process("Mock/UserWithMessages.json"),
+                .process("Mock/UserWithErrorsAndMessages.json"),
+                .process("Mock/Environment.json"),
+            ]
+        ),
+    ]
 )

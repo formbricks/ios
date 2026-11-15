@@ -1,0 +1,6 @@
+# Vendored from https://github.com/Flight-School/AnyCodable (see sonar-project.properties).
+# Kept close to upstream so it can be updated from there; its exhaustive type switches are
+# long and branchy by design.
+disabled_rules:
+  - cyclomatic_complexity
+  - function_body_length

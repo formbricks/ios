@@ -1,0 +1,176 @@
+AttributeValue.!=(_:_:): static func != (lhs: Self, rhs: Self) -> Bool
+AttributeValue.encode(to:): func encode(to encoder: any Encoder) throws
+AttributeValue.init(extendedGraphemeClusterLiteral:): init(extendedGraphemeClusterLiteral value: Self.StringLiteralType)
+AttributeValue.init(floatLiteral:): init(floatLiteral value: Double)
+AttributeValue.init(from:): init(from decoder: any Decoder) throws
+AttributeValue.init(integerLiteral:): init(integerLiteral value: Int)
+AttributeValue.init(stringLiteral:): init(stringLiteral value: String)
+AttributeValue.init(unicodeScalarLiteral:): init(unicodeScalarLiteral value: Self.ExtendedGraphemeClusterLiteralType)
+AttributeValue.number(_:): case number(Double)
+AttributeValue.numberValue: var numberValue: Double? { get }
+AttributeValue.string(_:): case string(String)
+AttributeValue.stringValue: var stringValue: String? { get }
+AttributeValue: conforms to Swift.Copyable
+AttributeValue: conforms to Swift.Decodable
+AttributeValue: conforms to Swift.Encodable
+AttributeValue: conforms to Swift.Equatable
+AttributeValue: conforms to Swift.ExpressibleByExtendedGraphemeClusterLiteral
+AttributeValue: conforms to Swift.ExpressibleByFloatLiteral
+AttributeValue: conforms to Swift.ExpressibleByIntegerLiteral
+AttributeValue: conforms to Swift.ExpressibleByStringLiteral
+AttributeValue: conforms to Swift.ExpressibleByUnicodeScalarLiteral
+AttributeValue: enum AttributeValue
+EmbeddedDataValue.!=(_:_:): static func != (lhs: Self, rhs: Self) -> Bool
+EmbeddedDataValue.bool(_:): case bool(Bool)
+EmbeddedDataValue.date(_:): case date(Date)
+EmbeddedDataValue.init(booleanLiteral:): init(booleanLiteral value: Bool)
+EmbeddedDataValue.init(extendedGraphemeClusterLiteral:): init(extendedGraphemeClusterLiteral value: Self.StringLiteralType)
+EmbeddedDataValue.init(floatLiteral:): init(floatLiteral value: Double)
+EmbeddedDataValue.init(integerLiteral:): init(integerLiteral value: Int)
+EmbeddedDataValue.init(stringLiteral:): init(stringLiteral value: String)
+EmbeddedDataValue.init(unicodeScalarLiteral:): init(unicodeScalarLiteral value: Self.ExtendedGraphemeClusterLiteralType)
+EmbeddedDataValue.number(_:): case number(Double)
+EmbeddedDataValue.string(_:): case string(String)
+EmbeddedDataValue: conforms to Swift.Copyable
+EmbeddedDataValue: conforms to Swift.Equatable
+EmbeddedDataValue: conforms to Swift.ExpressibleByBooleanLiteral
+EmbeddedDataValue: conforms to Swift.ExpressibleByExtendedGraphemeClusterLiteral
+EmbeddedDataValue: conforms to Swift.ExpressibleByFloatLiteral
+EmbeddedDataValue: conforms to Swift.ExpressibleByIntegerLiteral
+EmbeddedDataValue: conforms to Swift.ExpressibleByStringLiteral
+EmbeddedDataValue: conforms to Swift.ExpressibleByUnicodeScalarLiteral
+EmbeddedDataValue: enum EmbeddedDataValue
+Error.message: var message: String { get }
+Formbricks.cleanup(waitForOperations:completion:): @objc static func cleanup(waitForOperations: Bool = false, completion: (() -> Void)? = nil)
+Formbricks.clearEmbeddedData(): static func clearEmbeddedData()
+Formbricks.clearEmbeddedData(_:): static func clearEmbeddedData(_ key: String)
+Formbricks.logout(): @objc static func logout()
+Formbricks.setAppearance(_:): @objc static func setAppearance(_ appearance: String)
+Formbricks.setAppearance(_:): static func setAppearance(_ appearance: FormbricksAppearance)
+Formbricks.setAttribute(_:forKey:): @objc static func setAttribute(_ attribute: String, forKey key: String)
+Formbricks.setAttribute(_:forKey:): static func setAttribute(_ attribute: Date, forKey key: String)
+Formbricks.setAttribute(_:forKey:): static func setAttribute(_ attribute: Double, forKey key: String)
+Formbricks.setAttributes(_:): static func setAttributes(_ attributes: [String : AttributeValue])
+Formbricks.setEmbeddedData(_:): static func setEmbeddedData(_ data: [String : EmbeddedDataValue?])
+Formbricks.setLanguage(_:): @objc static func setLanguage(_ language: String)
+Formbricks.setUserId(_:): @objc static func setUserId(_ userId: String)
+Formbricks.setup(with:force:): @objc static func setup(with config: FormbricksConfig, force: Bool = false)
+Formbricks.track(_:completion:): @objc static func track(_ action: String, completion: (() -> Void)? = nil)
+Formbricks: @objc(Formbricks) class Formbricks
+Formbricks: conforms to ObjectiveC.NSObjectProtocol
+Formbricks: conforms to Swift.CVarArg
+Formbricks: conforms to Swift.CustomDebugStringConvertible
+Formbricks: conforms to Swift.CustomStringConvertible
+Formbricks: conforms to Swift.Equatable
+Formbricks: conforms to Swift.Hashable
+Formbricks: inherits from ObjectiveC.NSObject
+FormbricksAPIClientError.errorDescription: var errorDescription: String
+FormbricksAPIClientError.failureReason: var failureReason: String? { get } [macOS introduced 10.10; watchOS introduced 2.0; iOS introduced 8.0; tvOS introduced 9.0]
+FormbricksAPIClientError.helpAnchor: var helpAnchor: String? { get } [macOS introduced 10.10; watchOS introduced 2.0; iOS introduced 8.0; tvOS introduced 9.0]
+FormbricksAPIClientError.localizedDescription: var localizedDescription: String { get } [macOS introduced 10.10; watchOS introduced 2.0; iOS introduced 8.0; tvOS introduced 9.0]
+FormbricksAPIClientError.message: var message: String { get }
+FormbricksAPIClientError.recoverySuggestion: var recoverySuggestion: String? { get } [macOS introduced 10.10; watchOS introduced 2.0; iOS introduced 8.0; tvOS introduced 9.0]
+FormbricksAPIClientError.statusCodeInt: let statusCodeInt: Int?
+FormbricksAPIClientError.type: let type: FormbricksAPIErrorType
+FormbricksAPIClientError: conforms to Foundation.LocalizedError
+FormbricksAPIClientError: conforms to Swift.Error
+FormbricksAPIClientError: conforms to Swift.Sendable
+FormbricksAPIClientError: conforms to Swift.SendableMetatype
+FormbricksAPIClientError: final class FormbricksAPIClientError
+FormbricksAPIErrorType.!=(_:_:): static func != (lhs: Self, rhs: Self) -> Bool
+FormbricksAPIErrorType.hash(into:): func hash(into hasher: inout Hasher)
+FormbricksAPIErrorType.hashValue: var hashValue: Int { get }
+FormbricksAPIErrorType.init(rawValue:): init?(rawValue: Int)
+FormbricksAPIErrorType.invalidResponse: case invalidResponse
+FormbricksAPIErrorType.responseError: case responseError
+FormbricksAPIErrorType: conforms to Swift.Equatable
+FormbricksAPIErrorType: conforms to Swift.Hashable
+FormbricksAPIErrorType: conforms to Swift.RawRepresentable
+FormbricksAPIErrorType: enum FormbricksAPIErrorType
+FormbricksAppearance.!=(_:_:): static func != (lhs: Self, rhs: Self) -> Bool
+FormbricksAppearance.dark: case dark
+FormbricksAppearance.hash(into:): func hash(into hasher: inout Hasher)
+FormbricksAppearance.hashValue: var hashValue: Int { get }
+FormbricksAppearance.init(rawValue:): init?(rawValue: String)
+FormbricksAppearance.light: case light
+FormbricksAppearance.system: case system
+FormbricksAppearance: conforms to Swift.Equatable
+FormbricksAppearance: conforms to Swift.Hashable
+FormbricksAppearance: conforms to Swift.RawRepresentable
+FormbricksAppearance: enum FormbricksAppearance
+FormbricksConfig.Builder.add(attribute:forKey:): @objc func add(attribute: String, forKey key: String) -> FormbricksConfig.Builder
+FormbricksConfig.Builder.build(): @objc func build() -> FormbricksConfig
+FormbricksConfig.Builder.init(appUrl:environmentId:): @objc init(appUrl: String, environmentId: String) [deprecated, renamed: init(appUrl:workspaceId:), message: Use init(appUrl:workspaceId:) instead. environmentId will be removed in a future version.]
+FormbricksConfig.Builder.init(appUrl:workspaceId:): @objc init(appUrl: String, workspaceId: String)
+FormbricksConfig.Builder.set(appearance:): func set(appearance: FormbricksAppearance) -> FormbricksConfig.Builder
+FormbricksConfig.Builder.set(appearanceString:): @objc func set(appearanceString: String) -> FormbricksConfig.Builder
+FormbricksConfig.Builder.set(attributes:): func set(attributes: [String : AttributeValue]) -> FormbricksConfig.Builder
+FormbricksConfig.Builder.set(stringAttributes:): @objc func set(stringAttributes: [String : String]) -> FormbricksConfig.Builder
+FormbricksConfig.Builder.set(userId:): @objc func set(userId: String) -> FormbricksConfig.Builder
+FormbricksConfig.Builder.setLogLevel(_:): @objc func setLogLevel(_ logLevel: LogLevel) -> FormbricksConfig.Builder
+FormbricksConfig.Builder: @objc(FormbricksConfigBuilder) class Builder
+FormbricksConfig.Builder: conforms to ObjectiveC.NSObjectProtocol
+FormbricksConfig.Builder: conforms to Swift.CVarArg
+FormbricksConfig.Builder: conforms to Swift.CustomDebugStringConvertible
+FormbricksConfig.Builder: conforms to Swift.CustomStringConvertible
+FormbricksConfig.Builder: conforms to Swift.Equatable
+FormbricksConfig.Builder: conforms to Swift.Hashable
+FormbricksConfig.Builder: inherits from ObjectiveC.NSObject
+FormbricksConfig.environmentId: @objc var environmentId: String { get } [deprecated, renamed: workspaceId, message: Use workspaceId instead. environmentId will be removed in a future version.]
+FormbricksConfig.workspaceId: @objc let workspaceId: String
+FormbricksConfig: @objc(FormbricksConfig) class FormbricksConfig
+FormbricksConfig: conforms to ObjectiveC.NSObjectProtocol
+FormbricksConfig: conforms to Swift.CVarArg
+FormbricksConfig: conforms to Swift.CustomDebugStringConvertible
+FormbricksConfig: conforms to Swift.CustomStringConvertible
+FormbricksConfig: conforms to Swift.Equatable
+FormbricksConfig: conforms to Swift.Hashable
+FormbricksConfig: inherits from ObjectiveC.NSObject
+FormbricksSDKError.errorDescription: var errorDescription: String
+FormbricksSDKError.failureReason: var failureReason: String? { get } [macOS introduced 10.10; watchOS introduced 2.0; iOS introduced 8.0; tvOS introduced 9.0]
+FormbricksSDKError.helpAnchor: var helpAnchor: String? { get } [macOS introduced 10.10; watchOS introduced 2.0; iOS introduced 8.0; tvOS introduced 9.0]
+FormbricksSDKError.localizedDescription: var localizedDescription: String { get } [macOS introduced 10.10; watchOS introduced 2.0; iOS introduced 8.0; tvOS introduced 9.0]
+FormbricksSDKError.message: var message: String { get }
+FormbricksSDKError.recoverySuggestion: var recoverySuggestion: String? { get } [macOS introduced 10.10; watchOS introduced 2.0; iOS introduced 8.0; tvOS introduced 9.0]
+FormbricksSDKError.type: let type: FormbricksSDKErrorType
+FormbricksSDKError: conforms to Foundation.LocalizedError
+FormbricksSDKError: conforms to Swift.Error
+FormbricksSDKError: conforms to Swift.Sendable
+FormbricksSDKError: conforms to Swift.SendableMetatype
+FormbricksSDKError: final class FormbricksSDKError
+FormbricksSDKErrorType.!=(_:_:): static func != (lhs: Self, rhs: Self) -> Bool
+FormbricksSDKErrorType.hash(into:): func hash(into hasher: inout Hasher)
+FormbricksSDKErrorType.hashValue: var hashValue: Int { get }
+FormbricksSDKErrorType.init(rawValue:): init?(rawValue: Int)
+FormbricksSDKErrorType.invalidAppUrl: case invalidAppUrl
+FormbricksSDKErrorType.invalidDisplayOption: case invalidDisplayOption
+FormbricksSDKErrorType.invalidJavascriptMessage: case invalidJavascriptMessage
+FormbricksSDKErrorType.networkError: case networkError
+FormbricksSDKErrorType.sdkIsAlreadyInitialized: case sdkIsAlreadyInitialized
+FormbricksSDKErrorType.sdkIsNotInitialized: case sdkIsNotInitialized
+FormbricksSDKErrorType.unableToPersistEnvironment: case unableToPersistEnvironment
+FormbricksSDKErrorType.unableToPersistUser: case unableToPersistUser
+FormbricksSDKErrorType.unableToRefreshEnvironment: case unableToRefreshEnvironment
+FormbricksSDKErrorType.unableToRetrieveEnvironment: case unableToRetrieveEnvironment
+FormbricksSDKErrorType.unableToRetrieveUser: case unableToRetrieveUser
+FormbricksSDKErrorType.userIdIsNotSetYet: case userIdIsNotSetYet
+FormbricksSDKErrorType: conforms to Swift.Equatable
+FormbricksSDKErrorType: conforms to Swift.Hashable
+FormbricksSDKErrorType: conforms to Swift.RawRepresentable
+FormbricksSDKErrorType: enum FormbricksSDKErrorType
+LogLevel.!=(_:_:): static func != (lhs: Self, rhs: Self) -> Bool
+LogLevel.debug: case debug
+LogLevel.error: case error
+LogLevel.hash(into:): func hash(into hasher: inout Hasher)
+LogLevel.hashValue: var hashValue: Int { get }
+LogLevel.info: case info
+LogLevel.init(rawValue:): init?(rawValue: Int)
+LogLevel.none: case none
+LogLevel.verbose: case verbose
+LogLevel.warning: case warning
+LogLevel: @objc enum LogLevel
+LogLevel: conforms to Swift.Equatable
+LogLevel: conforms to Swift.Hashable
+LogLevel: conforms to Swift.RawRepresentable
+NSNotification.Name.environmentRefreshed: static let environmentRefreshed: Notification.Name [deprecated, renamed: workspaceRefreshed, message: Use .workspaceRefreshed instead. environmentRefreshed will be removed in a future version.]
+NSNotification.Name.workspaceRefreshed: static let workspaceRefreshed: Notification.Name

@@ -1,0 +1,6 @@
+# Test cases read top to bottom as scenarios, and a suite groups every case for one unit.
+# Splitting them to satisfy length limits would scatter a scenario without making it clearer.
+disabled_rules:
+  - file_length
+  - function_body_length
+  - type_body_length

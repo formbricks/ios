@@ -3,10 +3,8 @@ import SwiftUI
 /// Presents a survey webview from the top-most view controller in the key window.
 final class PresentSurveyManager {
     init() {
-        /*
-         This empty initializer prevents external instantiation of the PresentSurveyManager class.
-         The class serves as a namespace for the present method, so instance creation is not needed and should be restricted.
-        */
+        // This empty initializer prevents external instantiation of the PresentSurveyManager class.
+        // The class serves as a namespace for the present method, so instance creation is not needed and should be restricted.
     }
 
     /// The view controller that will present the survey window.
@@ -19,6 +17,13 @@ final class PresentSurveyManager {
     /// Where a survey is shown. Swappable because unit tests run with no window scene, where the
     /// real lookup always comes back empty.
     var keyWindow: () -> UIWindow? = { UIApplication.safeKeyWindow }
+
+    /// Wraps the survey view in the view controller that gets presented. Swappable so tests of
+    /// where and how a survey is shown need not render it: rendering starts a `WKWebView`, and
+    /// WebKit's first process launch blocks the main thread for seconds on a cold simulator.
+    var makeSurveyController: (FormbricksView) -> UIViewController = {
+        UIHostingController(rootView: $0)
+    }
 
     /// Walks the active presentation/navigation/tab hierarchy and returns the leaf VC.
     /// Mirrors UIKit's own `presentedViewController` traversal so a single walker is enough.
@@ -95,7 +100,7 @@ final class PresentSurveyManager {
                 workspaceResponse: workspaceResponse, surveyId: id,
                 traitSource: keyWindow()),
             layoutRelay: relay)
-        let hosting = UIHostingController(rootView: view)
+        let hosting = makeSurveyController(view)
         hosting.view.backgroundColor = .clear
 
         window.rootViewController = hosting
@@ -152,13 +157,13 @@ final class PresentSurveyManager {
         let view = FormbricksView(
             viewModel: FormbricksViewModel(
                 workspaceResponse: workspaceResponse, surveyId: id, traitSource: presenter))
-        let vc = UIHostingController(rootView: view)
-        vc.modalPresentationStyle = .overFullScreen
-        vc.modalTransitionStyle = .crossDissolve
-        vc.view.backgroundColor = .clear
-        self.viewController = vc
+        let controller = makeSurveyController(view)
+        controller.modalPresentationStyle = .overFullScreen
+        controller.modalTransitionStyle = .crossDissolve
+        controller.view.backgroundColor = .clear
+        self.viewController = controller
         presenter.present(
-            vc, animated: true,
+            controller, animated: true,
             completion: {
                 completion?(true)
             })

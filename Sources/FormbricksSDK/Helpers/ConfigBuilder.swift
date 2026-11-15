@@ -15,18 +15,25 @@ import Foundation
     let appearance: FormbricksAppearance?
 
     /// Backward-compatible alias for `workspaceId`.
-    @available(*, deprecated, renamed: "workspaceId", message: "Use workspaceId instead. environmentId will be removed in a future version.")
+    @available(
+        *, deprecated, renamed: "workspaceId",
+        message: "Use workspaceId instead. environmentId will be removed in a future version."
+    )
     @objc public var environmentId: String { workspaceId }
 
-    init(appUrl: String, workspaceId: String, userId: String?, attributes: [String: AttributeValue]?, logLevel: LogLevel, customService: FormbricksServiceProtocol?, usedDeprecatedEnvironmentId: Bool = false, appearance: FormbricksAppearance? = nil) {
-            self.appUrl = appUrl
-            self.workspaceId = workspaceId
-            self.userId = userId
-            self.attributes = attributes
-            self.logLevel = logLevel
-            self.customService = customService
-            self.usedDeprecatedEnvironmentId = usedDeprecatedEnvironmentId
-            self.appearance = appearance
+    init(
+        appUrl: String, workspaceId: String, userId: String?, attributes: [String: AttributeValue]?, logLevel: LogLevel,
+        customService: FormbricksServiceProtocol?, usedDeprecatedEnvironmentId: Bool = false,
+        appearance: FormbricksAppearance? = nil
+    ) {
+        self.appUrl = appUrl
+        self.workspaceId = workspaceId
+        self.userId = userId
+        self.attributes = attributes
+        self.logLevel = logLevel
+        self.customService = customService
+        self.usedDeprecatedEnvironmentId = usedDeprecatedEnvironmentId
+        self.appearance = appearance
     }
 
     /// The builder class for the FormbricksConfig object.
@@ -49,7 +56,10 @@ import Foundation
 
         /// Initializes the builder with the environment ID.
         /// - Warning: `environmentId` is deprecated — use `init(appUrl:workspaceId:)` instead.
-        @available(*, deprecated, renamed: "init(appUrl:workspaceId:)", message: "Use init(appUrl:workspaceId:) instead. environmentId will be removed in a future version.")
+        @available(
+            *, deprecated, renamed: "init(appUrl:workspaceId:)",
+            message: "Use init(appUrl:workspaceId:) instead. environmentId will be removed in a future version."
+        )
         @objc public init(appUrl: String, environmentId: String) {
             self.appUrl = appUrl
             self.workspaceId = environmentId
@@ -113,7 +123,10 @@ import Foundation
 
         /// Builds the FormbricksConfig object from the Builder object.
         @objc public func build() -> FormbricksConfig {
-            return FormbricksConfig(appUrl: appUrl, workspaceId: workspaceId, userId: userId, attributes: attributes, logLevel: logLevel, customService: customService, usedDeprecatedEnvironmentId: usedDeprecatedEnvironmentId, appearance: appearance)
+            return FormbricksConfig(
+                appUrl: appUrl, workspaceId: workspaceId, userId: userId, attributes: attributes, logLevel: logLevel,
+                customService: customService, usedDeprecatedEnvironmentId: usedDeprecatedEnvironmentId,
+                appearance: appearance)
         }
     }
 }
