@@ -147,7 +147,7 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Test the CI scripts
+      - name: Test the CI and release scripts
         run: make script-tests
 
       - name: Compare the public API with api/FormbricksSDK.api

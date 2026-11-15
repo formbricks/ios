@@ -65,6 +65,9 @@ api-check: symbol-graphs
 package-check:
 	scripts/package-check.sh
 
+# Tests for the shell scripts the checks and the release workflow run.
 script-tests:
 	scripts/tests/api-snapshot-test.sh
 	scripts/tests/pr-check-summary-test.sh
+	bash scripts/release/test-validate-tag.sh
+	bash scripts/release/test-verify-spm-release.sh
