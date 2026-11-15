@@ -181,13 +181,6 @@ jobs:
         # the iOS 26.2 simulator runtime that Xcode 26.3 runs.
         run: sudo xcode-select --switch "/Applications/Xcode_${XCODE_VERSION}.app"
 
-      - name: DEBUG simulators
-        run: |
-          xcrun simctl list runtimes || true
-          xcrun simctl list devices available | head -40 || true
-          xcodebuild -showdestinations -scheme FormbricksSDK 2>&1 | tail -40 || true
-          xcodebuild -showdestinations -project Playground/Playground.xcodeproj -scheme Playground 2>&1 | tail -40 || true
-
       # Before waiting for the server: the build and the simulator boot overlap the server's boot.
       - name: Build the playground and boot the simulator
         run: e2e/ios/run-journey.sh build
