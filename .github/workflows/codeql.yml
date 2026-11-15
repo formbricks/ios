@@ -25,7 +25,7 @@ jobs:
       matrix:
         include:
           - language: swift
-            runs-on: macos-15
+            runs-on: macos-26
             build-mode: manual
           - language: actions
             runs-on: ubuntu-latest
