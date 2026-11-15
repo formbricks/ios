@@ -1,0 +1,220 @@
+name: E2E
+
+# The SDK golden journey against a published Formbricks image. ci.yml calls it on every PR (fork PRs
+# skip it: no secrets) with the latest release; run it by hand with `server_version` (for example
+# 6.3.0-rc.1) as the pre-release QA.
+#
+# GitHub's macOS runners cannot run Docker, so two jobs run side by side with no `needs`:
+# - `server` (Linux) boots and seeds the server (e2e/server), opens a Cloudflare quick tunnel to it
+#   (e2e/tunnel), uploads the tunnel URL as an artifact, and stays up until the macOS job uploads its
+#   `done` artifact. Then it asserts the response through the V1 API and cleans up.
+# - `golden-journey` (macOS) builds Playground/, polls for the URL artifact, and runs the XCUITest.
+# A job's outputs only publish when it ends, which is why the hand-off uses artifacts.
+on:
+  workflow_call:
+    inputs:
+      server_version:
+        description: Formbricks image tag (ghcr.io/formbricks/formbricks) to test against
+        type: string
+        default: latest
+    secrets:
+      FORMBRICKS_QA_LICENSE_KEY:
+        description: QA Enterprise license with the Contacts feature
+        required: false
+  workflow_dispatch:
+    inputs:
+      server_version:
+        description: Formbricks image tag (ghcr.io/formbricks/formbricks) to test against, for example 6.3.0-rc.1
+        type: string
+        default: latest
+
+permissions:
+  contents: read
+  actions: read # each job polls the run's artifacts for the other's hand-off
+
+env:
+  FORMBRICKS_VERSION: ${{ inputs.server_version || 'latest' }}
+  # Unique per attempt; the XCUITest retry reuses it, which the survey allows.
+  E2E_USER_ID: qa-user-${{ github.run_id }}-${{ github.run_attempt }}
+  E2E_FEEDBACK: Golden journey feedback ${{ github.run_id }}
+  SERVER_ARTIFACT: e2e-server-attempt-${{ github.run_attempt }}
+  DONE_ARTIFACT: e2e-journey-done-attempt-${{ github.run_attempt }}
+
+jobs:
+  server:
+    name: Server and tunnel (Linux)
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    env:
+      CLOUDFLARED_VERSION: 2026.10.7
+      CLOUDFLARED_SHA256: 1f99fb518b83dec2ba8d870a7cc991d82a77e6196295a3d2754ba17ab9f91872
+    steps:
+      - name: Harden the runner
+        uses: step-security/harden-runner@1d88384fd173af6ecb012dfd0264a306b711241a # v2.22.4
+        with:
+          egress-policy: audit
+
+      - name: Check out the code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Check the server version
+        run: |
+          if [[ ! "${FORMBRICKS_VERSION}" =~ ^[A-Za-z0-9_][A-Za-z0-9_.-]{0,127}$ ]]; then
+            echo "::error::server_version '${FORMBRICKS_VERSION}' is not a valid image tag"
+            exit 1
+          fi
+          echo "Testing against ghcr.io/formbricks/formbricks:${FORMBRICKS_VERSION}"
+
+      - name: Test the harness scripts
+        run: |
+          e2e/server/test/lib.test.sh
+          e2e/tunnel/test/lib.test.sh
+
+      - name: Install cloudflared
+        run: |
+          curl -fsSL -o "$RUNNER_TEMP/cloudflared" \
+            "https://github.com/cloudflare/cloudflared/releases/download/${CLOUDFLARED_VERSION}/cloudflared-linux-amd64"
+          echo "${CLOUDFLARED_SHA256}  $RUNNER_TEMP/cloudflared" | sha256sum -c -
+          chmod +x "$RUNNER_TEMP/cloudflared"
+          echo "$RUNNER_TEMP" >> "$GITHUB_PATH"
+
+      - name: Start the Formbricks server and bootstrap the tenant
+        env:
+          FORMBRICKS_QA_LICENSE_KEY: ${{ secrets.FORMBRICKS_QA_LICENSE_KEY }}
+        run: e2e/server/up.sh
+
+      # Stops with a clear error at the license gate when FORMBRICKS_QA_LICENSE_KEY is missing.
+      - name: Seed the survey through the V1 API
+        env:
+          FORMBRICKS_QA_LICENSE_KEY: ${{ secrets.FORMBRICKS_QA_LICENSE_KEY }}
+        run: e2e/server/seed.sh
+
+      # The iOS SDK accepts only https:// app URLs; the quick tunnel provides one.
+      - name: Open a tunnel to the server
+        run: e2e/tunnel/start.sh
+
+      - name: Hand the tunnel URL to the macOS job
+        id: publish
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ${{ env.SERVER_ARTIFACT }}
+          path: e2e/tunnel/.state/server.env
+          if-no-files-found: error
+          retention-days: 1
+
+      # Without this the macOS job would wait for a URL that never comes.
+      - name: Tell the macOS job the server failed
+        if: failure() && steps.publish.outcome != 'success'
+        run: |
+          mkdir -p e2e/tunnel/.state
+          echo "E2E_SERVER_FAILED=1" > e2e/tunnel/.state/server.env
+
+      - name: Hand the failure to the macOS job
+        if: failure() && steps.publish.outcome != 'success'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ${{ env.SERVER_ARTIFACT }}
+          path: e2e/tunnel/.state/server.env
+          retention-days: 1
+
+      - name: Keep the server up until the macOS journey is done
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          e2e/tunnel/await-artifact.sh "${DONE_ARTIFACT}" e2e/tunnel/.state/done 2400
+          if ! grep -qx 'E2E_JOURNEY_RESULT=success' e2e/tunnel/.state/done/journey.env; then
+            echo "::error::the macOS journey did not pass ($(cat e2e/tunnel/.state/done/journey.env)); see the Golden journey (XCUITest) job"
+            exit 1
+          fi
+
+      - name: Assert the response through the V1 API
+        run: e2e/server/assert-response.sh
+
+      - name: Delete the seeded data through the V1 API
+        run: e2e/server/cleanup.sh
+
+      - name: Close the tunnel
+        if: always()
+        run: e2e/tunnel/stop.sh e2e/server/logs
+
+      - name: Stop the server and collect its logs
+        if: always()
+        run: e2e/server/down.sh e2e/server/logs
+
+      - name: Upload the server logs
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: e2e-golden-journey-attempt-${{ github.run_attempt }}
+          path: e2e/server/logs
+          if-no-files-found: ignore
+          retention-days: 7
+
+  golden-journey:
+    name: Golden journey (XCUITest)
+    runs-on: macos-26
+    timeout-minutes: 50
+    env:
+      XCODE_VERSION: "26.3"
+    steps:
+      - name: Harden the runner
+        uses: step-security/harden-runner@1d88384fd173af6ecb012dfd0264a306b711241a # v2.22.4
+        with:
+          egress-policy: audit
+
+      - name: Check out the code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Select Xcode
+        # xcode-select, not DEVELOPER_DIR, so the simulator service follows it too. macos-26 ships
+        # the iOS 26.2 simulator runtime that Xcode 26.3 runs.
+        run: sudo xcode-select --switch "/Applications/Xcode_${XCODE_VERSION}.app"
+
+      # Before waiting for the server: the build and the simulator boot overlap the server's boot.
+      - name: Build the playground and boot the simulator
+        run: e2e/ios/run-journey.sh build
+
+      - name: Wait for the server's tunnel URL
+        id: server
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          e2e/tunnel/await-artifact.sh "${SERVER_ARTIFACT}" "$RUNNER_TEMP/server" 1500
+          echo "url=$(e2e/tunnel/server-url.sh "$RUNNER_TEMP/server/server.env")" >> "$GITHUB_OUTPUT"
+
+      # -retry-tests-on-failure -test-iterations 2: a failed journey is retried once in this step.
+      - name: Run the golden journey
+        id: journey
+        env:
+          E2E_APP_URL: ${{ steps.server.outputs.url }}
+        run: e2e/ios/run-journey.sh test
+
+      # Always, so the server job stops waiting even when this job failed earlier.
+      - name: Tell the server job the journey is done
+        if: always()
+        env:
+          RESULT: ${{ steps.journey.outcome }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/done"
+          printf 'E2E_JOURNEY_RESULT=%s\n' "${RESULT:-skipped}" > "$RUNNER_TEMP/done/journey.env"
+
+      - name: Hand the result to the server job
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ${{ env.DONE_ARTIFACT }}
+          path: ${{ runner.temp }}/done/journey.env
+          retention-days: 1
+
+      - name: Upload the XCUITest results
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: e2e-golden-journey-xcresult-attempt-${{ github.run_attempt }}
+          path: .build/e2e/GoldenJourney.xcresult
+          if-no-files-found: ignore
+          retention-days: 7
