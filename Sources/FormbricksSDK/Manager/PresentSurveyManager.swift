@@ -20,6 +20,13 @@ final class PresentSurveyManager {
     /// real lookup always comes back empty.
     var keyWindow: () -> UIWindow? = { UIApplication.safeKeyWindow }
 
+    /// Wraps the survey view in the view controller that gets presented. Swappable so tests of
+    /// where and how a survey is shown need not render it: rendering starts a `WKWebView`, and
+    /// WebKit's first process launch blocks the main thread for seconds on a cold simulator.
+    var makeSurveyController: (FormbricksView) -> UIViewController = {
+        UIHostingController(rootView: $0)
+    }
+
     /// Walks the active presentation/navigation/tab hierarchy and returns the leaf VC.
     /// Mirrors UIKit's own `presentedViewController` traversal so a single walker is enough.
     private func topMostViewController(from viewController: UIViewController) -> UIViewController {
@@ -95,7 +102,7 @@ final class PresentSurveyManager {
                 workspaceResponse: workspaceResponse, surveyId: id,
                 traitSource: keyWindow()),
             layoutRelay: relay)
-        let hosting = UIHostingController(rootView: view)
+        let hosting = makeSurveyController(view)
         hosting.view.backgroundColor = .clear
 
         window.rootViewController = hosting
@@ -152,7 +159,7 @@ final class PresentSurveyManager {
         let view = FormbricksView(
             viewModel: FormbricksViewModel(
                 workspaceResponse: workspaceResponse, surveyId: id, traitSource: presenter))
-        let vc = UIHostingController(rootView: view)
+        let vc = makeSurveyController(view)
         vc.modalPresentationStyle = .overFullScreen
         vc.modalTransitionStyle = .crossDissolve
         vc.view.backgroundColor = .clear
