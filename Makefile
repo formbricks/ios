@@ -3,8 +3,9 @@
 
 SCHEME := FormbricksSDK
 DERIVED_DATA ?= .build/xcode
-# The newest iPhone simulator for the selected Xcode. Pin one with DESTINATION='platform=iOS Simulator,id=...'.
-DESTINATION ?= platform=iOS Simulator,name=iPhone 17,OS=latest
+# Empty picks an iPhone simulator on the newest runtime the selected Xcode supports
+# (scripts/simulator-destination.sh). Pin one with DESTINATION='platform=iOS Simulator,id=...'.
+DESTINATION ?=
 SWIFT_PATHS := Package.swift Sources Tests $(wildcard Playground)
 API_SNAPSHOT := api/FormbricksSDK.api
 PRODUCTS := $(DERIVED_DATA)/Build/Products/Debug-iphonesimulator
@@ -33,9 +34,12 @@ build:
 
 test:
 	rm -rf "$(TEST_RESULTS)"
+	destination='$(DESTINATION)'; \
+	if [ -z "$$destination" ]; then destination="$$(scripts/simulator-destination.sh)" || exit 1; fi; \
+	echo "Testing on $$destination"; \
 	xcodebuild test \
 		-scheme $(SCHEME) \
-		-destination '$(DESTINATION)' \
+		-destination "$$destination" \
 		-derivedDataPath $(DERIVED_DATA) \
 		-resultBundlePath $(TEST_RESULTS) \
 		-enableCodeCoverage YES \
@@ -69,5 +73,6 @@ package-check:
 script-tests:
 	scripts/tests/api-snapshot-test.sh
 	scripts/tests/pr-check-summary-test.sh
+	scripts/tests/simulator-destination-test.sh
 	bash scripts/release/test-validate-tag.sh
 	bash scripts/release/test-verify-spm-release.sh
