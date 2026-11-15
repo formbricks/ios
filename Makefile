@@ -67,3 +67,4 @@ package-check:
 
 script-tests:
 	scripts/tests/api-snapshot-test.sh
+	scripts/tests/pr-check-summary-test.sh

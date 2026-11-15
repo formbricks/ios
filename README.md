@@ -95,9 +95,25 @@ Formbricks.setAppearance(.dark) // .light, .dark or .system
 
 Custom CSS configured in Formbricks needs no SDK call; it arrives with the workspace state.
 
+## Development
+
+Every CI check has a `make` target, so `make check` runs them all locally. You need Xcode 26.3 and
+[SwiftLint](https://github.com/realm/SwiftLint) 0.65.1.
+
+| Target | What it checks |
+| --- | --- |
+| `make lint` | SwiftLint, strict |
+| `make format-check` | swift-format; `make format` fixes it |
+| `make build` | builds with warnings as errors |
+| `make test` | unit tests on an iPhone simulator |
+| `make api-check` | the public API against `api/FormbricksSDK.api` |
+| `make package-check` | an app can resolve and build the package through SPM |
+
+If you change the public API on purpose, run `make api-dump` and commit `api/FormbricksSDK.api` with the change.
+
 ## Releasing
 
-1. Confirm the SonarQube workflow passes, including the iOS simulator tests.
+1. Confirm the CI workflow (`PR Check Summary`) passes on the commit you are releasing.
 2. Create a new semantic-version Git tag (for example, `2.3.1`) on the tested commit and publish a GitHub release
    with the changes and any upgrade instructions. Do not move existing release tags.
 3. Swift Package Manager discovers versions from Git tags; no separate registry publishing step is required.
