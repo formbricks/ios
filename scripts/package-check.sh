@@ -20,8 +20,10 @@ trap cleanup EXIT
 mkdir -p "$work/Consumer/Sources/Consumer"
 
 # Served from a bare copy holding just this commit: SPM will not clone a worktree, and on CI
-# the commit under test is a detached merge commit that no branch points at.
+# the commit under test is a detached merge commit that no branch points at. CI checks out
+# shallow, and a bare repo refuses a push from a shallow clone unless told to accept one.
 git init --quiet --bare "$work/formbricks-ios.git"
+git -C "$work/formbricks-ios.git" config receive.shallowUpdate true
 git -C "$repo" push --quiet "$work/formbricks-ios.git" "$revision:refs/heads/package-check"
 
 cat >"$work/Consumer/Package.swift" <<SWIFT

@@ -30,8 +30,6 @@ jobs:
           - language: actions
             runs-on: ubuntu-latest
             build-mode: none
-    env:
-      DEVELOPER_DIR: /Applications/Xcode_26.3.app/Contents/Developer
     steps:
       - name: Harden the runner
         uses: step-security/harden-runner@1d88384fd173af6ecb012dfd0264a306b711241a # v2.22.4
@@ -42,6 +40,11 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+
+      - name: Select Xcode
+        if: runner.os == 'macOS'
+        # Matches ci.yml. xcode-select, not DEVELOPER_DIR, so the whole toolchain follows it.
+        run: sudo xcode-select --switch /Applications/Xcode_26.3.app
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
