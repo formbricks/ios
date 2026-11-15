@@ -37,7 +37,8 @@ extension WorkspaceResponse {
         let responseDict = responseDictionary?["data"] as? [String: Any]
         let dataDict = responseDict?["data"] as? [String: Any]
         // Server may respond with `settings`, `workspace`, or legacy `project` — all carry the same shape.
-        let settingsDict = (dataDict?["settings"] as? [String: Any])
+        let settingsDict =
+            (dataDict?["settings"] as? [String: Any])
             ?? (dataDict?["workspace"] as? [String: Any])
             ?? (dataDict?["project"] as? [String: Any])
         return settingsDict?["styling"] as? [String: Any]

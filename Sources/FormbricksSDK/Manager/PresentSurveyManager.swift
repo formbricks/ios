@@ -3,10 +3,8 @@ import SwiftUI
 /// Presents a survey webview from the top-most view controller in the key window.
 final class PresentSurveyManager {
     init() {
-        /*
-         This empty initializer prevents external instantiation of the PresentSurveyManager class.
-         The class serves as a namespace for the present method, so instance creation is not needed and should be restricted.
-        */
+        // This empty initializer prevents external instantiation of the PresentSurveyManager class.
+        // The class serves as a namespace for the present method, so instance creation is not needed and should be restricted.
     }
 
     /// The view controller that will present the survey window.
@@ -159,13 +157,13 @@ final class PresentSurveyManager {
         let view = FormbricksView(
             viewModel: FormbricksViewModel(
                 workspaceResponse: workspaceResponse, surveyId: id, traitSource: presenter))
-        let vc = makeSurveyController(view)
-        vc.modalPresentationStyle = .overFullScreen
-        vc.modalTransitionStyle = .crossDissolve
-        vc.view.backgroundColor = .clear
-        self.viewController = vc
+        let controller = makeSurveyController(view)
+        controller.modalPresentationStyle = .overFullScreen
+        controller.modalTransitionStyle = .crossDissolve
+        controller.view.backgroundColor = .clear
+        self.viewController = controller
         presenter.present(
-            vc, animated: true,
+            controller, animated: true,
             completion: {
                 completion?(true)
             })

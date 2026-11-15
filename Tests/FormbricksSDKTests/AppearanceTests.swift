@@ -1,4 +1,5 @@
 import XCTest
+
 @testable import FormbricksSDK
 
 final class AppearanceTests: XCTestCase {
@@ -90,7 +91,8 @@ final class AppearanceTests: XCTestCase {
         Formbricks.setAppearance(.system)
         let hostWindow = UIWindow(frame: .zero)
         hostWindow.overrideUserInterfaceStyle = .dark
-        XCTAssertNotEqual(UIView().traitCollection.userInterfaceStyle, .dark, "precondition: default traits are not dark")
+        XCTAssertNotEqual(
+            UIView().traitCollection.userInterfaceStyle, .dark, "precondition: default traits are not dark")
 
         let workspace = try workspace()
         let surveyId = try XCTUnwrap(workspace.data.data.surveys?.first?.id)
@@ -108,9 +110,10 @@ final class AppearanceTests: XCTestCase {
     }
 
     private func workspace() throws -> WorkspaceResponse {
-        Formbricks.setup(with: FormbricksConfig.Builder(appUrl: "https://example.com", workspaceId: "workspaceId")
-            .service(MockFormbricksService())
-            .build())
+        Formbricks.setup(
+            with: FormbricksConfig.Builder(appUrl: "https://example.com", workspaceId: "workspaceId")
+                .service(MockFormbricksService())
+                .build())
         let url = try XCTUnwrap(Bundle.module.url(forResource: "Environment", withExtension: "json"))
         return try JSONDecoder.iso8601Full.decode(WorkspaceResponse.self, from: Data(contentsOf: url))
     }

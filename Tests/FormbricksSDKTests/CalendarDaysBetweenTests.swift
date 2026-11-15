@@ -1,4 +1,5 @@
 import XCTest
+
 @testable import FormbricksSDK
 
 final class CalendarDaysBetweenTests: XCTestCase {
@@ -51,5 +52,3 @@ final class CalendarDaysBetweenTests: XCTestCase {
         XCTAssertEqual(days, 1)
     }
 }
-
-

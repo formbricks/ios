@@ -1,5 +1,6 @@
 import WebKit
 import XCTest
+
 @testable import FormbricksSDK
 
 /// A transparent full-screen WebView still swallows every touch — `pointer-events: none` is a web

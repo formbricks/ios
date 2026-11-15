@@ -1,4 +1,5 @@
 import XCTest
+
 @testable import FormbricksSDK
 
 /// The Embedded Data bag (ENG-1844 / ENG-2472): host-supplied context attached to future responses

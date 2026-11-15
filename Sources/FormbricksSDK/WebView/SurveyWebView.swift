@@ -1,7 +1,7 @@
-import SwiftUI
-@preconcurrency import WebKit
 import JavaScriptCore
 import SafariServices
+import SwiftUI
+@preconcurrency import WebKit
 
 /// SwiftUI wrapper for the WKWebView to display a survey.
 struct SurveyWebView: UIViewRepresentable {
@@ -13,25 +13,29 @@ struct SurveyWebView: UIViewRepresentable {
     weak var traitSource: UITraitEnvironment?
     /// Only set for a no-overlay survey — see `FormbricksView`.
     var layoutRelay: SurveyLayoutRelay?
-    
+
     /// Assemble the WKWebView with the necessary configuration.
     public func makeUIView(context: Context) -> WKWebView {
         clean()
-        
+
         // Add javascript message handlers
         let userContentController = WKUserContentController()
         userContentController.add(LoggingMessageHandler(), name: "logging")
         let coordinator = context.coordinator
-        userContentController.add(JsMessageHandler(surveyId: surveyId, layoutRelay: layoutRelay, onSurveyRendered: { [weak coordinator] in coordinator?.surveyDidRender() }), name: "jsMessage")
-        userContentController.addUserScript(WKUserScript(source: overrideConsole, injectionTime: .atDocumentStart, forMainFrameOnly: true))
-        
+        userContentController.add(
+            JsMessageHandler(
+                surveyId: surveyId, layoutRelay: layoutRelay,
+                onSurveyRendered: { [weak coordinator] in coordinator?.surveyDidRender() }), name: "jsMessage")
+        userContentController.addUserScript(
+            WKUserScript(source: overrideConsole, injectionTime: .atDocumentStart, forMainFrameOnly: true))
+
         let webViewConfig = WKWebViewConfiguration()
         webViewConfig.userContentController = userContentController
         // Full-size iPads would otherwise load the survey in desktop-class mode, where WebKit ignores
         // the page's `-webkit-text-size-adjust` and the text stops following Dynamic Type
         // (see `SurveyTextScale`). iPhones and the iPad mini are in mobile mode already.
         webViewConfig.defaultWebpagePreferences.preferredContentMode = .mobile
-        
+
         let webView = SurveyWKWebView(frame: .zero, configuration: webViewConfig)
         webView.configuration.defaultWebpagePreferences.allowsContentJavaScript = true
         webView.isOpaque = false
@@ -40,9 +44,9 @@ struct SurveyWebView: UIViewRepresentable {
         // to inspection in release builds (avoids leaking payload/responses and
         // allowing DOM/JS tampering on production devices).
         #if DEBUG
-        if #available(iOS 16.4, *) {
-            webView.isInspectable = true
-        }
+            if #available(iOS 16.4, *) {
+                webView.isInspectable = true
+            }
         #endif
         webView.navigationDelegate = context.coordinator
         webView.uiDelegate = context.coordinator
@@ -51,7 +55,7 @@ struct SurveyWebView: UIViewRepresentable {
         context.coordinator.attach(to: webView, appliedAppearance: initialAppearance, traitSource: traitSource)
         return webView
     }
-    
+
     func updateUIView(_ webView: WKWebView, context: Context) {
         // SwiftUI calls this on every update, and loading again restarts the survey and loses the
         // respondent's answers. Load once per document.
@@ -59,23 +63,23 @@ struct SurveyWebView: UIViewRepresentable {
         context.coordinator.loadedHTML = htmlString
         webView.loadHTMLString(htmlString, baseURL: nil)
     }
-    
+
     func makeCoordinator() -> Coordinator {
         return Coordinator()
     }
-    
-    /// Called automatically by SwiftUI when the view is torn down.
-   static func dismantleUIView(_ uiView: WKWebView, coordinator: Coordinator) {
-       let userContentController = uiView.configuration.userContentController
-       userContentController.removeScriptMessageHandler(forName: "logging")
-       userContentController.removeScriptMessageHandler(forName: "jsMessage")
 
-       coordinator.detach()
-       uiView.navigationDelegate = nil
-       uiView.uiDelegate = nil
-       Formbricks.logger?.debug("SurveyWebView: Dismantled")
-   }
-    
+    /// Called automatically by SwiftUI when the view is torn down.
+    static func dismantleUIView(_ uiView: WKWebView, coordinator: Coordinator) {
+        let userContentController = uiView.configuration.userContentController
+        userContentController.removeScriptMessageHandler(forName: "logging")
+        userContentController.removeScriptMessageHandler(forName: "jsMessage")
+
+        coordinator.detach()
+        uiView.navigationDelegate = nil
+        uiView.uiDelegate = nil
+        Formbricks.logger?.debug("SurveyWebView: Dismantled")
+    }
+
     /// Clean up cookies and website data.
     func clean() {
         HTTPCookieStorage.shared.removeCookies(since: Date.distantPast)
@@ -83,16 +87,16 @@ struct SurveyWebView: UIViewRepresentable {
             self.remove(records)
         }
     }
-    
+
     private func remove(_ records: [WKWebsiteDataRecord]) {
-        records.forEach { record in
-            WKWebsiteDataStore.default().removeData(ofTypes: record.dataTypes, for: [record], completionHandler: {
-                /*
-                 This completion handler is intentionally empty since we only need to
-                 ensure the data is removed. No additional actions are required after
-                 the website data has been cleared.
-                */
-            })
+        for record in records {
+            WKWebsiteDataStore.default().removeData(
+                ofTypes: record.dataTypes, for: [record],
+                completionHandler: {
+                    // This completion handler is intentionally empty since we only need to
+                    // ensure the data is removed. No additional actions are required after
+                    // the website data has been cleared.
+                })
         }
     }
 }
@@ -144,7 +148,7 @@ extension SurveyWebView {
 
         /// Sends the resolved value into the open survey, only when it actually changed.
         func syncAppearance() {
-            guard surveyRendered, let webView else { return } // hold until the renderer exists
+            guard surveyRendered, let webView else { return }  // hold until the renderer exists
             let resolved = AppearanceState.resolved(traits: traitSource?.traitCollection ?? webView.traitCollection)
             guard resolved != appliedAppearance else { return }
             appliedAppearance = resolved
@@ -153,31 +157,40 @@ extension SurveyWebView {
 
         func surveyDidRender() {
             surveyRendered = true
-            syncAppearance() // sends only if the value changed while loading
+            syncAppearance()  // sends only if the value changed while loading
         }
 
         // webView function handles Javascipt alert
-        func webView(_ webView: WKWebView, runJavaScriptAlertPanelWithMessage message: String, initiatedByFrame frame: WKFrameInfo,  completionHandler: @escaping () -> Void) {
+        func webView(
+            _ webView: WKWebView, runJavaScriptAlertPanelWithMessage message: String,
+            initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping () -> Void
+        ) {
             let alertController = UIAlertController(title: "", message: message, preferredStyle: .alert)
-           alertController.addAction(UIAlertAction(title: "OK", style: .default) { _ in 
-               /* 
-                This closure is intentionally empty since we only need a simple OK button
-                to dismiss the alert. The alert dismissal is handled automatically by the
-                system when the button is tapped.
-               */
-           })
-            UIApplication.safeKeyWindow?.rootViewController?.presentedViewController?.present(alertController, animated: true)
+            alertController.addAction(
+                UIAlertAction(title: "OK", style: .default) { _ in
+                    // This closure is intentionally empty since we only need a simple OK button
+                    // to dismiss the alert. The alert dismissal is handled automatically by the
+                    // system when the button is tapped.
+                })
+            UIApplication.safeKeyWindow?.rootViewController?.presentedViewController?.present(
+                alertController, animated: true)
             completionHandler()
         }
-        
-        func webView(_ webView: WKWebView, didReceive _: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
+
+        func webView(
+            _ webView: WKWebView, didReceive _: URLAuthenticationChallenge,
+            completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
+        ) {
             // Let the OS perform standard certificate-chain validation. Never force-trust
             // arbitrary certificates, as that would disable TLS validation and expose the
             // survey WebView traffic to man-in-the-middle interception.
             completionHandler(.performDefaultHandling, nil)
         }
 
-        func webView(_: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+        func webView(
+            _: WKWebView, decidePolicyFor navigationAction: WKNavigationAction,
+            decisionHandler: @escaping (WKNavigationActionPolicy) -> Void
+        ) {
             let url = navigationAction.request.url
             // The survey is an in-memory document (loaded via loadHTMLString) rendered by the
             // JS library; it never legitimately navigates its own frame. Allow that base
@@ -201,7 +214,7 @@ extension SurveyWebView {
 // MARK: - Javascript --> Native message handler -
 /// Handle messages coming from the Javascript in the WebView.
 final class JsMessageHandler: NSObject, WKScriptMessageHandler {
-    
+
     let surveyId: String
     /// Where card rects go. Nil for an overlaid survey, whose backdrop blocks the host app anyway.
     private let layoutRelay: SurveyLayoutRelay?
@@ -249,61 +262,68 @@ final class JsMessageHandler: NSObject, WKScriptMessageHandler {
 
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
         Formbricks.logger?.debug(message.body)
-        
-        if let body = message.body as? String, let data = body.data(using: .utf8), let obj = try? JSONDecoder().decode(JsMessageData.self, from: data) {
-            
-            switch obj.event {
-                /// Happens when the user submits an answer.
-            case .onResponseCreated:
-                Formbricks.surveyManager?.postResponse(surveyId: surveyId)
-                refreshSegmentsOnce(for: .onResponse)
 
-                /// Happens when a survey is shown.
-            case .onDisplayCreated:
-                Formbricks.surveyManager?.onNewDisplay(surveyId: surveyId)
-                refreshSegmentsOnce(for: .onDisplay)
-
-            /// Happens when the survey is completed and the finished response has been
-            /// accepted by the backend. Only used to refresh interaction-based segments —
-            /// the survey window is still closed by `onClose`.
-            case .onFinished:
-                refreshSegmentsOnce(for: .onFinished)
-
-            /// Happens when the user closes the survey view with the close button.
-            case .onClose:
-                Formbricks.surveyManager?.dismissSurveyWebView()
-            
-            /// Happens when the survey wants to open an external link in the default browser.
-            case .onOpenExternalURL:
-                if let message = try? JSONDecoder().decode(OpenExternalUrlMessage.self, from: data),
-                   let url = URL(string: message.onOpenExternalURLParams.url) {
-                    JsMessageHandler.openExternalURL(url)
-                }
-                
-            /// Happens when the survey library fails to load.
-            case .onSurveyLibraryLoadError:
-                Formbricks.surveyManager?.dismissSurveyWebView()
-
-            /// renderSurvey returned: appearance changes held back while loading can now be sent.
-            case .onSurveyRendered:
-                onSurveyRendered?()
-
-            /// Happens whenever the survey card moves or resizes, and once more with no rect when it
-            /// leaves the screen. Only a no-overlay survey acts on it; see `SurveyTouchRegion`.
-            case .onCardRectChange:
-                // A payload that does not decode says nothing about where the card is. Passing it on
-                // as `nil` would read as "the card left the screen" and make the visible card
-                // untappable, so it is logged and the current region kept.
-                guard let cardRectMessage = try? JSONDecoder().decode(CardRectMessage.self, from: data) else {
-                    Formbricks.logger?.error("Ignoring an onCardRectChange payload that does not decode: \(body)")
-                    return
-                }
-                layoutRelay?.onCardRectChange?(cardRectMessage.rect)
-            }
-            
+        if let body = message.body as? String, let data = body.data(using: .utf8),
+            let obj = try? JSONDecoder().decode(JsMessageData.self, from: data)
+        {
+            handle(obj.event, data: data, body: body)
         } else {
             let error = FormbricksSDKError(type: .invalidJavascriptMessage)
             Formbricks.logger?.error("\(error.message): \(message.body)")
+        }
+    }
+
+    /// Acts on one decoded message from the survey. `data` is the raw payload, for events that
+    /// carry more than their name.
+    private func handle(_ event: EventType, data: Data, body: String) {
+        switch event {
+        /// Happens when the user submits an answer.
+        case .onResponseCreated:
+            Formbricks.surveyManager?.postResponse(surveyId: surveyId)
+            refreshSegmentsOnce(for: .onResponse)
+
+        /// Happens when a survey is shown.
+        case .onDisplayCreated:
+            Formbricks.surveyManager?.onNewDisplay(surveyId: surveyId)
+            refreshSegmentsOnce(for: .onDisplay)
+
+        /// Happens when the survey is completed and the finished response has been
+        /// accepted by the backend. Only used to refresh interaction-based segments —
+        /// the survey window is still closed by `onClose`.
+        case .onFinished:
+            refreshSegmentsOnce(for: .onFinished)
+
+        /// Happens when the user closes the survey view with the close button.
+        case .onClose:
+            Formbricks.surveyManager?.dismissSurveyWebView()
+
+        /// Happens when the survey wants to open an external link in the default browser.
+        case .onOpenExternalURL:
+            if let message = try? JSONDecoder().decode(OpenExternalUrlMessage.self, from: data),
+                let url = URL(string: message.onOpenExternalURLParams.url)
+            {
+                JsMessageHandler.openExternalURL(url)
+            }
+
+        /// Happens when the survey library fails to load.
+        case .onSurveyLibraryLoadError:
+            Formbricks.surveyManager?.dismissSurveyWebView()
+
+        /// renderSurvey returned: appearance changes held back while loading can now be sent.
+        case .onSurveyRendered:
+            onSurveyRendered?()
+
+        /// Happens whenever the survey card moves or resizes, and once more with no rect when it
+        /// leaves the screen. Only a no-overlay survey acts on it; see `SurveyTouchRegion`.
+        case .onCardRectChange:
+            // A payload that does not decode says nothing about where the card is. Passing it on
+            // as `nil` would read as "the card left the screen" and make the visible card
+            // untappable, so it is logged and the current region kept.
+            guard let cardRectMessage = try? JSONDecoder().decode(CardRectMessage.self, from: data) else {
+                Formbricks.logger?.error("Ignoring an onCardRectChange payload that does not decode: \(body)")
+                return
+            }
+            layoutRelay?.onCardRectChange?(cardRectMessage.rect)
         }
     }
 
@@ -325,35 +345,35 @@ final class LoggingMessageHandler: NSObject, WKScriptMessageHandler {
     }
 }
 
-private extension SurveyWebView {
+extension SurveyWebView {
     // https://stackoverflow.com/a/61489361
-    var overrideConsole: String {
+    fileprivate var overrideConsole: String {
         return
-    """
-        function log(emoji, type, args) {
-          window.webkit.messageHandlers.logging.postMessage(
-            `${emoji} JS ${type}: ${Object.values(args)
-              .map(v => typeof(v) === "undefined" ? "undefined" : typeof(v) === "object" ? JSON.stringify(v) : v.toString())
-              .map(v => v.substring(0, 3000)) // Limit msg to 3000 chars
-              .join(", ")}`
-          )
-        }
-    
-        let originalLog = console.log
-        let originalWarn = console.warn
-        let originalError = console.error
-        let originalDebug = console.debug
-    
-        console.log = function() { log("📗", "log", arguments); originalLog.apply(null, arguments) }
-        console.warn = function() { log("📙", "warning", arguments); originalWarn.apply(null, arguments) }
-        console.error = function() { log("📕", "error", arguments); originalError.apply(null, arguments) }
-        console.debug = function() { log("📘", "debug", arguments); originalDebug.apply(null, arguments) }
-    
-        window.addEventListener("error", function(e) {
-            window.webkit.messageHandlers.jsMessage.postMessage(JSON.stringify({ event: "onSurveyLibraryLoadError" }));
-            log("💥", "Uncaught", [`${e.message} at ${e.filename}:${e.lineno}:${e.colno}`])
-        })
-    """
+            """
+                function log(emoji, type, args) {
+                  window.webkit.messageHandlers.logging.postMessage(
+                    `${emoji} JS ${type}: ${Object.values(args)
+                      .map(v => typeof(v) === "undefined" ? "undefined" : typeof(v) === "object" ? JSON.stringify(v) : v.toString())
+                      .map(v => v.substring(0, 3000)) // Limit msg to 3000 chars
+                      .join(", ")}`
+                  )
+                }
+
+                let originalLog = console.log
+                let originalWarn = console.warn
+                let originalError = console.error
+                let originalDebug = console.debug
+
+                console.log = function() { log("📗", "log", arguments); originalLog.apply(null, arguments) }
+                console.warn = function() { log("📙", "warning", arguments); originalWarn.apply(null, arguments) }
+                console.error = function() { log("📕", "error", arguments); originalError.apply(null, arguments) }
+                console.debug = function() { log("📘", "debug", arguments); originalDebug.apply(null, arguments) }
+
+                window.addEventListener("error", function(e) {
+                    window.webkit.messageHandlers.jsMessage.postMessage(JSON.stringify({ event: "onSurveyLibraryLoadError" }));
+                    log("💥", "Uncaught", [`${e.message} at ${e.filename}:${e.lineno}:${e.colno}`])
+                })
+            """
     }
 }
 

@@ -1,5 +1,6 @@
-import XCTest
 import WebKit
+import XCTest
+
 @testable import FormbricksSDK
 
 /// `WKScriptMessage` cannot be constructed with a payload, but `body` is overridable, so the
@@ -21,7 +22,10 @@ private final class CountingMockService: MockFormbricksService {
     /// Lets a test wait on the real request instead of guessing how long the debounce takes.
     var onPostUser: ((Int) -> Void)?
 
-    override func postUser(id: String, attributes: [String: AttributeValue]?, completion: @escaping (ResultType<PostUserRequest.Response>) -> Void) {
+    override func postUser(
+        id: String, attributes: [String: AttributeValue]?,
+        completion: @escaping (ResultType<PostUserRequest.Response>) -> Void
+    ) {
         postUserCallCount += 1
         onPostUser?(postUserCallCount)
         super.postUser(id: id, attributes: attributes, completion: completion)
@@ -32,7 +36,7 @@ final class SurveyInteractionRefreshTests: XCTestCase {
 
     private let userDefaultsKeys = [
         "userIdKey", "contactIdKey", "segmentsKey",
-        "displaysKey", "responsesKey", "lastDisplayedAtKey", "expiresAtKey"
+        "displaysKey", "responsesKey", "lastDisplayedAtKey", "expiresAtKey",
     ]
 
     override func setUp() {
@@ -48,7 +52,7 @@ final class SurveyInteractionRefreshTests: XCTestCase {
     }
 
     private func clearUserState() {
-        userDefaultsKeys.forEach { UserDefaults.standard.removeObject(forKey: $0) }
+        for key in userDefaultsKeys { UserDefaults.standard.removeObject(forKey: key) }
         // The cached workspace blob outlives `Formbricks.cleanup()` on purpose (real apps rely
         // on it across launches), and its fixture `expiresAt` is years out — so without this a
         // blob written by an earlier run is reused and never refetched.
@@ -86,10 +90,12 @@ final class SurveyInteractionRefreshTests: XCTestCase {
     }
 
     func testSurveyDecodesFullInteractionRefresh() throws {
-        let decoded = try decodeSurvey(#"""
-        {"id":"survey-a","interactionRefresh":{"onDisplay":true,"onResponse":false,"onFinished":true}}
-        """#)
-        XCTAssertEqual(decoded.interactionRefresh, InteractionRefresh(onDisplay: true, onResponse: false, onFinished: true))
+        let decoded = try decodeSurvey(
+            #"""
+            {"id":"survey-a","interactionRefresh":{"onDisplay":true,"onResponse":false,"onFinished":true}}
+            """#)
+        XCTAssertEqual(
+            decoded.interactionRefresh, InteractionRefresh(onDisplay: true, onResponse: false, onFinished: true))
     }
 
     /// A partial object must not fail the decode — otherwise one malformed survey blanks out
@@ -100,18 +106,20 @@ final class SurveyInteractionRefreshTests: XCTestCase {
     }
 
     func testUnknownKeyInsideInteractionRefreshIsIgnored() throws {
-        let decoded = try decodeSurvey(#"""
-        {"id":"survey-a","interactionRefresh":{"onDisplay":true,"onSomethingNew":true}}
-        """#)
+        let decoded = try decodeSurvey(
+            #"""
+            {"id":"survey-a","interactionRefresh":{"onDisplay":true,"onSomethingNew":true}}
+            """#)
         XCTAssertEqual(decoded.interactionRefresh?.onDisplay, true)
     }
 
     /// The server attaches an all-false object to every survey in an interaction-targeting
     /// workspace, so this is a real payload and must be distinguishable from absent.
     func testAllFalseInteractionRefreshIsPresentButNeverRefreshes() throws {
-        let decoded = try decodeSurvey(#"""
-        {"id":"survey-a","interactionRefresh":{"onDisplay":false,"onResponse":false,"onFinished":false}}
-        """#)
+        let decoded = try decodeSurvey(
+            #"""
+            {"id":"survey-a","interactionRefresh":{"onDisplay":false,"onResponse":false,"onFinished":false}}
+            """#)
         XCTAssertNotNil(decoded.interactionRefresh)
         for source in [InteractionSource.onDisplay, .onResponse, .onFinished] {
             XCTAssertFalse(decoded.interactionRefresh?.shouldRefresh(on: source) ?? true)
@@ -150,12 +158,14 @@ final class SurveyInteractionRefreshTests: XCTestCase {
     }
 
     func testHtmlTemplatePassesOnFinishedToRenderSurvey() throws {
-        Formbricks.setup(with: FormbricksConfig.Builder(appUrl: "https://example.com", workspaceId: "workspaceId")
-            .service(MockFormbricksService())
-            .build())
+        Formbricks.setup(
+            with: FormbricksConfig.Builder(appUrl: "https://example.com", workspaceId: "workspaceId")
+                .service(MockFormbricksService())
+                .build())
 
         guard let url = Bundle.module.url(forResource: "Environment", withExtension: "json"),
-              let data = try? Data(contentsOf: url) else {
+            let data = try? Data(contentsOf: url)
+        else {
             return XCTFail("Missing Environment.json fixture")
         }
         let workspaceResponse = try JSONDecoder.iso8601Full.decode(GetWorkspaceRequest.Response.self, from: data)
@@ -346,10 +356,11 @@ final class SurveyInteractionRefreshTests: XCTestCase {
         if let userId = userId {
             UserDefaults.standard.set(userId, forKey: "userIdKey")
         }
-        Formbricks.setup(with: FormbricksConfig.Builder(appUrl: "https://example.com", workspaceId: "workspaceId")
-            .service(service)
-            .build())
-        return "cm6ovw6j7000gsf0kduf4oo4i" // the fixture survey, which carries interactionRefresh
+        Formbricks.setup(
+            with: FormbricksConfig.Builder(appUrl: "https://example.com", workspaceId: "workspaceId")
+                .service(service)
+                .build())
+        return "cm6ovw6j7000gsf0kduf4oo4i"  // the fixture survey, which carries interactionRefresh
     }
 
     private func send(_ event: String, to handler: JsMessageHandler) {
@@ -525,7 +536,7 @@ final class SurveyInteractionRefreshTests: XCTestCase {
         defer { Config.User.minimumSyncIntervalInSeconds = originalFloor }
 
         let service = BackgroundCompletionMockService()
-        service.expiresIn = -3600 // server expiry already an hour in the device's past
+        service.expiresIn = -3600  // server expiry already an hour in the device's past
         let userManager = UserManager(service: service)
 
         userManager.syncUser(withId: "user-1")
@@ -549,14 +560,17 @@ private final class BackgroundCompletionMockService: MockFormbricksService {
     var expiresIn: TimeInterval = 0.3
     var onPostUser: ((Int) -> Void)?
 
-    override func postUser(id: String, attributes: [String: AttributeValue]?, completion: @escaping (ResultType<PostUserRequest.Response>) -> Void) {
+    override func postUser(
+        id: String, attributes: [String: AttributeValue]?,
+        completion: @escaping (ResultType<PostUserRequest.Response>) -> Void
+    ) {
         postUserCallCount += 1
         onPostUser?(postUserCallCount)
 
         let expiresAt = DateFormatter.isoFormatter.string(from: Date().addingTimeInterval(expiresIn))
         let json = """
-        {"data":{"state":{"data":{"contactId":"contact-1","displays":[],"lastDisplayAt":null,"responses":[],"segments":["segment-1"],"userId":"\(id)"},"expiresAt":"\(expiresAt)"}}}
-        """
+            {"data":{"state":{"data":{"contactId":"contact-1","displays":[],"lastDisplayAt":null,"responses":[],"segments":["segment-1"],"userId":"\(id)"},"expiresAt":"\(expiresAt)"}}}
+            """
 
         DispatchQueue.global().async {
             do {

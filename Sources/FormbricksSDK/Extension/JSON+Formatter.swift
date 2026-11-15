@@ -15,10 +15,10 @@ extension JSONDecoder {
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .formatted(DateFormatter.isoFormatter)
         return decoder
-        
+
     }()
 }
-    
+
 extension JSONEncoder {
     static let iso8601Full: JSONEncoder = {
         let encoder = JSONEncoder()

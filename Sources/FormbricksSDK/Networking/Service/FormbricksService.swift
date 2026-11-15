@@ -10,7 +10,10 @@ class FormbricksService: FormbricksServiceProtocol {
 
     // MARK: - User -
     /// Logs in a user with the given ID or creates one if it doesn't exist.
-    func postUser(id: String, attributes: [String: AttributeValue]?, completion: @escaping (ResultType<PostUserRequest.Response>) -> Void) {
+    func postUser(
+        id: String, attributes: [String: AttributeValue]?,
+        completion: @escaping (ResultType<PostUserRequest.Response>) -> Void
+    ) {
         let endPointRequest = PostUserRequest(userId: id, attributes: attributes)
         execute(endPointRequest, withCompletion: completion)
     }
@@ -18,18 +21,20 @@ class FormbricksService: FormbricksServiceProtocol {
 
 protocol FormbricksServiceProtocol {
     func getWorkspaceState(
-      completion: @escaping (ResultType<GetWorkspaceRequest.Response>) -> Void
+        completion: @escaping (ResultType<GetWorkspaceRequest.Response>) -> Void
     )
     func postUser(
-      id: String,
-      attributes: [String: AttributeValue]?,
-      completion: @escaping (ResultType<PostUserRequest.Response>) -> Void
+        id: String,
+        attributes: [String: AttributeValue]?,
+        completion: @escaping (ResultType<PostUserRequest.Response>) -> Void
     )
-  }
+}
 
-private extension FormbricksService {
+extension FormbricksService {
     /// Creates the APIClient operation and adds it to the queue
-    func execute<Request: CodableRequest>(_ request: Request, withCompletion completion: @escaping (ResultType<Request.Response>) -> Void) {
+    fileprivate func execute<Request: CodableRequest>(
+        _ request: Request, withCompletion completion: @escaping (ResultType<Request.Response>) -> Void
+    ) {
         let operation = APIClient(request: request, completion: completion)
         Formbricks.apiQueue?.addOperation(operation)
     }

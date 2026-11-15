@@ -1,36 +1,34 @@
 // https://github.com/Flight-School/AnyCodable/blob/master/Sources/AnyCodable/AnyCodable.swift
 
 #if canImport(Foundation)
-import Foundation
+    import Foundation
 #endif
 
-/**
- A type-erased `Encodable` value.
-
- The `AnyEncodable` type forwards encoding responsibilities
- to an underlying value, hiding its specific underlying type.
-
- You can encode mixed-type values in dictionaries
- and other collections that require `Encodable` conformance
- by declaring their contained type to be `AnyEncodable`:
-
-     let dictionary: [String: AnyEncodable] = [
-         "boolean": true,
-         "integer": 42,
-         "double": 3.141592653589793,
-         "string": "string",
-         "array": [1, 2, 3],
-         "nested": [
-             "a": "alpha",
-             "b": "bravo",
-             "c": "charlie"
-         ],
-         "null": nil
-     ]
-
-     let encoder = JSONEncoder()
-     let json = try! encoder.encode(dictionary)
- */
+/// A type-erased `Encodable` value.
+///
+/// The `AnyEncodable` type forwards encoding responsibilities
+/// to an underlying value, hiding its specific underlying type.
+///
+/// You can encode mixed-type values in dictionaries
+/// and other collections that require `Encodable` conformance
+/// by declaring their contained type to be `AnyEncodable`:
+///
+///     let dictionary: [String: AnyEncodable] = [
+///         "boolean": true,
+///         "integer": 42,
+///         "double": 3.141592653589793,
+///         "string": "string",
+///         "array": [1, 2, 3],
+///         "nested": [
+///             "a": "alpha",
+///             "b": "bravo",
+///             "c": "charlie"
+///         ],
+///         "null": nil
+///     ]
+///
+///     let encoder = JSONEncoder()
+///     let json = try! encoder.encode(dictionary)
 struct AnyEncodable: Encodable {
     public let value: Any
 
@@ -55,8 +53,8 @@ extension AnyEncodableProtocol {
 
         switch value {
         #if canImport(Foundation)
-        case is NSNull:
-            try container.encodeNil()
+            case is NSNull:
+                try container.encodeNil()
         #endif
         case is Void:
             try container.encodeNil()
@@ -89,12 +87,12 @@ extension AnyEncodableProtocol {
         case let string as String:
             try container.encode(string)
         #if canImport(Foundation)
-        case let number as NSNumber:
-            try encode(nsnumber: number, into: &container)
-        case let date as Date:
-            try container.encode(date)
-        case let url as URL:
-            try container.encode(url)
+            case let number as NSNumber:
+                try encode(nsnumber: number, into: &container)
+            case let date as Date:
+                try container.encode(date)
+            case let url as URL:
+                try container.encode(url)
         #endif
         case let array as [Any?]:
             try container.encode(array.map { AnyEncodable($0) })
@@ -103,41 +101,44 @@ extension AnyEncodableProtocol {
         case let encodable as Encodable:
             try encodable.encode(to: encoder)
         default:
-            let context = EncodingError.Context(codingPath: container.codingPath, debugDescription: "AnyEncodable value cannot be encoded")
+            let context = EncodingError.Context(
+                codingPath: container.codingPath, debugDescription: "AnyEncodable value cannot be encoded")
             throw EncodingError.invalidValue(value, context)
         }
     }
 
     #if canImport(Foundation)
-    private func encode(nsnumber: NSNumber, into container: inout SingleValueEncodingContainer) throws {
-        switch Character(Unicode.Scalar(UInt8(nsnumber.objCType.pointee)))  {
-        case "B":
-            try container.encode(nsnumber.boolValue)
-        case "c":
-            try container.encode(nsnumber.int8Value)
-        case "s":
-            try container.encode(nsnumber.int16Value)
-        case "i", "l":
-            try container.encode(nsnumber.int32Value)
-        case "q":
-            try container.encode(nsnumber.int64Value)
-        case "C":
-            try container.encode(nsnumber.uint8Value)
-        case "S":
-            try container.encode(nsnumber.uint16Value)
-        case "I", "L":
-            try container.encode(nsnumber.uint32Value)
-        case "Q":
-            try container.encode(nsnumber.uint64Value)
-        case "f":
-            try container.encode(nsnumber.floatValue)
-        case "d":
-            try container.encode(nsnumber.doubleValue)
-        default:
-            let context = EncodingError.Context(codingPath: container.codingPath, debugDescription: "NSNumber cannot be encoded because its type is not handled")
-            throw EncodingError.invalidValue(nsnumber, context)
+        private func encode(nsnumber: NSNumber, into container: inout SingleValueEncodingContainer) throws {
+            switch Character(Unicode.Scalar(UInt8(nsnumber.objCType.pointee))) {
+            case "B":
+                try container.encode(nsnumber.boolValue)
+            case "c":
+                try container.encode(nsnumber.int8Value)
+            case "s":
+                try container.encode(nsnumber.int16Value)
+            case "i", "l":
+                try container.encode(nsnumber.int32Value)
+            case "q":
+                try container.encode(nsnumber.int64Value)
+            case "C":
+                try container.encode(nsnumber.uint8Value)
+            case "S":
+                try container.encode(nsnumber.uint16Value)
+            case "I", "L":
+                try container.encode(nsnumber.uint32Value)
+            case "Q":
+                try container.encode(nsnumber.uint64Value)
+            case "f":
+                try container.encode(nsnumber.floatValue)
+            case "d":
+                try container.encode(nsnumber.doubleValue)
+            default:
+                let context = EncodingError.Context(
+                    codingPath: container.codingPath,
+                    debugDescription: "NSNumber cannot be encoded because its type is not handled")
+                throw EncodingError.invalidValue(nsnumber, context)
+            }
         }
-    }
     #endif
 }
 
@@ -146,37 +147,37 @@ extension AnyEncodable: Equatable {
         switch (lhs.value, rhs.value) {
         case is (Void, Void):
             return true
-        case let (lhs as Bool, rhs as Bool):
+        case (let lhs as Bool, let rhs as Bool):
             return lhs == rhs
-        case let (lhs as Int, rhs as Int):
+        case (let lhs as Int, let rhs as Int):
             return lhs == rhs
-        case let (lhs as Int8, rhs as Int8):
+        case (let lhs as Int8, let rhs as Int8):
             return lhs == rhs
-        case let (lhs as Int16, rhs as Int16):
+        case (let lhs as Int16, let rhs as Int16):
             return lhs == rhs
-        case let (lhs as Int32, rhs as Int32):
+        case (let lhs as Int32, let rhs as Int32):
             return lhs == rhs
-        case let (lhs as Int64, rhs as Int64):
+        case (let lhs as Int64, let rhs as Int64):
             return lhs == rhs
-        case let (lhs as UInt, rhs as UInt):
+        case (let lhs as UInt, let rhs as UInt):
             return lhs == rhs
-        case let (lhs as UInt8, rhs as UInt8):
+        case (let lhs as UInt8, let rhs as UInt8):
             return lhs == rhs
-        case let (lhs as UInt16, rhs as UInt16):
+        case (let lhs as UInt16, let rhs as UInt16):
             return lhs == rhs
-        case let (lhs as UInt32, rhs as UInt32):
+        case (let lhs as UInt32, let rhs as UInt32):
             return lhs == rhs
-        case let (lhs as UInt64, rhs as UInt64):
+        case (let lhs as UInt64, let rhs as UInt64):
             return lhs == rhs
-        case let (lhs as Float, rhs as Float):
+        case (let lhs as Float, let rhs as Float):
             return lhs == rhs
-        case let (lhs as Double, rhs as Double):
+        case (let lhs as Double, let rhs as Double):
             return lhs == rhs
-        case let (lhs as String, rhs as String):
+        case (let lhs as String, let rhs as String):
             return lhs == rhs
-        case let (lhs as [String: AnyEncodable], rhs as [String: AnyEncodable]):
+        case (let lhs as [String: AnyEncodable], let rhs as [String: AnyEncodable]):
             return lhs == rhs
-        case let (lhs as [AnyEncodable], rhs as [AnyEncodable]):
+        case (let lhs as [AnyEncodable], let rhs as [AnyEncodable]):
             return lhs == rhs
         default:
             return false
