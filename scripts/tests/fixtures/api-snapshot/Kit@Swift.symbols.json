@@ -1,0 +1,19 @@
+{
+  "module": { "name": "Kit" },
+  "symbols": [
+    {
+      "kind": { "identifier": "swift.property", "displayName": "Instance Property" },
+      "identifier": { "precise": "s:s5ErrorP3KitE4codeSivp", "interfaceLanguage": "swift" },
+      "pathComponents": ["Error", "code"],
+      "declarationFragments": [
+        { "kind": "keyword", "spelling": "var" },
+        { "kind": "text", "spelling": " " },
+        { "kind": "identifier", "spelling": "code" },
+        { "kind": "text", "spelling": ": " },
+        { "kind": "typeIdentifier", "spelling": "Int", "preciseIdentifier": "s:Si" }
+      ],
+      "accessLevel": "public"
+    }
+  ],
+  "relationships": []
+}

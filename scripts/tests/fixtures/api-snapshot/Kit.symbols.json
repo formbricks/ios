@@ -1,0 +1,53 @@
+{
+  "module": { "name": "Kit" },
+  "symbols": [
+    {
+      "kind": { "identifier": "swift.class", "displayName": "Class" },
+      "identifier": { "precise": "s:3Kit6WidgetC", "interfaceLanguage": "swift" },
+      "pathComponents": ["Widget"],
+      "docComment": { "lines": [{ "text": "Docs move when the file is edited." }] },
+      "declarationFragments": [
+        { "kind": "keyword", "spelling": "class" },
+        { "kind": "text", "spelling": " " },
+        { "kind": "identifier", "spelling": "Widget" }
+      ],
+      "accessLevel": "public",
+      "location": { "uri": "file:///somewhere/Widget.swift", "position": { "line": 4, "character": 13 } }
+    },
+    {
+      "kind": { "identifier": "swift.method", "displayName": "Instance Method" },
+      "identifier": { "precise": "s:3Kit6WidgetC4spinyyF", "interfaceLanguage": "swift" },
+      "pathComponents": ["Widget", "spin()"],
+      "declarationFragments": [
+        { "kind": "keyword", "spelling": "func" },
+        { "kind": "text", "spelling": " " },
+        { "kind": "identifier", "spelling": "spin" },
+        { "kind": "text", "spelling": "()" }
+      ],
+      "accessLevel": "public",
+      "location": { "uri": "file:///somewhere/Widget.swift", "position": { "line": 9, "character": 16 } }
+    },
+    {
+      "kind": { "identifier": "swift.property", "displayName": "Instance Property" },
+      "identifier": { "precise": "s:3Kit6WidgetC3oldSivp", "interfaceLanguage": "swift" },
+      "pathComponents": ["Widget", "old"],
+      "declarationFragments": [
+        { "kind": "keyword", "spelling": "var" },
+        { "kind": "text", "spelling": " " },
+        { "kind": "identifier", "spelling": "old" },
+        { "kind": "text", "spelling": ": " },
+        { "kind": "typeIdentifier", "spelling": "Int", "preciseIdentifier": "s:Si" }
+      ],
+      "accessLevel": "public",
+      "availability": [
+        { "domain": "*", "isUnconditionallyDeprecated": true, "renamed": "spin()", "message": "Use spin()." },
+        { "domain": "iOS", "introduced": { "major": 16, "minor": 0 } }
+      ]
+    }
+  ],
+  "relationships": [
+    { "kind": "memberOf", "source": "s:3Kit6WidgetC4spinyyF", "target": "s:3Kit6WidgetC" },
+    { "kind": "conformsTo", "source": "s:3Kit6WidgetC", "target": "s:SH", "targetFallback": "Swift.Hashable" },
+    { "kind": "inheritsFrom", "source": "s:3Kit6WidgetC", "target": "c:objc(cs)NSObject", "targetFallback": "ObjectiveC.NSObject" }
+  ]
+}
