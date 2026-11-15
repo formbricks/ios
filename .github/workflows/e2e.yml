@@ -27,10 +27,6 @@ on:
         description: Formbricks image tag (ghcr.io/formbricks/formbricks) to test against, for example 6.3.0-rc.1
         type: string
         default: latest
-  # TEMPORARY: proves the workflow on the ticket branch before e2e.yml is on main. Remove before merge.
-  push:
-    branches:
-      - dhruwang/eng-7213-ios-playground-app-xcuitest-golden-journey
 
 permissions:
   contents: read
