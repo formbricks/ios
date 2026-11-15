@@ -1,0 +1,69 @@
+name: Release
+
+# SPM ships straight from the git tag, so publishing the GitHub release is the
+# publication step. This workflow only checks the result. See RELEASING.md.
+on:
+  release:
+    types: [published]
+
+permissions: {}
+
+concurrency:
+  group: release-${{ github.event.release.tag_name }}
+  cancel-in-progress: false
+
+jobs:
+  validate-tag:
+    name: Validate tag
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@1d88384fd173af6ecb012dfd0264a306b711241a # v2.22.4
+        with:
+          egress-policy: audit
+
+      # Scripts come from the default branch, so a tag on an older commit is
+      # still checked by the current rules.
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+
+      - name: Check the tag is plain semver
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+        run: bash scripts/release/validate-tag.sh "$TAG"
+
+  verify:
+    name: Verify
+    needs: validate-tag
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@1d88384fd173af6ecb012dfd0264a306b711241a # v2.22.4
+        with:
+          egress-policy: audit
+
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+
+      - name: Show Swift version
+        run: swift --version
+
+      - name: Check the tag is live and resolves through SwiftPM
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+          REPO_URL: ${{ github.server_url }}/${{ github.repository }}.git
+          VERIFY_TIMEOUT_SECONDS: "600"
+          VERIFY_INTERVAL_SECONDS: "15"
+        run: bash scripts/release/verify-spm-release.sh "$REPO_URL" "$TAG"
