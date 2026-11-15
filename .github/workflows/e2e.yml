@@ -188,7 +188,9 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           e2e/tunnel/await-artifact.sh "${SERVER_ARTIFACT}" "$RUNNER_TEMP/server" 1500
-          echo "url=$(e2e/tunnel/server-url.sh "$RUNNER_TEMP/server/server.env")" >> "$GITHUB_OUTPUT"
+          # Assigned first: a failing command substitution inside `echo` would not fail the step.
+          url="$(e2e/tunnel/server-url.sh "$RUNNER_TEMP/server/server.env")"
+          echo "url=${url}" >> "$GITHUB_OUTPUT"
 
       # -retry-tests-on-failure -test-iterations 2: a failed journey is retried once in this step.
       - name: Run the golden journey
