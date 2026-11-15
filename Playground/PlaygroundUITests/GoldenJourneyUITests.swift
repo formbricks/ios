@@ -41,20 +41,11 @@ final class GoldenJourneyUITests: XCTestCase {
 
         let survey = try trackUntilTheSurveyAppears(in: app)
 
-        try tap(
-            firstExisting(
-                [
-                    survey.radioButtons["Rate 9 out of 10"],
-                    survey.buttons["Rate 9 out of 10"],
-                    survey.staticTexts["9"],
-                ], in: app), in: app)
+        // WKWebView exposes the NPS option as its label's text; the radio input itself is sr-only.
+        try tap(survey.staticTexts["9"], in: app)
         try tap(survey.buttons["Next"], in: app)
 
-        let answer = try firstExisting(
-            [
-                survey.textFields["Type your answer"],
-                survey.textFields.firstMatch,
-            ], in: app)
+        let answer = survey.textFields["Type your answer"]
         try tap(answer, in: app)
         answer.typeText(feedback)
         try tap(survey.buttons["Finish"], in: app)
@@ -100,21 +91,6 @@ final class GoldenJourneyUITests: XCTestCase {
     private func tap(_ element: XCUIElement, in app: XCUIApplication) throws {
         try waitFor(element, in: app)
         element.tap()
-    }
-
-    /// The first of `candidates` to appear. WKWebView maps some HTML roles differently across iOS
-    /// versions (a radio input may surface as a radio button, a button or only its text).
-    private func firstExisting(_ candidates: [XCUIElement], in app: XCUIApplication) throws -> XCUIElement {
-        let deadline = Date().addingTimeInterval(Self.elementTimeout)
-        repeat {
-            if let found = candidates.first(where: \.exists) {
-                return found
-            }
-            Thread.sleep(forTimeInterval: 0.5)
-        } while Date() < deadline
-        attachTree(of: app)
-        XCTFail("None found within \(Self.elementTimeout)s: \(candidates.map(\.description))")
-        throw JourneyError.notFound(candidates.map(\.description).joined(separator: ", "))
     }
 
     /// The accessibility tree, for working out a selector from the xcresult when one fails.

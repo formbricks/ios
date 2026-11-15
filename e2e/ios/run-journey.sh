@@ -3,7 +3,8 @@
 #   e2e/ios/run-journey.sh build   build-for-testing, then boot the simulator (no server needed)
 #   e2e/ios/run-journey.sh test    test-without-building against the server at E2E_APP_URL
 # Env for `test`: E2E_APP_URL (https://, for example the tunnel), E2E_USER_ID, E2E_FEEDBACK,
-# optional E2E_WORKSPACE_ID. Optional: DESTINATION (default: scripts/simulator-destination.sh).
+# optional E2E_WORKSPACE_ID. Optional: DESTINATION (default: what `build` picked with
+# scripts/simulator-destination.sh, saved in .build/e2e/destination).
 # A failed journey is retried once (-retry-tests-on-failure -test-iterations 2). The result bundle
 # is .build/e2e/GoldenJourney.xcresult.
 set -euo pipefail
@@ -12,7 +13,37 @@ root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "${root}"
 derived_data=".build/e2e"
 result_bundle="${derived_data}/GoldenJourney.xcresult"
-destination="${DESTINATION:-$(scripts/simulator-destination.sh)}"
+destination_file="${derived_data}/destination"
+
+# On a fresh macos-26 runner `xcodebuild -showdestinations` now and then lists no simulators, so
+# `build` picks one (with retries) and `test` reuses that pick.
+pick_destination() {
+  local attempt picked
+  if [[ -n "${DESTINATION:-}" ]]; then
+    printf '%s\n' "${DESTINATION}"
+    return
+  fi
+  if [[ "${1:-}" == reuse && -s "${destination_file}" ]]; then
+    cat "${destination_file}"
+    return
+  fi
+  for attempt in 1 2 3; do
+    if picked="$(scripts/simulator-destination.sh)"; then
+      mkdir -p "${derived_data}"
+      printf '%s\n' "${picked}" | tee "${destination_file}"
+      return
+    fi
+    echo "==> No simulator listed (attempt ${attempt}), retrying" >&2
+    sleep 10
+  done
+  return 1
+}
+
+if [[ "${1:-}" == test ]]; then
+  destination="$(pick_destination reuse)"
+else
+  destination="$(pick_destination)"
+fi
 xcodebuild_args=(
   -project Playground/Playground.xcodeproj
   -scheme Playground
