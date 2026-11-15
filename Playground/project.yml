@@ -1,0 +1,60 @@
+# Source of Playground.xcodeproj. After editing, regenerate with:
+#   xcodegen generate --spec Playground/project.yml
+# and commit both. CI builds the committed project and does not need XcodeGen.
+name: Playground
+options:
+  bundleIdPrefix: com.formbricks
+  deploymentTarget:
+    iOS: "16.0"
+  createIntermediateGroups: true
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    CODE_SIGNING_ALLOWED: "NO"
+    CODE_SIGN_IDENTITY: ""
+    DEVELOPMENT_TEAM: ""
+    TARGETED_DEVICE_FAMILY: "1"
+packages:
+  FormbricksSDK:
+    path: ..
+targets:
+  Playground:
+    type: application
+    platform: iOS
+    sources:
+      - Playground
+    dependencies:
+      - package: FormbricksSDK
+    info:
+      path: Playground/Info.plist
+      properties:
+        CFBundleDisplayName: Formbricks Playground
+        UILaunchScreen: {}
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.formbricks.playground
+        MARKETING_VERSION: "1.0"
+        CURRENT_PROJECT_VERSION: "1"
+  PlaygroundUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - PlaygroundUITests
+    dependencies:
+      - target: Playground
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.formbricks.playground.uitests
+        GENERATE_INFOPLIST_FILE: "YES"
+        TEST_TARGET_NAME: Playground
+schemes:
+  Playground:
+    build:
+      targets:
+        Playground: all
+        PlaygroundUITests: [test]
+    test:
+      targets:
+        - PlaygroundUITests

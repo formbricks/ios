@@ -306,6 +306,18 @@ jobs:
           advanced-security: false
           annotations: true
 
+  e2e-tests:
+    name: e2e-tests
+    # Fork PRs get no secrets (no QA license); the summary allows the skip.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    permissions:
+      contents: read
+      actions: read # the Linux and macOS jobs hand the tunnel URL over through run artifacts
+    # actionlint 1.7.12 rejects the `$/` form zizmor suggests.
+    uses: ./.github/workflows/e2e.yml # zizmor: ignore[self-repository]
+    secrets:
+      FORMBRICKS_QA_LICENSE_KEY: ${{ secrets.FORMBRICKS_QA_LICENSE_KEY }}
+
   pr-check-summary:
     name: PR Check Summary
     if: always()
@@ -319,6 +331,7 @@ jobs:
       - sonarqube
       - dependency-review
       - workflow-lint
+      - e2e-tests
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:

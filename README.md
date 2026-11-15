@@ -111,6 +111,22 @@ Every CI check has a `make` target, so `make check` runs them all locally. You n
 
 If you change the public API on purpose, run `make api-dump` and commit `api/FormbricksSDK.api` with the change.
 
+### Playground and E2E
+
+`Playground/Playground.xcodeproj` is a small app that uses the SDK from this checkout, with a button per
+SDK call (set up, set user ID, set attribute, track, log out). Its source is `Playground/project.yml`; after
+editing it, run `xcodegen generate --spec Playground/project.yml` and commit the project too.
+
+The E2E workflow (`.github/workflows/e2e.yml`) runs its XCUITest golden journey against a real Formbricks
+server. The server runs on Linux (`e2e/server/`) and the macOS job reaches it through a Cloudflare quick
+tunnel (`e2e/tunnel/`), because the SDK only accepts `https://` app URLs. To run it locally against a
+server you can reach over https:
+
+```sh
+e2e/ios/run-journey.sh build
+E2E_APP_URL=https://... E2E_USER_ID=qa-user-local E2E_FEEDBACK="Local feedback" e2e/ios/run-journey.sh test
+```
+
 ## Releasing
 
 1. Confirm the CI workflow (`PR Check Summary`) passes on the commit you are releasing.
