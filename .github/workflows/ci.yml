@@ -347,9 +347,10 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Require every check to pass
+      # scripts/pr-check-summary.sh decides which skips are allowed.
+      - name: Fail unless every job passed or was an allowed skip
         env:
-          NEEDS: ${{ toJSON(needs) }}
-          # Fork PRs get no secrets, so Sonar and E2E skip there by design.
-          ALLOWED_SKIPS: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository && 'sonarqube e2e-tests' || '' }}
+          NEEDS_JSON: ${{ toJSON(needs) }}
+          EVENT_NAME: ${{ github.event_name }}
+          IS_FORK_PR: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository }}
         run: scripts/pr-check-summary.sh
