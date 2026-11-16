@@ -509,7 +509,7 @@ final class SurveyInteractionRefreshTests: XCTestCase {
     }
 
     /// Syncs once and returns after the completion has armed the next sync. The completion
-    /// arrives on a background queue and arms the timer with a main-queue hop; the hop queued
+    /// arrives on a background thread and arms the timer with a main-queue hop; the hop queued
     /// after it runs strictly later, so the timer is in place once it does.
     private func syncAndWaitForTheNextSyncToBeScheduled(
         _ userManager: UserManager, service: BackgroundCompletionMockService
@@ -521,14 +521,14 @@ final class SurveyInteractionRefreshTests: XCTestCase {
     }
 }
 
-/// Delivers completions on a background queue, the way `APIClient` does via URLSession's
-/// delegate queue, and returns a user state whose expiry is controllable. Used to prove the
+/// Delivers completions on a background thread with no run loop, the way `APIClient` does via
+/// URLSession's delegate queue, and returns a user state whose expiry is controllable. Used to prove the
 /// sync timer is not scheduled onto a dead run loop.
 private final class BackgroundCompletionMockService: MockFormbricksService {
     var postUserCallCount = 0
     /// Seconds from now for the returned `expiresAt`. Negative simulates clock skew.
     var expiresIn: TimeInterval = 3600
-    /// Called on the background queue once `completion` has returned, with the request's number.
+    /// Called on the background thread once `completion` has returned, with the request's number.
     var onCompletionDelivered: ((Int) -> Void)?
 
     override func postUser(
@@ -542,34 +542,19 @@ private final class BackgroundCompletionMockService: MockFormbricksService {
             {"data":{"state":{"data":{"contactId":"contact-1","displays":[],"lastDisplayAt":null,"responses":[],"segments":["segment-1"],"userId":"\(id)"},"expiresAt":"\(expiresAt)"}}}
             """
 
+        // A thread of its own rather than `DispatchQueue.global()`. On the CI simulator GCD's
+        // global queues can wait a long time for a worker thread: a probe on the utility queue
+        // ran 91s late, and default-QoS completions here missed a 30s wait in three runs. A
+        // dedicated thread with no run loop is the condition under test, and it starts at once.
         let count = postUserCallCount
-        let t0 = Date()
-        func dbg(_ m: String) { print("[DEBUG-q7f3] #\(count) +\(String(format: "%.2f", Date().timeIntervalSince(t0)))s \(m)") }
-        dbg("enqueue on global(default)")
-        Thread { dbg("probe: dedicated Thread ran") }.start()
-        Thread {
-            _ = DateFormatter.isoFormatter.date(from: expiresAt)
-            dbg("probe: ICU parse on dedicated Thread done")
-        }.start()
-        Thread {
-            _ = try? JSONDecoder.iso8601Full.decode(PostUserRequest.Response.self, from: Data(json.utf8))
-            dbg("probe: shared iso8601Full decode on dedicated Thread done")
-        }.start()
-        DispatchQueue.global(qos: .userInitiated).async { dbg("probe: global(userInitiated) ran") }
-        DispatchQueue.global(qos: .utility).async { dbg("probe: global(utility) ran") }
-        DispatchQueue.global().async { dbg("probe: global(default) ran") }
-        DispatchQueue(label: "debug.serial").async { dbg("probe: private serial queue ran") }
-        DispatchQueue.global().async { [onCompletionDelivered] in
-            dbg("block started")
+        Thread { [onCompletionDelivered] in
             do {
                 let response = try JSONDecoder.iso8601Full.decode(PostUserRequest.Response.self, from: Data(json.utf8))
-                dbg("decoded")
                 completion(.success(response))
-                dbg("completion returned")
             } catch {
                 completion(.failure(error))
             }
             onCompletionDelivered?(count)
-        }
+        }.start()
     }
 }
