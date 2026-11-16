@@ -251,6 +251,8 @@ jobs:
 
   dependency-review:
     name: dependency-review
+    # It compares a base and a head, which only PRs and merge groups have.
+    if: github.event_name == 'pull_request' || github.event_name == 'merge_group'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
@@ -264,12 +266,8 @@ jobs:
       - name: Review dependency changes
         uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
         with:
-          # A PR compares against its base on its own. The merge queue and pushes to main carry
-          # no PR, so name the two commits being compared.
-          base-ref: ${{ github.event.merge_group.base_sha || github.event.before || '' }}
-          head-ref: ${{ github.event.merge_group.head_sha || github.event.after || '' }}
-          fail-on-severity: low
-          comment-summary-in-pr: never
+          base-ref: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha }}
+          head-ref: ${{ github.event.pull_request.head.sha || github.event.merge_group.head_sha }}
 
   workflow-lint:
     name: workflow-lint
