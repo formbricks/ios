@@ -308,7 +308,7 @@ jobs:
 
   e2e-tests:
     name: e2e-tests
-    # Fork PRs get no secrets (no QA license); the summary allows the skip.
+    # Fork PRs get no secrets (no Enterprise license); the summary allows the skip.
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     permissions:
       contents: read
@@ -316,7 +316,7 @@ jobs:
     # actionlint 1.7.12 rejects the `$/` form zizmor suggests.
     uses: ./.github/workflows/e2e.yml # zizmor: ignore[self-repository]
     secrets:
-      FORMBRICKS_QA_LICENSE_KEY: ${{ secrets.FORMBRICKS_QA_LICENSE_KEY }}
+      ENTERPRISE_LICENSE_KEY: ${{ secrets.ENTERPRISE_LICENSE_KEY }}
 
   pr-check-summary:
     name: PR Check Summary
