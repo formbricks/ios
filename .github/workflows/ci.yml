@@ -297,6 +297,10 @@ jobs:
       - name: actionlint
         run: '"$RUNNER_TEMP/actionlint" -color'
 
+      # actionlint only checks the run: blocks; this covers the CI, release and E2E harness scripts.
+      - name: shellcheck
+        run: shellcheck scripts/*.sh scripts/*/*.sh e2e/*/*.sh e2e/*/*/*.sh
+
       - name: zizmor
         uses: zizmorcore/zizmor-action@45d7276c9ca790aabd705e31ca99c6185c3e76dd # v0.8.1
         with:
