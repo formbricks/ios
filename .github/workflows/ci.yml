@@ -231,13 +231,7 @@ jobs:
           path: coverage
 
       - name: SonarQube scan
-        # Held at v6.0.0 deliberately; do not bump to v8 without re-testing. v8 verifies the
-        # scanner binary's GPG signature by fetching SonarSource's key from a keyserver, and gpg
-        # could not reach either keyserver from behind harden-runner (`keyserver receive failed:
-        # Invalid argument`): dirmngr resolves keyservers over SRV records, which harden-runner's
-        # DNS proxy does not answer. v6.0.0 already carries the fixes for CVE-2025-58178 and
-        # CVE-2025-59844, so this pin is current on security.
-        uses: SonarSource/sonarqube-scan-action@fd88b7d7ccbaefd23d8f36f73b59db7a3d246602 # v6.0.0
+        uses: SonarSource/sonarqube-scan-action@59202af334b4ba7b5db01b701b8e79f8b3bef0f4 # v8.5.0
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
