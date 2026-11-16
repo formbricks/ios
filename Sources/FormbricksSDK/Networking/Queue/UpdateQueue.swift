@@ -255,6 +255,19 @@ extension UpdateQueue {
         }
     }
 
+    /// Whether a debounced commit is waiting to fire. Main thread only, like the timer itself.
+    var hasScheduledCommit: Bool {
+        timer?.isValid == true
+    }
+
+    /// Fires the debounced commit now, as if its interval had elapsed. Main thread only.
+    ///
+    /// For tests: sleeping past the debounce races the wall clock, and a stalled simulator lets
+    /// the sleep win. This drives the same timer the run loop would.
+    func fireScheduledCommit() {
+        timer?.fire()
+    }
+
     /// Sends what is queued now instead of waiting the debounce window out. Everything queued so
     /// far still goes in a single request, so calls stay coalesced.
     fileprivate func flushNow() {

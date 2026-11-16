@@ -103,7 +103,7 @@ final class PassthroughPresentationTests: XCTestCase {
             XCTAssertFalse(success)
             done.fulfill()
         }
-        wait(for: [done], timeout: 2.0)
+        wait(for: [done], timeout: eventTimeout)
     }
 
     // MARK: - Modal path (light / dark overlay)
@@ -142,7 +142,7 @@ final class PassthroughPresentationTests: XCTestCase {
         // the presentation's own completion never runs and cannot be waited on.
         let presented = expectation(description: "Present ran")
         DispatchQueue.main.async { presented.fulfill() }
-        wait(for: [presented], timeout: 1.0)
+        wait(for: [presented], timeout: eventTimeout)
 
         XCTAssertIdentical(leaf.presentedViewController, survey)
         XCTAssertIdentical(traitSource, leaf)
@@ -160,7 +160,7 @@ final class PassthroughPresentationTests: XCTestCase {
             XCTAssertFalse(success, "UIKit cannot host a modal on an alert")
             done.fulfill()
         }
-        wait(for: [done], timeout: 2.0)
+        wait(for: [done], timeout: eventTimeout)
         withExtendedLifetime(window) {}
     }
 
@@ -174,7 +174,7 @@ final class PassthroughPresentationTests: XCTestCase {
             XCTAssertTrue(success)
             done.fulfill()
         }
-        wait(for: [done], timeout: 2.0)
+        wait(for: [done], timeout: eventTimeout)
 
         // Not a presented view controller: that would answer the hit test for the whole screen.
         XCTAssertNil(root.presentedViewController)

@@ -6,10 +6,13 @@ class MockUserManager: UserManagerSyncable {
     var lastSyncedUserId: String?
     var lastSyncedAttributes: [String: AttributeValue]?
     var syncCallCount = 0
+    /// Lets a test wait on the sync itself instead of guessing how long the debounce takes.
+    var onSync: (() -> Void)?
     func syncUser(withId id: String, attributes: [String: AttributeValue]?) {
         lastSyncedUserId = id
         lastSyncedAttributes = attributes
         syncCallCount += 1
+        onSync?()
     }
 }
 
@@ -46,7 +49,7 @@ final class UpdateQueueTests: XCTestCase {
             XCTAssertTrue(succeeded)
             exp.fulfill()
         }
-        wait(for: [exp], timeout: 1.0)
+        wait(for: [exp], timeout: eventTimeout)
         XCTAssertEqual(mockUserManager.syncCallCount, 0, "Nothing was queued, so nothing should be sent")
     }
 
@@ -70,7 +73,7 @@ final class UpdateQueueTests: XCTestCase {
         XCTAssertEqual(mockUserManager.lastSyncedAttributes?["region"], "eu")
 
         queue.syncDidFinish(success: true)
-        wait(for: [exp], timeout: 1.0)
+        wait(for: [exp], timeout: eventTimeout)
     }
 
     /// A failed update must report failure, so the caller can refuse to judge segment membership
@@ -86,20 +89,21 @@ final class UpdateQueueTests: XCTestCase {
         }
 
         queue.syncDidFinish(success: false)
-        wait(for: [exp], timeout: 1.0)
+        wait(for: [exp], timeout: eventTimeout)
     }
 
     /// Nothing is sent for an anonymous user, so nothing would ever resolve the waiter. It has to
     /// short-circuit rather than sit parked until the timeout.
     func testWaitForPendingWorkDoesNotHangForAnAnonymousUser() {
-        Config.User.pendingUpdateTimeoutInSeconds = 30
+        // Far beyond the wait below, so only an immediate resolution can fulfil it.
+        Config.User.pendingUpdateTimeoutInSeconds = 3600
 
         queue.set(attributes: ["plan": "pro"])
 
         let exp = expectation(description: "resolves without waiting out the timeout")
         queue.waitForPendingWork { _ in exp.fulfill() }
 
-        wait(for: [exp], timeout: 1.0)
+        wait(for: [exp], timeout: eventTimeout)
         XCTAssertEqual(mockUserManager.syncCallCount, 0)
     }
 
@@ -110,8 +114,6 @@ final class UpdateQueueTests: XCTestCase {
     /// nothing. Now the request *moves* its values out, so a mid-flight write survives and gets
     /// its own request.
     func testAttributeSetDuringAnInFlightSyncIsStillSent() {
-        Config.User.updateDebounceIntervalInSeconds = 0.05
-
         queue.set(userId: "user123")
         queue.set(attributes: ["plan": "pro"])
 
@@ -124,11 +126,10 @@ final class UpdateQueueTests: XCTestCase {
         queue.add(attribute: "eu", forKey: "region")
 
         queue.syncDidFinish(success: true)
-        wait(for: [flushed], timeout: 1.0)
+        wait(for: [flushed], timeout: eventTimeout)
 
-        let settled = expectation(description: "re-armed debounce sends the mid-flight write")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { settled.fulfill() }
-        wait(for: [settled], timeout: 1.0)
+        XCTAssertTrue(queue.hasScheduledCommit, "The mid-flight write must re-arm the debounce")
+        queue.fireScheduledCommit()
 
         XCTAssertEqual(mockUserManager.syncCallCount, 2, "The mid-flight write needs its own request")
         XCTAssertEqual(mockUserManager.lastSyncedAttributes?["region"], "eu")
@@ -151,85 +152,77 @@ final class UpdateQueueTests: XCTestCase {
         XCTAssertEqual(mockUserManager.syncCallCount, 1, "Must not start a second concurrent sync")
 
         queue.syncDidFinish(success: true)
-        wait(for: [flushed, second], timeout: 1.0)
+        wait(for: [flushed, second], timeout: eventTimeout)
     }
 
+    /// The debounce fires by itself on the main run loop. This is the one test that waits for the
+    /// real timer; the rest fire it with `fireScheduledCommit()` so they don't race the clock.
     func testSetUserIdTriggersDebounceAndCommit() {
-        let exp = expectation(description: "Debounce triggers commit")
+        let synced = expectation(description: "Debounce triggers commit")
+        mockUserManager.onSync = { synced.fulfill() }
+
         queue.set(userId: "user123")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-            XCTAssertEqual(self.mockUserManager.lastSyncedUserId, "user123")
-            exp.fulfill()
-        }
-        wait(for: [exp], timeout: 1.0)
+        XCTAssertEqual(mockUserManager.syncCallCount, 0, "Debounced, not sent straight away")
+
+        wait(for: [synced], timeout: eventTimeout)
+        XCTAssertEqual(mockUserManager.lastSyncedUserId, "user123")
     }
 
     func testSetAttributesTriggersDebounceAndCommit() {
-        let exp = expectation(description: "Debounce triggers commit for attributes")
         queue.set(userId: "user123")
         queue.set(attributes: ["foo": "bar"])
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-            XCTAssertEqual(self.mockUserManager.lastSyncedAttributes?["foo"], "bar")
-            exp.fulfill()
-        }
-        wait(for: [exp], timeout: 1.0)
+
+        XCTAssertTrue(queue.hasScheduledCommit)
+        queue.fireScheduledCommit()
+
+        XCTAssertEqual(mockUserManager.syncCallCount, 1)
+        XCTAssertEqual(mockUserManager.lastSyncedAttributes?["foo"], "bar")
     }
 
     func testAddAttributeToExisting() {
-        let exp = expectation(description: "Add attribute to existing attributes")
         queue.set(userId: "user123")
         queue.set(attributes: ["foo": "bar"])
         queue.add(attribute: "baz", forKey: "newKey")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-            XCTAssertEqual(self.mockUserManager.lastSyncedAttributes?["foo"], "bar")
-            XCTAssertEqual(self.mockUserManager.lastSyncedAttributes?["newKey"], "baz")
-            exp.fulfill()
-        }
-        wait(for: [exp], timeout: 1.0)
+
+        queue.fireScheduledCommit()
+
+        XCTAssertEqual(mockUserManager.lastSyncedAttributes?["foo"], "bar")
+        XCTAssertEqual(mockUserManager.lastSyncedAttributes?["newKey"], "baz")
     }
 
     func testAddAttributeToNew() {
-        let exp = expectation(description: "Add attribute to new attributes")
         queue.set(userId: "user123")
         queue.add(attribute: "baz", forKey: "newKey")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-            XCTAssertEqual(self.mockUserManager.lastSyncedAttributes?["newKey"], "baz")
-            exp.fulfill()
-        }
-        wait(for: [exp], timeout: 1.0)
+
+        queue.fireScheduledCommit()
+
+        XCTAssertEqual(mockUserManager.lastSyncedAttributes?["newKey"], "baz")
     }
 
     func testAddNumberAttribute() {
-        let exp = expectation(description: "Add number attribute")
         queue.set(userId: "user123")
         queue.add(attribute: 42.0, forKey: "age")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-            XCTAssertEqual(self.mockUserManager.lastSyncedAttributes?["age"], 42.0)
-            exp.fulfill()
-        }
-        wait(for: [exp], timeout: 1.0)
+
+        queue.fireScheduledCommit()
+
+        XCTAssertEqual(mockUserManager.lastSyncedAttributes?["age"], 42.0)
     }
 
     func testSetLanguageWithUserId() {
-        let exp = expectation(description: "Set language with userId triggers commit")
         queue.set(userId: "user123")
         queue.set(language: "de")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-            XCTAssertEqual(self.mockUserManager.lastSyncedAttributes?["language"], "de")
-            exp.fulfill()
-        }
-        wait(for: [exp], timeout: 1.0)
+
+        queue.fireScheduledCommit()
+
+        XCTAssertEqual(mockUserManager.lastSyncedAttributes?["language"], "de")
     }
 
     func testSetLanguageWithoutUserId() {
-        // Should not call syncUser, just log
+        // Only updated locally: nothing is scheduled, so nothing can be sent.
         queue.set(language: "fr")
-        let exp = expectation(description: "No commit without userId")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-            XCTAssertEqual(self.mockUserManager.syncCallCount, 0)
-            exp.fulfill()
-        }
-        wait(for: [exp], timeout: 1.0)
+
+        XCTAssertFalse(queue.hasScheduledCommit)
+        XCTAssertEqual(mockUserManager.syncCallCount, 0)
     }
 
     func testResetClearsState() {
@@ -237,36 +230,28 @@ final class UpdateQueueTests: XCTestCase {
         queue.set(attributes: ["foo": "bar"])
         queue.set(language: "en")
         queue.reset()
-        // Internal state is private, but we can check that no sync happens after reset
-        let exp = expectation(description: "No commit after reset")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-            // Should not have called syncUser after reset
-            XCTAssertNil(self.mockUserManager.lastSyncedUserId)
-            exp.fulfill()
-        }
-        wait(for: [exp], timeout: 1.0)
+
+        // Reset leaves the debounce armed; when it fires there must be nothing left to send.
+        queue.fireScheduledCommit()
+
+        XCTAssertNil(mockUserManager.lastSyncedUserId)
     }
 
     func testCleanupStopsTimerAndClearsState() {
         queue.set(userId: "user123")
         queue.set(attributes: ["foo": "bar"])
         queue.cleanup()
-        let exp = expectation(description: "No commit after cleanup")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-            XCTAssertNil(self.mockUserManager.lastSyncedUserId)
-            exp.fulfill()
-        }
-        wait(for: [exp], timeout: 1.0)
+
+        XCTAssertFalse(queue.hasScheduledCommit, "Cleanup must stop the debounce")
+        XCTAssertNil(mockUserManager.lastSyncedUserId)
     }
 
     func testCommitWithoutUserIdLogsError() {
-        // This will not call syncUser, but will log an error
+        // The commit bails out before syncing, and logs an error.
         queue.set(attributes: ["foo": "bar"])
-        let exp = expectation(description: "No commit without userId")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-            XCTAssertNil(self.mockUserManager.lastSyncedUserId)
-            exp.fulfill()
-        }
-        wait(for: [exp], timeout: 1.0)
+
+        queue.fireScheduledCommit()
+
+        XCTAssertNil(mockUserManager.lastSyncedUserId)
     }
 }
