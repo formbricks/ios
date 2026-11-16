@@ -67,11 +67,6 @@ jobs:
           fi
           echo "Testing against ghcr.io/formbricks/formbricks:${FORMBRICKS_VERSION}"
 
-      - name: Test the harness scripts
-        run: |
-          e2e/server/test/lib.test.sh
-          e2e/tunnel/test/lib.test.sh
-
       - name: Install cloudflared
         run: |
           curl -fsSL -o "$RUNNER_TEMP/cloudflared" \

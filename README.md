@@ -108,6 +108,7 @@ Every CI check has a `make` target, so `make check` runs them all locally. You n
 | `make test` | unit tests on an iPhone simulator |
 | `make api-check` | the public API against `api/FormbricksSDK.api` |
 | `make package-check` | an app can resolve and build the package through SPM |
+| `make script-tests` | the CI, release and E2E harness shell scripts (needs `jq`) |
 
 If you change the public API on purpose, run `make api-dump` and commit `api/FormbricksSDK.api` with the change.
 

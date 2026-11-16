@@ -135,6 +135,9 @@ jobs:
       - name: Run the unit tests
         run: make test
 
+      - name: Test the CI, release and E2E harness scripts
+        run: make script-tests
+
       - name: Convert coverage for SonarQube
         run: |
           mkdir -p coverage
@@ -171,9 +174,6 @@ jobs:
         # xcode-select, not DEVELOPER_DIR, so the simulator service follows it too. macos-26 ships
         # the iOS 26.2 simulator runtime that Xcode 26.3 runs; macos-15 has none for it.
         run: sudo xcode-select --switch "/Applications/Xcode_${XCODE_VERSION}.app"
-
-      - name: Test the CI and release scripts
-        run: make script-tests
 
       - name: Compare the public API with api/FormbricksSDK.api
         run: make api-check

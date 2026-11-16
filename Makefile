@@ -69,10 +69,11 @@ api-check: symbol-graphs
 package-check:
 	scripts/package-check.sh
 
-# Tests for the shell scripts the checks and the release workflow run.
+# Tests for the shell scripts the checks, the release workflow and the E2E harness run.
 script-tests:
 	scripts/tests/api-snapshot-test.sh
 	scripts/tests/pr-check-summary-test.sh
 	scripts/tests/simulator-destination-test.sh
 	bash scripts/release/test-validate-tag.sh
 	bash scripts/release/test-verify-spm-release.sh
+	set -e; for test in e2e/*/test/*.sh; do echo "$$test"; "$$test"; done

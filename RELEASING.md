@@ -57,6 +57,8 @@ the tag commit, so the scripts that run are the ones that shipped with the relea
 
 ## Testing the scripts
 
+CI runs these in the `unit-tests` job, through `make script-tests`. To run only the release scripts:
+
 ```sh
 bash scripts/release/test-validate-tag.sh
 bash scripts/release/test-verify-spm-release.sh   # needs git and a Swift toolchain
