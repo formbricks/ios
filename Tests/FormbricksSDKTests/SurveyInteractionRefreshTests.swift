@@ -543,10 +543,29 @@ private final class BackgroundCompletionMockService: MockFormbricksService {
             """
 
         let count = postUserCallCount
+        let t0 = Date()
+        func dbg(_ m: String) { print("[DEBUG-q7f3] #\(count) +\(String(format: "%.2f", Date().timeIntervalSince(t0)))s \(m)") }
+        dbg("enqueue on global(default)")
+        Thread { dbg("probe: dedicated Thread ran") }.start()
+        Thread {
+            _ = DateFormatter.isoFormatter.date(from: expiresAt)
+            dbg("probe: ICU parse on dedicated Thread done")
+        }.start()
+        Thread {
+            _ = try? JSONDecoder.iso8601Full.decode(PostUserRequest.Response.self, from: Data(json.utf8))
+            dbg("probe: shared iso8601Full decode on dedicated Thread done")
+        }.start()
+        DispatchQueue.global(qos: .userInitiated).async { dbg("probe: global(userInitiated) ran") }
+        DispatchQueue.global(qos: .utility).async { dbg("probe: global(utility) ran") }
+        DispatchQueue.global().async { dbg("probe: global(default) ran") }
+        DispatchQueue(label: "debug.serial").async { dbg("probe: private serial queue ran") }
         DispatchQueue.global().async { [onCompletionDelivered] in
+            dbg("block started")
             do {
                 let response = try JSONDecoder.iso8601Full.decode(PostUserRequest.Response.self, from: Data(json.utf8))
+                dbg("decoded")
                 completion(.success(response))
+                dbg("completion returned")
             } catch {
                 completion(.failure(error))
             }
