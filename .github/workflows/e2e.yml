@@ -8,8 +8,11 @@ name: E2E
 # - `server` (Linux) boots and seeds the server (e2e/server), opens a Cloudflare quick tunnel to it
 #   (e2e/tunnel), uploads the tunnel URL as an artifact, and stays up until the macOS job uploads its
 #   `done` artifact. Then it asserts the response through the V1 API and cleans up.
-# - `golden-journey` (macOS) builds Playground/, polls for the URL artifact, and runs the XCUITest.
-# A job's outputs only publish when it ends, which is why the hand-off uses artifacts.
+# - `golden-journey` (macOS) builds Playground/, polls for the URL artifact, runs the XCUITest, and
+#   then waits for the server job's `verdict` artifact, so it fails whenever the server job fails.
+# A job's outputs only publish when it ends, which is why the hand-off uses artifacts. Because each
+# job fails when the other does, "Re-run failed jobs" always re-runs the pair: one half alone would
+# wait for an artifact of the new attempt that the other half never uploads.
 on:
   workflow_call:
     inputs:
@@ -39,6 +42,7 @@ env:
   E2E_FEEDBACK: Golden journey feedback ${{ github.run_id }}
   SERVER_ARTIFACT: e2e-server-attempt-${{ github.run_attempt }}
   DONE_ARTIFACT: e2e-journey-done-attempt-${{ github.run_attempt }}
+  VERDICT_ARTIFACT: e2e-server-verdict-attempt-${{ github.run_attempt }}
 
 jobs:
   server:
@@ -147,6 +151,23 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
 
+      # Last, so it covers every step above. The macOS job fails on anything but success.
+      - name: Record the server job's verdict
+        if: always()
+        env:
+          RESULT: ${{ job.status }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/verdict"
+          printf 'E2E_SERVER_RESULT=%s\n' "${RESULT}" > "$RUNNER_TEMP/verdict/server.env"
+
+      - name: Hand the verdict to the macOS job
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ${{ env.VERDICT_ARTIFACT }}
+          path: ${{ runner.temp }}/verdict/server.env
+          retention-days: 1
+
   golden-journey:
     name: Golden journey (XCUITest)
     runs-on: macos-26
@@ -215,3 +236,15 @@ jobs:
           path: .build/e2e/GoldenJourney.xcresult
           if-no-files-found: ignore
           retention-days: 7
+
+      # Ties this job's result to the server job's (the V1 assert and cleanup run there), so a
+      # failure on either side fails both and a re-run of failed jobs re-runs the pair.
+      - name: Wait for the server job's verdict
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          e2e/tunnel/await-artifact.sh "${VERDICT_ARTIFACT}" "$RUNNER_TEMP/verdict" 900
+          if ! grep -qx 'E2E_SERVER_RESULT=success' "$RUNNER_TEMP/verdict/server.env"; then
+            echo "::error::the server job did not pass ($(cat "$RUNNER_TEMP/verdict/server.env")); see the Server and tunnel (Linux) job"
+            exit 1
+          fi

@@ -7,6 +7,7 @@
 # must stay alive while the macOS job runs, so the two jobs swap run artifacts instead:
 #   Linux  uploads e2e-server-attempt-<n>        (E2E_APP_URL=<tunnel>, or E2E_SERVER_FAILED=1)
 #   macOS  uploads e2e-journey-done-attempt-<n>  (E2E_JOURNEY_RESULT=success|failure)
+#   Linux  uploads e2e-server-verdict-attempt-<n> (E2E_SERVER_RESULT=<job status>) as its last step
 # Each side polls for the other's artifact with await-artifact.sh.
 
 E2E_TUNNEL_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
