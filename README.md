@@ -130,8 +130,5 @@ E2E_APP_URL=https://... E2E_USER_ID=qa-user-local E2E_FEEDBACK="Local feedback" 
 
 ## Releasing
 
-1. Confirm the CI workflow (`PR Check Summary`) passes on the commit you are releasing.
-2. Create a new semantic-version Git tag (for example, `2.3.1`) on the tested commit and publish a GitHub release
-   with the changes and any upgrade instructions. Do not move existing release tags.
-3. Swift Package Manager discovers versions from Git tags; no separate registry publishing step is required.
-   Verify the new version resolves in Xcode and build an app that imports `FormbricksSDK`.
+See [RELEASING.md](RELEASING.md). The tag is the release, so the manual E2E QA run must pass before you
+publish.
