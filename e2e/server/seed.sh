@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Seeds the golden-journey data through the V1 management API and writes the created ids to
-# $E2E_STATE_FILE. Run after up.sh and before any SDK traffic.
+# $E2E_STATE_FILE. Run after up.sh and before any SDK traffic. Re-running it first deletes the
+# previous seed (cleanup.sh), so it can run again on the same stack.
 #   1. action class qa-action (code)
 #   2. app survey: NPS + open text, triggered by qa-action
 #   3. segment filter plan = pro on the survey's private segment (SQL: V1 cannot set it)
@@ -10,6 +11,12 @@ set -euo pipefail
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/lib.sh"
 
 mkdir -p "$(dirname "${E2E_STATE_FILE}")"
+# A re-run against the same stack would collide with the previous seed's action key and attribute key
+# (both unique per workspace), so delete what the last run recorded first.
+if [[ -s "${E2E_STATE_FILE}" ]]; then
+  log "Deleting the previous seed recorded in ${E2E_STATE_FILE}"
+  E2E_STATE_FILE="${E2E_STATE_FILE}" FORMBRICKS_URL="${FORMBRICKS_URL}" "${E2E_SERVER_DIR}/cleanup.sh"
+fi
 : >"${E2E_STATE_FILE}"
 save() {
   printf '%s=%q\n' "$1" "$2" >>"${E2E_STATE_FILE}"
