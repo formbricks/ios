@@ -21,19 +21,16 @@ import Foundation
     )
     @objc public var environmentId: String { workspaceId }
 
-    init(
-        appUrl: String, workspaceId: String, userId: String?, attributes: [String: AttributeValue]?, logLevel: LogLevel,
-        customService: FormbricksServiceProtocol?, usedDeprecatedEnvironmentId: Bool = false,
-        appearance: FormbricksAppearance? = nil
-    ) {
-        self.appUrl = appUrl
-        self.workspaceId = workspaceId
-        self.userId = userId
-        self.attributes = attributes
-        self.logLevel = logLevel
-        self.customService = customService
-        self.usedDeprecatedEnvironmentId = usedDeprecatedEnvironmentId
-        self.appearance = appearance
+    /// Only `Builder.build()` creates a config, so it reads the builder's fields directly.
+    init(builder: Builder) {
+        self.appUrl = builder.appUrl
+        self.workspaceId = builder.workspaceId
+        self.userId = builder.userId
+        self.attributes = builder.attributes
+        self.logLevel = builder.logLevel
+        self.customService = builder.customService
+        self.usedDeprecatedEnvironmentId = builder.usedDeprecatedEnvironmentId
+        self.appearance = builder.appearance
     }
 
     /// The builder class for the FormbricksConfig object.
@@ -123,10 +120,7 @@ import Foundation
 
         /// Builds the FormbricksConfig object from the Builder object.
         @objc public func build() -> FormbricksConfig {
-            return FormbricksConfig(
-                appUrl: appUrl, workspaceId: workspaceId, userId: userId, attributes: attributes, logLevel: logLevel,
-                customService: customService, usedDeprecatedEnvironmentId: usedDeprecatedEnvironmentId,
-                appearance: appearance)
+            return FormbricksConfig(builder: self)
         }
     }
 }
