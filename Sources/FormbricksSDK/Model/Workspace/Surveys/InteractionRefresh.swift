@@ -47,7 +47,7 @@ struct InteractionRefresh: Codable, Equatable {
     /// Whether an interaction of this kind should trigger a user-state refresh.
     func shouldRefresh(on source: InteractionSource) -> Bool {
         switch source {
-        case .onDisplay:  return onDisplay
+        case .onDisplay: return onDisplay
         case .onResponse: return onResponse
         case .onFinished: return onFinished
         }

@@ -1,5 +1,6 @@
-import XCTest
 import WebKit
+import XCTest
+
 @testable import FormbricksSDK
 
 /// `WKScriptMessage` cannot be constructed with a payload, but `body` is overridable, so the
@@ -18,12 +19,12 @@ final class FakeScriptMessage: WKScriptMessage {
 /// Counts `postUser` calls so the interaction gate can be asserted end to end.
 private final class CountingMockService: MockFormbricksService {
     var postUserCallCount = 0
-    /// Lets a test wait on the real request instead of guessing how long the debounce takes.
-    var onPostUser: ((Int) -> Void)?
 
-    override func postUser(id: String, attributes: [String: AttributeValue]?, completion: @escaping (ResultType<PostUserRequest.Response>) -> Void) {
+    override func postUser(
+        id: String, attributes: [String: AttributeValue]?,
+        completion: @escaping (ResultType<PostUserRequest.Response>) -> Void
+    ) {
         postUserCallCount += 1
-        onPostUser?(postUserCallCount)
         super.postUser(id: id, attributes: attributes, completion: completion)
     }
 }
@@ -32,7 +33,7 @@ final class SurveyInteractionRefreshTests: XCTestCase {
 
     private let userDefaultsKeys = [
         "userIdKey", "contactIdKey", "segmentsKey",
-        "displaysKey", "responsesKey", "lastDisplayedAtKey", "expiresAtKey"
+        "displaysKey", "responsesKey", "lastDisplayedAtKey", "expiresAtKey",
     ]
 
     override func setUp() {
@@ -48,7 +49,7 @@ final class SurveyInteractionRefreshTests: XCTestCase {
     }
 
     private func clearUserState() {
-        userDefaultsKeys.forEach { UserDefaults.standard.removeObject(forKey: $0) }
+        for key in userDefaultsKeys { UserDefaults.standard.removeObject(forKey: key) }
         // The cached workspace blob outlives `Formbricks.cleanup()` on purpose (real apps rely
         // on it across launches), and its fixture `expiresAt` is years out — so without this a
         // blob written by an earlier run is reused and never refetched.
@@ -86,10 +87,12 @@ final class SurveyInteractionRefreshTests: XCTestCase {
     }
 
     func testSurveyDecodesFullInteractionRefresh() throws {
-        let decoded = try decodeSurvey(#"""
-        {"id":"survey-a","interactionRefresh":{"onDisplay":true,"onResponse":false,"onFinished":true}}
-        """#)
-        XCTAssertEqual(decoded.interactionRefresh, InteractionRefresh(onDisplay: true, onResponse: false, onFinished: true))
+        let decoded = try decodeSurvey(
+            #"""
+            {"id":"survey-a","interactionRefresh":{"onDisplay":true,"onResponse":false,"onFinished":true}}
+            """#)
+        XCTAssertEqual(
+            decoded.interactionRefresh, InteractionRefresh(onDisplay: true, onResponse: false, onFinished: true))
     }
 
     /// A partial object must not fail the decode — otherwise one malformed survey blanks out
@@ -100,18 +103,20 @@ final class SurveyInteractionRefreshTests: XCTestCase {
     }
 
     func testUnknownKeyInsideInteractionRefreshIsIgnored() throws {
-        let decoded = try decodeSurvey(#"""
-        {"id":"survey-a","interactionRefresh":{"onDisplay":true,"onSomethingNew":true}}
-        """#)
+        let decoded = try decodeSurvey(
+            #"""
+            {"id":"survey-a","interactionRefresh":{"onDisplay":true,"onSomethingNew":true}}
+            """#)
         XCTAssertEqual(decoded.interactionRefresh?.onDisplay, true)
     }
 
     /// The server attaches an all-false object to every survey in an interaction-targeting
     /// workspace, so this is a real payload and must be distinguishable from absent.
     func testAllFalseInteractionRefreshIsPresentButNeverRefreshes() throws {
-        let decoded = try decodeSurvey(#"""
-        {"id":"survey-a","interactionRefresh":{"onDisplay":false,"onResponse":false,"onFinished":false}}
-        """#)
+        let decoded = try decodeSurvey(
+            #"""
+            {"id":"survey-a","interactionRefresh":{"onDisplay":false,"onResponse":false,"onFinished":false}}
+            """#)
         XCTAssertNotNil(decoded.interactionRefresh)
         for source in [InteractionSource.onDisplay, .onResponse, .onFinished] {
             XCTAssertFalse(decoded.interactionRefresh?.shouldRefresh(on: source) ?? true)
@@ -150,12 +155,14 @@ final class SurveyInteractionRefreshTests: XCTestCase {
     }
 
     func testHtmlTemplatePassesOnFinishedToRenderSurvey() throws {
-        Formbricks.setup(with: FormbricksConfig.Builder(appUrl: "https://example.com", workspaceId: "workspaceId")
-            .service(MockFormbricksService())
-            .build())
+        Formbricks.setup(
+            with: FormbricksConfig.Builder(appUrl: "https://example.com", workspaceId: "workspaceId")
+                .service(MockFormbricksService())
+                .build())
 
         guard let url = Bundle.module.url(forResource: "Environment", withExtension: "json"),
-              let data = try? Data(contentsOf: url) else {
+            let data = try? Data(contentsOf: url)
+        else {
             return XCTFail("Missing Environment.json fixture")
         }
         let workspaceResponse = try JSONDecoder.iso8601Full.decode(GetWorkspaceRequest.Response.self, from: data)
@@ -181,12 +188,8 @@ final class SurveyInteractionRefreshTests: XCTestCase {
             source: .onDisplay
         )
 
-        let exp = expectation(description: "no sync for anonymous user")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-            XCTAssertEqual(service.postUserCallCount, 0)
-            exp.fulfill()
-        }
-        wait(for: [exp], timeout: 2.0)
+        flushQueuedUpdates(of: userManager)
+        XCTAssertEqual(service.postUserCallCount, 0)
     }
 
     func testGateBlocksWhenFieldAbsentOrFlagFalse() {
@@ -204,12 +207,9 @@ final class SurveyInteractionRefreshTests: XCTestCase {
             source: .onResponse
         )
 
-        let exp = expectation(description: "gate blocks all three")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-            XCTAssertEqual(service.postUserCallCount, 0)
-            exp.fulfill()
-        }
-        wait(for: [exp], timeout: 2.0)
+        // Anything the gate let through would be sent by this flush.
+        flushQueuedUpdates(of: userManager)
+        XCTAssertEqual(service.postUserCallCount, 0)
     }
 
     func testMatchingFlagTriggersExactlyOneSync() {
@@ -217,18 +217,12 @@ final class SurveyInteractionRefreshTests: XCTestCase {
         let userManager = UserManager(service: service)
         UserDefaults.standard.set("user-1", forKey: "userIdKey")
 
-        // Driven by the request itself rather than a fixed sleep, so a loaded machine can't
-        // make this flake. Over-fulfilment fails the test, which is the "exactly one" half.
-        let synced = expectation(description: "the gate lets one sync through")
-        synced.assertForOverFulfill = true
-        service.onPostUser = { _ in synced.fulfill() }
-
         userManager.refreshSegmentsAfterInteraction(
             survey: survey(refresh: InteractionRefresh(onDisplay: true)),
             source: .onDisplay
         )
 
-        wait(for: [synced], timeout: 5.0)
+        flushQueuedUpdates(of: userManager)
         XCTAssertEqual(service.postUserCallCount, 1)
     }
 
@@ -238,16 +232,12 @@ final class SurveyInteractionRefreshTests: XCTestCase {
         let userManager = UserManager(service: service)
         UserDefaults.standard.set("user-1", forKey: "userIdKey")
 
-        let synced = expectation(description: "burst coalesces into one sync")
-        synced.assertForOverFulfill = true
-        service.onPostUser = { _ in synced.fulfill() }
-
         let allOn = survey(refresh: InteractionRefresh(onDisplay: true, onResponse: true, onFinished: true))
         userManager.refreshSegmentsAfterInteraction(survey: allOn, source: .onDisplay)
         userManager.refreshSegmentsAfterInteraction(survey: allOn, source: .onResponse)
         userManager.refreshSegmentsAfterInteraction(survey: allOn, source: .onFinished)
 
-        wait(for: [synced], timeout: 5.0)
+        flushQueuedUpdates(of: userManager)
         XCTAssertEqual(service.postUserCallCount, 1)
     }
 
@@ -261,32 +251,22 @@ final class SurveyInteractionRefreshTests: XCTestCase {
         defer { queue.cleanup() }
 
         queue.requestUserStateRefresh(userId: "user-1")
+        queue.fireScheduledCommit()
+        // MockUserManager never reports completion, so the queue is still "in flight".
+        XCTAssertEqual(mockUserManager.syncCallCount, 1)
 
-        let done = expectation(description: "deferred refresh is replayed")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-            // MockUserManager never reports completion, so the queue is still "in flight".
-            XCTAssertEqual(mockUserManager.syncCallCount, 1)
+        queue.requestUserStateRefresh(userId: "user-1")
+        XCTAssertFalse(
+            queue.hasScheduledCommit,
+            "A nudge during an in-flight sync must not start a second request"
+        )
 
-            queue.requestUserStateRefresh(userId: "user-1")
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-                XCTAssertEqual(
-                    mockUserManager.syncCallCount, 1,
-                    "A nudge during an in-flight sync must not start a second request"
-                )
-
-                // Completing the sync must replay the deferred nudge on its own — without any
-                // further interaction.
-                queue.syncDidFinish()
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-                    XCTAssertEqual(
-                        mockUserManager.syncCallCount, 2,
-                        "The deferred refresh must be replayed once the sync finishes"
-                    )
-                    done.fulfill()
-                }
-            }
-        }
-        wait(for: [done], timeout: 5.0)
+        // Completing the sync must replay the deferred nudge on its own — without any
+        // further interaction.
+        queue.syncDidFinish()
+        XCTAssertTrue(queue.hasScheduledCommit, "The deferred refresh must be replayed once the sync finishes")
+        queue.fireScheduledCommit()
+        XCTAssertEqual(mockUserManager.syncCallCount, 2)
     }
 
     /// Only one deferred refresh is kept, so a long sync with many interactions behind it
@@ -297,22 +277,17 @@ final class SurveyInteractionRefreshTests: XCTestCase {
         defer { queue.cleanup() }
 
         queue.requestUserStateRefresh(userId: "user-1")
+        queue.fireScheduledCommit()
+        XCTAssertEqual(mockUserManager.syncCallCount, 1)
 
-        let done = expectation(description: "one replay")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-            XCTAssertEqual(mockUserManager.syncCallCount, 1)
+        queue.requestUserStateRefresh(userId: "user-1")
+        queue.requestUserStateRefresh(userId: "user-1")
+        queue.requestUserStateRefresh(userId: "user-1")
 
-            queue.requestUserStateRefresh(userId: "user-1")
-            queue.requestUserStateRefresh(userId: "user-1")
-            queue.requestUserStateRefresh(userId: "user-1")
-
-            queue.syncDidFinish()
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-                XCTAssertEqual(mockUserManager.syncCallCount, 2)
-                done.fulfill()
-            }
-        }
-        wait(for: [done], timeout: 5.0)
+        queue.syncDidFinish()
+        queue.fireScheduledCommit()
+        XCTAssertEqual(mockUserManager.syncCallCount, 2)
+        XCTAssertFalse(queue.hasScheduledCommit, "Only one replay may be queued")
     }
 
     /// A commit with no user id must not leave the in-flight flag stuck, or every later
@@ -324,17 +299,14 @@ final class SurveyInteractionRefreshTests: XCTestCase {
 
         // No user id anywhere: commit bails out early.
         queue.set(attributes: ["foo": "bar"])
+        queue.fireScheduledCommit()
+        XCTAssertEqual(mockUserManager.syncCallCount, 0)
 
-        let exp = expectation(description: "queue still usable")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-            XCTAssertEqual(mockUserManager.syncCallCount, 0)
-            queue.requestUserStateRefresh(userId: "user-1")
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-                XCTAssertEqual(mockUserManager.syncCallCount, 1)
-                exp.fulfill()
-            }
-        }
-        wait(for: [exp], timeout: 3.0)
+        // A stuck in-flight flag would defer this nudge instead of scheduling it.
+        queue.requestUserStateRefresh(userId: "user-1")
+        XCTAssertTrue(queue.hasScheduledCommit, "The anonymous commit wedged the queue")
+        queue.fireScheduledCommit()
+        XCTAssertEqual(mockUserManager.syncCallCount, 1)
     }
 
     // MARK: - End-to-end wiring: JS event -> SurveyManager -> UserManager -> queue
@@ -346,10 +318,22 @@ final class SurveyInteractionRefreshTests: XCTestCase {
         if let userId = userId {
             UserDefaults.standard.set(userId, forKey: "userIdKey")
         }
-        Formbricks.setup(with: FormbricksConfig.Builder(appUrl: "https://example.com", workspaceId: "workspaceId")
-            .service(service)
-            .build())
-        return "cm6ovw6j7000gsf0kduf4oo4i" // the fixture survey, which carries interactionRefresh
+        Formbricks.setup(
+            with: FormbricksConfig.Builder(appUrl: "https://example.com", workspaceId: "workspaceId")
+                .service(service)
+                .build())
+        return "cm6ovw6j7000gsf0kduf4oo4i"  // the fixture survey, which carries interactionRefresh
+    }
+
+    /// Sends whatever the update queue holds now, instead of sleeping past the debounce: a stalled
+    /// simulator lets a sleep finish before the debounce fires. The mock service answers
+    /// synchronously, so the request has been made by the time this returns.
+    private func flushQueuedUpdates(of userManager: UserManager?, file: StaticString = #filePath, line: UInt = #line) {
+        guard let userManager = userManager else {
+            XCTFail("The SDK has no user manager", file: file, line: line)
+            return
+        }
+        userManager.waitForPendingUpdates { _ in }
     }
 
     private func send(_ event: String, to handler: JsMessageHandler) {
@@ -366,12 +350,8 @@ final class SurveyInteractionRefreshTests: XCTestCase {
 
         send("onFinished", to: JsMessageHandler(surveyId: surveyId))
 
-        let exp = expectation(description: "onFinished triggers a refresh")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
-            XCTAssertEqual(service.postUserCallCount - baseline, 1)
-            exp.fulfill()
-        }
-        wait(for: [exp], timeout: 3.0)
+        flushQueuedUpdates(of: Formbricks.userManager)
+        XCTAssertEqual(service.postUserCallCount - baseline, 1)
     }
 
     func testDisplayEventReachesTheUserStateRefresh() {
@@ -381,12 +361,8 @@ final class SurveyInteractionRefreshTests: XCTestCase {
 
         send("onDisplayCreated", to: JsMessageHandler(surveyId: surveyId))
 
-        let exp = expectation(description: "onDisplayCreated triggers a refresh")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
-            XCTAssertEqual(service.postUserCallCount - baseline, 1)
-            exp.fulfill()
-        }
-        wait(for: [exp], timeout: 3.0)
+        flushQueuedUpdates(of: Formbricks.userManager)
+        XCTAssertEqual(service.postUserCallCount - baseline, 1)
     }
 
     /// The one-shot guard: the surveys library does not guard `onFinished`, and a self-hosted
@@ -399,18 +375,14 @@ final class SurveyInteractionRefreshTests: XCTestCase {
         let handler = JsMessageHandler(surveyId: surveyId)
 
         send("onFinished", to: handler)
+        // The sync completes inside the flush, so the in-flight lock is released; only the
+        // handler's own guard can suppress the second event now.
+        flushQueuedUpdates(of: Formbricks.userManager)
+        XCTAssertEqual(service.postUserCallCount - baseline, 1)
 
-        let exp = expectation(description: "second onFinished is ignored")
-        // Wait past the debounce and the sync so the in-flight lock is released; only the
-        // handler's own guard can suppress the second event by then.
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.9) {
-            self.send("onFinished", to: handler)
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.9) {
-                XCTAssertEqual(service.postUserCallCount - baseline, 1)
-                exp.fulfill()
-            }
-        }
-        wait(for: [exp], timeout: 5.0)
+        send("onFinished", to: handler)
+        flushQueuedUpdates(of: Formbricks.userManager)
+        XCTAssertEqual(service.postUserCallCount - baseline, 1)
     }
 
     /// A fresh handler means a fresh showing, so it is allowed to refresh again.
@@ -420,16 +392,12 @@ final class SurveyInteractionRefreshTests: XCTestCase {
         let baseline = service.postUserCallCount
 
         send("onFinished", to: JsMessageHandler(surveyId: surveyId))
+        flushQueuedUpdates(of: Formbricks.userManager)
 
-        let exp = expectation(description: "second showing refreshes again")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.9) {
-            self.send("onFinished", to: JsMessageHandler(surveyId: surveyId))
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.9) {
-                XCTAssertEqual(service.postUserCallCount - baseline, 2)
-                exp.fulfill()
-            }
-        }
-        wait(for: [exp], timeout: 5.0)
+        send("onFinished", to: JsMessageHandler(surveyId: surveyId))
+        flushQueuedUpdates(of: Formbricks.userManager)
+
+        XCTAssertEqual(service.postUserCallCount - baseline, 2)
     }
 
     /// The survey id must actually be matched. If the lookup degraded to "just take the first
@@ -441,12 +409,8 @@ final class SurveyInteractionRefreshTests: XCTestCase {
 
         Formbricks.surveyManager?.onSurveyInteraction(surveyId: "no-such-survey", source: .onFinished)
 
-        let exp = expectation(description: "unknown survey id is a no-op")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
-            XCTAssertEqual(service.postUserCallCount - baseline, 0)
-            exp.fulfill()
-        }
-        wait(for: [exp], timeout: 3.0)
+        flushQueuedUpdates(of: Formbricks.userManager)
+        XCTAssertEqual(service.postUserCallCount - baseline, 0)
     }
 
     /// Proves the fixture — i.e. a real server-shaped payload — decodes the gate correctly.
@@ -468,24 +432,31 @@ final class SurveyInteractionRefreshTests: XCTestCase {
     /// installs on `RunLoop.current`, and that pooled thread has no run loop, so the timer was
     /// created and never fired. This mock reproduces the same threading, so the second
     /// `postUser` only happens if the timer is genuinely live.
-    func testSyncTimerFiresWhenScheduledFromABackgroundCompletion() {
-        let originalFloor = Config.User.minimumSyncIntervalInSeconds
-        Config.User.minimumSyncIntervalInSeconds = 0.2
-        defer { Config.User.minimumSyncIntervalInSeconds = originalFloor }
-
+    ///
+    /// It checks where the timer lives instead of waiting for it to fire: a timer on that pooled
+    /// thread's run loop is the bug, and a wait for it to fire only tells the bug apart from a
+    /// stalled simulator by how long it takes.
+    func testSyncTimerFiresWhenScheduledFromABackgroundCompletion() throws {
         let service = BackgroundCompletionMockService()
-        service.expiresIn = 0.3
         let userManager = UserManager(service: service)
 
-        let exp = expectation(description: "timer fires and re-syncs")
-        service.onPostUser = { count in
-            if count == 2 { exp.fulfill() }
+        syncAndWaitForTheNextSyncToBeScheduled(userManager, service: service)
+
+        let timer = try XCTUnwrap(userManager.syncTimer)
+        XCTAssertTrue(timer.isValid)
+        XCTAssertTrue(
+            CFRunLoopContainsTimer(CFRunLoopGetMain(), unsafeBitCast(timer, to: CFRunLoopTimer.self), .commonModes),
+            "The sync timer must be on the main run loop; any other thread's run loop never runs"
+        )
+
+        // And when it fires, it re-syncs.
+        let resynced = expectation(description: "the timer re-synced")
+        service.onCompletionDelivered = { count in
+            if count == 2 { DispatchQueue.main.async { resynced.fulfill() } }
         }
-
-        userManager.syncUser(withId: "user-1")
-
-        wait(for: [exp], timeout: 5.0)
-        XCTAssertGreaterThanOrEqual(service.postUserCallCount, 2)
+        timer.fire()
+        wait(for: [resynced], timeout: eventTimeout)
+        XCTAssertEqual(service.postUserCallCount, 2)
     }
 
     /// A failed sync must still leave a timer armed. Otherwise one transient network error ends
@@ -499,13 +470,13 @@ final class SurveyInteractionRefreshTests: XCTestCase {
 
         userManager.syncUser(withId: "user-1")
 
+        // The retry is armed on the main queue; a hop queued after it runs strictly later.
         let exp = expectation(description: "a retry is armed after the failure")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            XCTAssertNotNil(userManager.syncTimer, "A failed sync must leave a retry scheduled")
-            XCTAssertEqual(userManager.syncTimer?.isValid, true)
-            exp.fulfill()
-        }
-        wait(for: [exp], timeout: 3.0)
+        DispatchQueue.main.async { exp.fulfill() }
+        wait(for: [exp], timeout: eventTimeout)
+
+        XCTAssertNotNil(userManager.syncTimer, "A failed sync must leave a retry scheduled")
+        XCTAssertEqual(userManager.syncTimer?.isValid, true)
     }
 
     /// The retry backs off rather than hammering at the minimum sync interval, so a sustained
@@ -519,52 +490,71 @@ final class SurveyInteractionRefreshTests: XCTestCase {
 
     /// A device clock ahead of the server makes every `expiresAt` land in the past. Without
     /// the floor the timer would fire immediately, re-sync, and loop.
-    func testSkewedClockDoesNotCauseASyncLoop() {
-        let originalFloor = Config.User.minimumSyncIntervalInSeconds
-        Config.User.minimumSyncIntervalInSeconds = 10
-        defer { Config.User.minimumSyncIntervalInSeconds = originalFloor }
+    func testSkewedClockDoesNotCauseASyncLoop() throws {
 
         let service = BackgroundCompletionMockService()
-        service.expiresIn = -3600 // server expiry already an hour in the device's past
+        service.expiresIn = -3600  // server expiry already an hour in the device's past
         let userManager = UserManager(service: service)
 
-        userManager.syncUser(withId: "user-1")
+        syncAndWaitForTheNextSyncToBeScheduled(userManager, service: service)
 
-        let exp = expectation(description: "no loop")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-            XCTAssertEqual(service.postUserCallCount, 1, "Clamp should hold the next sync off")
-            XCTAssertEqual(userManager.syncTimer?.isValid, true)
-            exp.fulfill()
-        }
-        wait(for: [exp], timeout: 3.0)
+        XCTAssertEqual(service.postUserCallCount, 1)
+        let timer = try XCTUnwrap(userManager.syncTimer)
+        XCTAssertTrue(timer.isValid)
+        // Read off the timer rather than by waiting to see no second sync, so a stall cannot pass
+        // or fail it. Unclamped, the fire date is the skewed expiry, an hour in the past.
+        XCTAssertGreaterThan(
+            timer.fireDate.timeIntervalSinceNow, Config.User.minimumSyncIntervalInSeconds / 2,
+            "Clamp should hold the next sync off")
+    }
+
+    /// Syncs once and returns after the completion has armed the next sync. The completion
+    /// arrives on a background thread and arms the timer with a main-queue hop; the hop queued
+    /// after it runs strictly later, so the timer is in place once it does.
+    private func syncAndWaitForTheNextSyncToBeScheduled(
+        _ userManager: UserManager, service: BackgroundCompletionMockService
+    ) {
+        let scheduled = expectation(description: "the sync landed and armed the next one")
+        service.onCompletionDelivered = { _ in DispatchQueue.main.async { scheduled.fulfill() } }
+        userManager.syncUser(withId: "user-1")
+        wait(for: [scheduled], timeout: eventTimeout)
     }
 }
 
-/// Delivers completions on a background queue, the way `APIClient` does via URLSession's
-/// delegate queue, and returns a user state whose expiry is controllable. Used to prove the
+/// Delivers completions on a background thread with no run loop, the way `APIClient` does via
+/// URLSession's delegate queue, and returns a user state whose expiry is controllable. Used to prove the
 /// sync timer is not scheduled onto a dead run loop.
 private final class BackgroundCompletionMockService: MockFormbricksService {
     var postUserCallCount = 0
     /// Seconds from now for the returned `expiresAt`. Negative simulates clock skew.
-    var expiresIn: TimeInterval = 0.3
-    var onPostUser: ((Int) -> Void)?
+    var expiresIn: TimeInterval = 3600
+    /// Called on the background thread once `completion` has returned, with the request's number.
+    var onCompletionDelivered: ((Int) -> Void)?
 
-    override func postUser(id: String, attributes: [String: AttributeValue]?, completion: @escaping (ResultType<PostUserRequest.Response>) -> Void) {
+    override func postUser(
+        id: String, attributes: [String: AttributeValue]?,
+        completion: @escaping (ResultType<PostUserRequest.Response>) -> Void
+    ) {
         postUserCallCount += 1
-        onPostUser?(postUserCallCount)
 
         let expiresAt = DateFormatter.isoFormatter.string(from: Date().addingTimeInterval(expiresIn))
         let json = """
-        {"data":{"state":{"data":{"contactId":"contact-1","displays":[],"lastDisplayAt":null,"responses":[],"segments":["segment-1"],"userId":"\(id)"},"expiresAt":"\(expiresAt)"}}}
-        """
+            {"data":{"state":{"data":{"contactId":"contact-1","displays":[],"lastDisplayAt":null,"responses":[],"segments":["segment-1"],"userId":"\(id)"},"expiresAt":"\(expiresAt)"}}}
+            """
 
-        DispatchQueue.global().async {
+        // A thread of its own rather than `DispatchQueue.global()`. On the CI simulator GCD's
+        // global queues can wait a long time for a worker thread: a probe on the utility queue
+        // ran 91s late, and default-QoS completions here missed a 30s wait in three runs. A
+        // dedicated thread with no run loop is the condition under test, and it starts at once.
+        let count = postUserCallCount
+        Thread { [onCompletionDelivered] in
             do {
                 let response = try JSONDecoder.iso8601Full.decode(PostUserRequest.Response.self, from: Data(json.utf8))
                 completion(.success(response))
             } catch {
                 completion(.failure(error))
             }
-        }
+            onCompletionDelivered?(count)
+        }.start()
     }
 }

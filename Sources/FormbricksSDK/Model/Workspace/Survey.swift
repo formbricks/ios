@@ -1,13 +1,13 @@
 enum DisplayOptionType: String, Codable {
-    case respondMultiple = "respondMultiple"
-    case displayOnce = "displayOnce"
-    case displayMultiple = "displayMultiple"
-    case displaySome = "displaySome"
+    case respondMultiple
+    case displayOnce
+    case displayMultiple
+    case displaySome
 }
 
 struct SurveyLanguage: Codable {
     let enabled: Bool
-    let isDefault: Bool       // must differ from "default" in JSON
+    let isDefault: Bool  // must differ from "default" in JSON
     let language: LanguageDetail
 
     private enum CodingKeys: String, CodingKey {
@@ -16,7 +16,6 @@ struct SurveyLanguage: Codable {
         case language
     }
 }
-
 
 struct LanguageDetail: Codable {
     let id: String
@@ -28,18 +27,18 @@ struct LanguageDetail: Codable {
 // MARK: - New types for projectOverwrites
 
 enum Placement: String, Codable {
-    case topLeft = "topLeft"
-    case topRight = "topRight"
-    case bottomLeft = "bottomLeft"
-    case bottomRight = "bottomRight"
-    case center = "center"
+    case topLeft
+    case topRight
+    case bottomLeft
+    case bottomRight
+    case center
 }
 
 /// Defines the overlay style displayed behind a survey modal.
 enum SurveyOverlay: String, Codable {
-    case none = "none"
-    case light = "light"
-    case dark = "dark"
+    case none
+    case light
+    case dark
 }
 
 struct ProjectOverwrites: Codable {

@@ -1,5 +1,6 @@
-import XCTest
 import WebKit
+import XCTest
+
 @testable import FormbricksSDK
 
 final class FormbricksSDKTests: XCTestCase {
@@ -9,13 +10,13 @@ final class FormbricksSDKTests: XCTestCase {
     let surveyID = "cm6ovw6j7000gsf0kduf4oo4i"
     let mockService = MockFormbricksService()
     let waitDescription = "wait for a second"
-    
+
     override func setUp() {
         super.setUp()
         // Always clean up before each test
         Formbricks.cleanup()
         clearPersistedWorkspaceCache()
-   }
+    }
 
     override func tearDown() {
         Formbricks.cleanup()
@@ -31,112 +32,110 @@ final class FormbricksSDKTests: XCTestCase {
         defaults.removeObject(forKey: SurveyManager.workspaceResponseObjectKey)
         defaults.removeObject(forKey: SurveyManager.legacyEnvironmentResponseObjectKey)
     }
-    
+
+    /// Waits for the queued `setUserId` / `setAttribute` to reach the mock server, instead of
+    /// sleeping past the update queue's debounce and hoping the sync has landed by then.
+    private func waitForUserSync() {
+        let synced = expectation(description: "Pending user updates sent")
+        Formbricks.userManager?.waitForPendingUpdates { _ in synced.fulfill() }
+        wait(for: [synced], timeout: 3.0)
+    }
+
     func testFormbricks() throws {
         // Everything should be in the default state before initialization.
         XCTAssertFalse(Formbricks.isInitialized)
         XCTAssertNil(Formbricks.surveyManager)
         XCTAssertNil(Formbricks.userManager)
-        
+
         // The language should be "default" initially
         XCTAssertEqual(Formbricks.language, "default")
-        
+
         // Set language before SDK setup
         Formbricks.setLanguage("de")
-        XCTAssertEqual(Formbricks.language, "de") // This works without initialization
-        
+        XCTAssertEqual(Formbricks.language, "de")  // This works without initialization
+
         // User manager default state: there is no user yet.
         XCTAssertNil(Formbricks.userManager?.displays)
         XCTAssertNil(Formbricks.userManager?.responses)
         XCTAssertNil(Formbricks.userManager?.segments)
-         
+
         // Use methods before init should have no effect except language.
         Formbricks.setUserId("userId")
-        Formbricks.setAttributes(["testA" : "testB"])
+        Formbricks.setAttributes(["testA": "testB"])
         Formbricks.setAttribute("test", forKey: "testKey")
         XCTAssertNil(Formbricks.userManager?.userId)
 
         // Setup the SDK using your new instance-based design.
         // This creates new instances for both the UserManager and SurveyManager.
-        Formbricks.setup(with: FormbricksConfig.Builder(appUrl: appUrl, workspaceId: workspaceId)
-            .set(attributes: ["a": "b"])
-            .add(attribute: "test", forKey: "key")
-            .setLogLevel(.debug)
-            .service(mockService)
-            .build()
+        Formbricks.setup(
+            with: FormbricksConfig.Builder(appUrl: appUrl, workspaceId: workspaceId)
+                .set(attributes: ["a": "b"])
+                .add(attribute: "test", forKey: "key")
+                .setLogLevel(.debug)
+                .service(mockService)
+                .build()
         )
-        
+
         XCTAssertTrue(Formbricks.isInitialized)
         XCTAssertEqual(Formbricks.appUrl, appUrl)
         XCTAssertEqual(Formbricks.workspaceId, workspaceId)
-         
+
         // Check error state handling.
         XCTAssertFalse(Formbricks.surveyManager?.hasApiError ?? false)
-        
+
         mockService.isErrorResponseNeeded = true
         Formbricks.surveyManager?.refreshWorkspaceIfNeeded(force: true)
         XCTAssertTrue(Formbricks.surveyManager?.hasApiError ?? false)
 
         mockService.isErrorResponseNeeded = false
         Formbricks.surveyManager?.refreshWorkspaceIfNeeded(force: true)
-        
-        // Wait for environment to refresh
-        let refreshExpectation = expectation(description: "Environment refreshed")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            refreshExpectation.fulfill()
-        }
-        wait(for: [refreshExpectation])
-        
+
         // Authenticate the user.
         Formbricks.setUserId(userId)
-        
-        // Wait for user ID to be set with a longer timeout
-        let userSetExpectation = expectation(description: "User set")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-            userSetExpectation.fulfill()
-        }
-        wait(for: [userSetExpectation], timeout: 3.0)
+        waitForUserSync()
 
         // Verify user ID is set
         XCTAssertEqual(Formbricks.userManager?.userId, userId, "User ID should be set")
         // User refresh timer should be set.
         XCTAssertNotNil(Formbricks.userManager?.syncTimer, "Sync timer should be set")
-        
+
         // The environment should be fetched.
         XCTAssertNotNil(Formbricks.surveyManager?.workspaceResponse)
-        
+
         // Check if the filter method works properly.
         XCTAssertEqual(Formbricks.surveyManager?.filteredSurveys.count, 1)
-        
+
         // Verify that we're not showing any survey initially.
         XCTAssertNotNil(Formbricks.surveyManager?.filteredSurveys)
         XCTAssertFalse(Formbricks.surveyManager?.isShowingSurvey ?? false)
-        
+
         // Track an unknown event—survey should not be shown.
         Formbricks.track("unknown_event")
         XCTAssertFalse(Formbricks.surveyManager?.isShowingSurvey ?? false)
-        
+
         // Track a known event—the survey should be shown.
         let trackExpectation = expectation(description: "Track event")
-        Formbricks.track("click_demo_button", completion: {
-            trackExpectation.fulfill()
-        })
-        
+        Formbricks.track(
+            "click_demo_button",
+            completion: {
+                trackExpectation.fulfill()
+            })
+
         wait(for: [trackExpectation])
-        
+
         // In headless test environment, presentation fails (no key window), so flag should reset to false
         XCTAssertFalse(Formbricks.surveyManager?.isShowingSurvey ?? true)
-        
+
         // "Dismiss" the webview.
         Formbricks.surveyManager?.dismissSurveyWebView()
         XCTAssertFalse(Formbricks.surveyManager?.isShowingSurvey ?? false)
-        
+
         // Validate display and response.
         Formbricks.surveyManager?.postResponse(surveyId: surveyID)
         Formbricks.surveyManager?.onNewDisplay(surveyId: surveyID)
         XCTAssertEqual(Formbricks.userManager?.responses?.count, 1)
         XCTAssertEqual(Formbricks.userManager?.displays?.count, 1)
-        
+
         // Track a valid event, but survey should not be shown because a response was already submitted.
         Formbricks.track("click_demo_button")
         let secondTrackExpectation = expectation(description: "Second track event")
@@ -144,39 +143,41 @@ final class FormbricksSDKTests: XCTestCase {
             secondTrackExpectation.fulfill()
         }
         wait(for: [secondTrackExpectation], timeout: 5.0)
-        
+
         XCTAssertFalse(Formbricks.surveyManager?.isShowingSurvey ?? false)
-        
+
         // Validate logout.
         XCTAssertNotNil(Formbricks.userManager?.userId)
         XCTAssertNotNil(Formbricks.userManager?.responses)
         XCTAssertNotNil(Formbricks.userManager?.displays)
         Formbricks.logout()
-        
+
         let logoutExpectation = expectation(description: "Logout")
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             logoutExpectation.fulfill()
         }
         wait(for: [logoutExpectation], timeout: 1.0)
-        
+
         XCTAssertNil(Formbricks.userManager?.userId)
         XCTAssertNil(Formbricks.userManager?.responses)
         XCTAssertNil(Formbricks.userManager?.displays)
-        
+
         // Clear the responses and verify survey behavior.
         Formbricks.logout()
         Formbricks.surveyManager?.filterSurveys()
-        
+
         let thirdTrackExpectation = expectation(description: "Third track event")
-        Formbricks.track("click_demo_button", completion: {
-            thirdTrackExpectation.fulfill()
-        })
-        
+        Formbricks.track(
+            "click_demo_button",
+            completion: {
+                thirdTrackExpectation.fulfill()
+            })
+
         wait(for: [thirdTrackExpectation])
-        
+
         // In headless test environment, presentation fails (no key window), so flag should reset to false
         XCTAssertFalse(Formbricks.surveyManager?.isShowingSurvey ?? true)
-        
+
         // Test the cleanup
         Formbricks.cleanup()
         XCTAssertNil(Formbricks.userManager)
@@ -195,11 +196,11 @@ final class FormbricksSDKTests: XCTestCase {
             .setLogLevel(.debug)
             .service(mockService)
             .build()
-        
+
         Formbricks.setup(with: config)
-        
+
         XCTAssertTrue(Formbricks.isInitialized)
-        
+
         // Wait for cleanup to complete using XCTestExpectation
         let cleanupExpectation = expectation(description: "Cleanup complete")
         Formbricks.cleanup(waitForOperations: true) {
@@ -207,7 +208,7 @@ final class FormbricksSDKTests: XCTestCase {
         }
 
         wait(for: [cleanupExpectation])
-        
+
         // Validate cleanup: all main properties should be nil or false
         XCTAssertNil(Formbricks.userManager, "User manager should be nil")
         XCTAssertNil(Formbricks.surveyManager, "Survey manager should be nil")
@@ -218,13 +219,55 @@ final class FormbricksSDKTests: XCTestCase {
         XCTAssertNil(Formbricks.workspaceId, "Workspace ID should be nil")
         XCTAssertNil(Formbricks.logger, "Logger should be nil")
     }
-    
+
+    /// `cleanup(waitForOperations:)` must not queue behind every other thread in the process.
+    /// It used to wait at `.background` QoS, the band the scheduler drops first when the CPU is
+    /// busy: on a loaded CI runner the completion took minutes (457s in one run). Saturating the
+    /// CPU with routine `.utility` work here recreates that contention.
+    func testCleanupWaitingForOperationsFinishesWhileTheCPUIsBusy() {
+        Formbricks.setup(
+            with: FormbricksConfig.Builder(appUrl: appUrl, workspaceId: workspaceId)
+                .service(mockService)
+                .build())
+        let load = CPULoad()
+        load.start()
+        defer { load.stop() }
+
+        let cleanedUp = expectation(description: "Cleanup complete")
+        Formbricks.cleanup(waitForOperations: true) {
+            cleanedUp.fulfill()
+        }
+
+        wait(for: [cleanedUp], timeout: 2.0)
+        XCTAssertFalse(Formbricks.isInitialized)
+    }
+
+    /// `track` checks connectivity before it evaluates a survey, and that check ran at
+    /// `.background` QoS too: under the same contention a survey trigger could stall for minutes.
+    func testTrackReachesTheSurveyWhileTheCPUIsBusy() {
+        Formbricks.setup(
+            with: FormbricksConfig.Builder(appUrl: appUrl, workspaceId: workspaceId)
+                .service(mockService)
+                .build())
+        let load = CPULoad()
+        load.start()
+        defer { load.stop() }
+
+        let tracked = expectation(description: "Track reached the survey")
+        Formbricks.track("click_demo_button") {
+            tracked.fulfill()
+        }
+
+        wait(for: [tracked], timeout: 2.0)
+    }
+
     func testSurveyManagerEdgeCases() {
         // Setup
         let userManager = UserManager()
         let presentSurveyManager = PresentSurveyManager()
         let service = MockFormbricksService()
-        let manager = SurveyManager.create(userManager: userManager, presentSurveyManager: presentSurveyManager, service: service)
+        let manager = SurveyManager.create(
+            userManager: userManager, presentSurveyManager: presentSurveyManager, service: service)
 
         // shouldDisplayBasedOnPercentage
         XCTAssertTrue(manager.shouldDisplayBasedOnPercentage(nil))
@@ -254,9 +297,15 @@ final class FormbricksSDKTests: XCTestCase {
             segment: nil,
             styling: nil,
             languages: [
-                SurveyLanguage(enabled: true, isDefault: true, language: LanguageDetail(id: "1", code: "en", alias: "english", projectId: "p1")),
-                SurveyLanguage(enabled: true, isDefault: false, language: LanguageDetail(id: "2", code: "de", alias: "german", projectId: "p1")),
-                SurveyLanguage(enabled: false, isDefault: false, language: LanguageDetail(id: "3", code: "fr", alias: nil, projectId: "p1"))
+                SurveyLanguage(
+                    enabled: true, isDefault: true,
+                    language: LanguageDetail(id: "1", code: "en", alias: "english", projectId: "p1")),
+                SurveyLanguage(
+                    enabled: true, isDefault: false,
+                    language: LanguageDetail(id: "2", code: "de", alias: "german", projectId: "p1")),
+                SurveyLanguage(
+                    enabled: false, isDefault: false,
+                    language: LanguageDetail(id: "3", code: "fr", alias: nil, projectId: "p1")),
             ],
             projectOverwrites: nil,
             interactionRefresh: nil
@@ -268,7 +317,7 @@ final class FormbricksSDKTests: XCTestCase {
         // Code match, enabled
         XCTAssertEqual(manager.getLanguageCode(survey: survey, language: "de"), "de")
         // Alias match, enabled
-        XCTAssertEqual(manager.getLanguageCode(survey: survey, language: "english"), "default") // isDefault
+        XCTAssertEqual(manager.getLanguageCode(survey: survey, language: "english"), "default")  // isDefault
         // Code match, disabled
         XCTAssertNil(manager.getLanguageCode(survey: survey, language: "fr"))
         // Alias not found
@@ -289,18 +338,10 @@ final class FormbricksSDKTests: XCTestCase {
 
         // Refresh environment first
         Formbricks.surveyManager?.refreshWorkspaceIfNeeded(force: true)
-        let envExpectation = expectation(description: "Env loaded")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { envExpectation.fulfill() }
-        wait(for: [envExpectation])
 
         // Set userId to trigger syncUser which uses the mock with errors
         Formbricks.setUserId(userId)
-
-        let syncExpectation = expectation(description: "User synced with errors")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-            syncExpectation.fulfill()
-        }
-        wait(for: [syncExpectation], timeout: 3.0)
+        waitForUserSync()
 
         // Verify the user was still synced successfully despite errors
         XCTAssertEqual(Formbricks.userManager?.userId, userId, "User ID should be set even when response has errors")
@@ -319,18 +360,10 @@ final class FormbricksSDKTests: XCTestCase {
 
         // Refresh environment first
         Formbricks.surveyManager?.refreshWorkspaceIfNeeded(force: true)
-        let envExpectation = expectation(description: "Env loaded")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { envExpectation.fulfill() }
-        wait(for: [envExpectation])
 
         // Set userId to trigger syncUser which uses the mock with messages
         Formbricks.setUserId(userId)
-
-        let syncExpectation = expectation(description: "User synced with messages")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-            syncExpectation.fulfill()
-        }
-        wait(for: [syncExpectation], timeout: 3.0)
+        waitForUserSync()
 
         // Verify the user was synced successfully
         XCTAssertEqual(Formbricks.userManager?.userId, userId, "User ID should be set when response has messages")
@@ -349,21 +382,14 @@ final class FormbricksSDKTests: XCTestCase {
 
         // Refresh environment first
         Formbricks.surveyManager?.refreshWorkspaceIfNeeded(force: true)
-        let envExpectation = expectation(description: "Env loaded")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { envExpectation.fulfill() }
-        wait(for: [envExpectation])
 
         // Set userId to trigger syncUser which uses the mock with both errors and messages
         Formbricks.setUserId(userId)
-
-        let syncExpectation = expectation(description: "User synced with errors and messages")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-            syncExpectation.fulfill()
-        }
-        wait(for: [syncExpectation], timeout: 3.0)
+        waitForUserSync()
 
         // Verify the user was synced successfully despite having both errors and messages
-        XCTAssertEqual(Formbricks.userManager?.userId, userId, "User ID should be set when response has both errors and messages")
+        XCTAssertEqual(
+            Formbricks.userManager?.userId, userId, "User ID should be set when response has both errors and messages")
         XCTAssertNotNil(Formbricks.userManager?.syncTimer, "Sync timer should still be set")
     }
 
@@ -378,15 +404,10 @@ final class FormbricksSDKTests: XCTestCase {
 
         // Refresh environment first
         Formbricks.surveyManager?.refreshWorkspaceIfNeeded(force: true)
-        let envExpectation = expectation(description: "Env loaded")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { envExpectation.fulfill() }
-        wait(for: [envExpectation])
 
         // Set userId
         Formbricks.setUserId(userId)
-        let setExpectation = expectation(description: "User set")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) { setExpectation.fulfill() }
-        wait(for: [setExpectation], timeout: 3.0)
+        waitForUserSync()
 
         XCTAssertEqual(Formbricks.userManager?.userId, userId)
 
@@ -404,15 +425,10 @@ final class FormbricksSDKTests: XCTestCase {
 
         // Refresh environment first
         Formbricks.surveyManager?.refreshWorkspaceIfNeeded(force: true)
-        let envExpectation = expectation(description: "Env loaded")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { envExpectation.fulfill() }
-        wait(for: [envExpectation])
 
         // Set initial userId and wait for sync to complete
         Formbricks.setUserId(userId)
-        let setExpectation = expectation(description: "First user set")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) { setExpectation.fulfill() }
-        wait(for: [setExpectation], timeout: 3.0)
+        waitForUserSync()
 
         XCTAssertEqual(Formbricks.userManager?.userId, userId)
 
@@ -500,9 +516,6 @@ final class FormbricksSDKTests: XCTestCase {
         Formbricks.setup(with: config)
 
         Formbricks.surveyManager?.refreshWorkspaceIfNeeded(force: true)
-        let loadExpectation = expectation(description: "Env loaded")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { loadExpectation.fulfill() }
-        wait(for: [loadExpectation])
 
         guard let workspace = Formbricks.surveyManager?.workspaceResponse else {
             XCTFail("Missing workspaceResponse")
@@ -531,9 +544,6 @@ final class FormbricksSDKTests: XCTestCase {
 
         // Force refresh and wait briefly for async fetch
         Formbricks.surveyManager?.refreshWorkspaceIfNeeded(force: true)
-        let expectation = self.expectation(description: "Env loaded")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { expectation.fulfill() }
-        wait(for: [expectation])
 
         guard let workspace = Formbricks.surveyManager?.workspaceResponse else {
             XCTFail("Missing workspaceResponse")
@@ -541,16 +551,17 @@ final class FormbricksSDKTests: XCTestCase {
         }
 
         // Build the view model to produce WEBVIEW_DATA
-        let vm = FormbricksViewModel(workspaceResponse: workspace, surveyId: surveyID)
-        guard let html = vm.htmlString else {
+        let viewModel = FormbricksViewModel(workspaceResponse: workspace, surveyId: surveyID)
+        guard let html = viewModel.htmlString else {
             XCTFail("Missing htmlString")
             return
         }
 
         // The payload is base64-encoded and embedded as atob("...") (see ENG-1813).
         guard let blob = webviewDataBase64(from: html),
-              let data = Data(base64Encoded: blob),
-              let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+            let data = Data(base64Encoded: blob),
+            let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
+        else {
             XCTFail("Invalid JSON in WEBVIEW_DATA")
             return
         }
@@ -612,25 +623,26 @@ final class FormbricksSDKTests: XCTestCase {
 
     /// Workspace data should decode when the server sends the new `settings` key.
     func testWorkspaceDataDecodesFromSettingsKey() throws {
-        let json = """
-        {
-            "data": {
+        let json = Data(
+            """
+            {
                 "data": {
-                    "settings": {
-                        "recontactDays": 7,
-                        "clickOutsideClose": true,
-                        "overlay": "none",
-                        "placement": "bottomRight",
-                        "inAppSurveyBranding": true,
-                        "styling": { "allowStyleOverwrite": true }
+                    "data": {
+                        "settings": {
+                            "recontactDays": 7,
+                            "clickOutsideClose": true,
+                            "overlay": "none",
+                            "placement": "bottomRight",
+                            "inAppSurveyBranding": true,
+                            "styling": { "allowStyleOverwrite": true }
+                        },
+                        "surveys": [],
+                        "actionClasses": []
                     },
-                    "surveys": [],
-                    "actionClasses": []
-                },
-                "expiresAt": "2099-12-31T23:59:59.999Z"
+                    "expiresAt": "2099-12-31T23:59:59.999Z"
+                }
             }
-        }
-        """.data(using: .utf8)!
+            """.utf8)
 
         let response = try JSONDecoder.iso8601Full.decode(WorkspaceResponse.self, from: json)
         XCTAssertEqual(response.data.data.settings.recontactDays, 7)
@@ -639,25 +651,26 @@ final class FormbricksSDKTests: XCTestCase {
 
     /// Workspace data should decode when the server sends the `workspace` key.
     func testWorkspaceDataDecodesFromWorkspaceKey() throws {
-        let json = """
-        {
-            "data": {
+        let json = Data(
+            """
+            {
                 "data": {
-                    "workspace": {
-                        "recontactDays": 3,
-                        "clickOutsideClose": false,
-                        "overlay": "none",
-                        "placement": "center",
-                        "inAppSurveyBranding": false,
-                        "styling": { "allowStyleOverwrite": false }
+                    "data": {
+                        "workspace": {
+                            "recontactDays": 3,
+                            "clickOutsideClose": false,
+                            "overlay": "none",
+                            "placement": "center",
+                            "inAppSurveyBranding": false,
+                            "styling": { "allowStyleOverwrite": false }
+                        },
+                        "surveys": [],
+                        "actionClasses": []
                     },
-                    "surveys": [],
-                    "actionClasses": []
-                },
-                "expiresAt": "2099-12-31T23:59:59.999Z"
+                    "expiresAt": "2099-12-31T23:59:59.999Z"
+                }
             }
-        }
-        """.data(using: .utf8)!
+            """.utf8)
 
         let response = try JSONDecoder.iso8601Full.decode(WorkspaceResponse.self, from: json)
         XCTAssertEqual(response.data.data.settings.recontactDays, 3)
@@ -667,25 +680,26 @@ final class FormbricksSDKTests: XCTestCase {
     /// Workspace data should still decode when the server sends the legacy `project` key,
     /// which lets the SDK read cached blobs written by older SDK versions.
     func testWorkspaceDataDecodesFromLegacyProjectKey() throws {
-        let json = """
-        {
-            "data": {
+        let json = Data(
+            """
+            {
                 "data": {
-                    "project": {
-                        "recontactDays": 14,
-                        "clickOutsideClose": true,
-                        "overlay": "none",
-                        "placement": "bottomLeft",
-                        "inAppSurveyBranding": true,
-                        "styling": { "allowStyleOverwrite": true }
+                    "data": {
+                        "project": {
+                            "recontactDays": 14,
+                            "clickOutsideClose": true,
+                            "overlay": "none",
+                            "placement": "bottomLeft",
+                            "inAppSurveyBranding": true,
+                            "styling": { "allowStyleOverwrite": true }
+                        },
+                        "surveys": [],
+                        "actionClasses": []
                     },
-                    "surveys": [],
-                    "actionClasses": []
-                },
-                "expiresAt": "2099-12-31T23:59:59.999Z"
+                    "expiresAt": "2099-12-31T23:59:59.999Z"
+                }
             }
-        }
-        """.data(using: .utf8)!
+            """.utf8)
 
         let response = try JSONDecoder.iso8601Full.decode(WorkspaceResponse.self, from: json)
         XCTAssertEqual(response.data.data.settings.recontactDays, 14)
@@ -706,9 +720,10 @@ final class FormbricksSDKTests: XCTestCase {
         // fixture with the SDK's iso8601 decoder, then re-encode with the plain
         // JSONEncoder used by the persisted-cache path.
         guard let fixtureUrl = Bundle.module.url(forResource: "Environment", withExtension: "json"),
-              let fixtureData = try? Data(contentsOf: fixtureUrl),
-              let fixtureResponse = try? JSONDecoder.iso8601Full.decode(WorkspaceResponse.self, from: fixtureData),
-              let legacyBlob = try? JSONEncoder().encode(fixtureResponse) else {
+            let fixtureData = try? Data(contentsOf: fixtureUrl),
+            let fixtureResponse = try? JSONDecoder.iso8601Full.decode(WorkspaceResponse.self, from: fixtureData),
+            let legacyBlob = try? JSONEncoder().encode(fixtureResponse)
+        else {
             XCTFail("Missing or invalid Environment.json fixture")
             return
         }
@@ -717,7 +732,8 @@ final class FormbricksSDKTests: XCTestCase {
         // Fresh SurveyManager so the in-memory backing cache is empty.
         let userManager = UserManager()
         let presentSurveyManager = PresentSurveyManager()
-        let manager = SurveyManager.create(userManager: userManager, presentSurveyManager: presentSurveyManager, service: MockFormbricksService())
+        let manager = SurveyManager.create(
+            userManager: userManager, presentSurveyManager: presentSurveyManager, service: MockFormbricksService())
 
         // Reading should migrate and return a decoded WorkspaceResponse.
         XCTAssertNotNil(manager.workspaceResponse, "Legacy cache should be read and decoded")
@@ -734,9 +750,11 @@ final class FormbricksSDKTests: XCTestCase {
     func testEnvironmentRefreshedNotificationStillFiresForBackwardCompat() {
         let userManager = UserManager()
         let presentSurveyManager = PresentSurveyManager()
-        let manager = SurveyManager.create(userManager: userManager, presentSurveyManager: presentSurveyManager, service: MockFormbricksService())
+        let manager = SurveyManager.create(
+            userManager: userManager, presentSurveyManager: presentSurveyManager, service: MockFormbricksService())
 
-        let legacyExpectation = expectation(forNotification: Notification.Name("Formbricks.environmentRefreshed"), object: manager, handler: nil)
+        let legacyExpectation = expectation(
+            forNotification: Notification.Name("Formbricks.environmentRefreshed"), object: manager, handler: nil)
         let newExpectation = expectation(forNotification: .workspaceRefreshed, object: manager, handler: nil)
 
         manager.refreshWorkspaceAfter(timeout: 0.1)
@@ -793,12 +811,14 @@ final class FormbricksSDKTests: XCTestCase {
         }
         wait(for: [handlerCalled], timeout: 1.0)
 
-        XCTAssertEqual(capturedDisposition, .performDefaultHandling,
-                       "WebView must let the OS validate the challenge (\(authenticationMethod)), not override it.",
-                       file: file, line: line)
-        XCTAssertNil(capturedCredential,
-                     "WebView must not supply a credential for \(authenticationMethod) (MITM / force-trust risk).",
-                     file: file, line: line)
+        XCTAssertEqual(
+            capturedDisposition, .performDefaultHandling,
+            "WebView must let the OS validate the challenge (\(authenticationMethod)), not override it.",
+            file: file, line: line)
+        XCTAssertNil(
+            capturedCredential,
+            "WebView must not supply a credential for \(authenticationMethod) (MITM / force-trust risk).",
+            file: file, line: line)
     }
 
     /// Security regression guard (ENG-1812): the allowlist must be enforced on *direct*
@@ -812,11 +832,14 @@ final class FormbricksSDKTests: XCTestCase {
         XCTAssertTrue(JsMessageHandler.shouldAllowInWebViewNavigation(to: nil))
 
         // Nothing else navigates in-frame — including web links (they open externally instead).
-        for external in ["https://formbricks.com", "http://example.com/x",
-                         "tel:+123456789", "sms:+1", "mailto:a@b.com", "facetime:a@b.com",
-                         "itms-apps://apple.com", "myapp://do-something"] {
-            XCTAssertFalse(JsMessageHandler.shouldAllowInWebViewNavigation(to: URL(string: external)!),
-                           "\(external) must not load in the survey frame")
+        for external in [
+            "https://formbricks.com", "http://example.com/x",
+            "tel:+123456789", "sms:+1", "mailto:a@b.com", "facetime:a@b.com",
+            "itms-apps://apple.com", "myapp://do-something",
+        ] {
+            XCTAssertFalse(
+                JsMessageHandler.shouldAllowInWebViewNavigation(to: URL(string: external)!),
+                "\(external) must not load in the survey frame")
         }
 
         // Of the cancelled navigations, only http/https are actually opened; the rest are blocked.
@@ -835,9 +858,11 @@ final class FormbricksSDKTests: XCTestCase {
             XCTAssertTrue(JsMessageHandler.isAllowedExternalURL(url), "\(allowed) should be allowed")
         }
         // Blocked
-        for blocked in ["tel:+123456789", "sms:+123456789", "mailto:a@b.com",
-                        "facetime:a@b.com", "file:///etc/passwd", "javascript:alert(1)",
-                        "whatsapp://send?text=hi", "myapp://do-something"] {
+        for blocked in [
+            "tel:+123456789", "sms:+123456789", "mailto:a@b.com",
+            "facetime:a@b.com", "file:///etc/passwd", "javascript:alert(1)",
+            "whatsapp://send?text=hi", "myapp://do-something",
+        ] {
             let url = URL(string: blocked)!
             XCTAssertFalse(JsMessageHandler.isAllowedExternalURL(url), "\(blocked) should be blocked")
         }
@@ -855,32 +880,36 @@ final class FormbricksSDKTests: XCTestCase {
         Formbricks.setup(with: config)
 
         Formbricks.surveyManager?.refreshWorkspaceIfNeeded(force: true)
-        let loaded = expectation(description: "Env loaded")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { loaded.fulfill() }
-        wait(for: [loaded])
 
         guard let workspace = Formbricks.surveyManager?.workspaceResponse else {
-            XCTFail("Missing workspaceResponse"); return
+            XCTFail("Missing workspaceResponse")
+            return
         }
         guard let html = FormbricksViewModel(workspaceResponse: workspace, surveyId: surveyID).htmlString else {
-            XCTFail("Missing htmlString"); return
+            XCTFail("Missing htmlString")
+            return
         }
 
         // The old raw-template-literal injection must be gone.
-        XCTAssertFalse(html.contains("const json = `"),
-                       "Payload must not be spliced into a JS template literal (script-injection risk).")
+        XCTAssertFalse(
+            html.contains("const json = `"),
+            "Payload must not be spliced into a JS template literal (script-injection risk).")
 
         // The payload must be delivered via atob("...") and the blob must be pure base64.
         guard let blob = webviewDataBase64(from: html) else {
-            XCTFail("Base64 payload marker not found"); return
+            XCTFail("Base64 payload marker not found")
+            return
         }
         XCTAssertFalse(blob.isEmpty, "Payload blob should not be empty")
-        let base64Charset = CharacterSet(charactersIn: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=")
-        XCTAssertTrue(blob.unicodeScalars.allSatisfy { base64Charset.contains($0) },
-                      "Embedded payload must be pure base64 — no characters that could break out of the JS string.")
+        let base64Charset = CharacterSet(
+            charactersIn: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=")
+        XCTAssertTrue(
+            blob.unicodeScalars.allSatisfy { base64Charset.contains($0) },
+            "Embedded payload must be pure base64 — no characters that could break out of the JS string.")
         // And it must decode back to valid JSON.
-        XCTAssertNotNil(Data(base64Encoded: blob).flatMap { try? JSONSerialization.jsonObject(with: $0) },
-                        "Base64 payload must decode to valid JSON.")
+        XCTAssertNotNil(
+            Data(base64Encoded: blob).flatMap { try? JSONSerialization.jsonObject(with: $0) },
+            "Base64 payload must decode to valid JSON.")
     }
 
     /// Regression guard (ENG-1813): removing the old `\"`->`'` mangling must not corrupt
@@ -889,47 +918,57 @@ final class FormbricksSDKTests: XCTestCase {
     /// (and the angle brackets) must survive verbatim — not be rewritten to single quotes.
     func testWebViewPayloadPreservesQuotesAndAngleBrackets() throws {
         // Configure appUrl/workspaceId (the survey-script URL, and thus htmlString, need it).
-        Formbricks.setup(with: FormbricksConfig.Builder(appUrl: appUrl, workspaceId: workspaceId)
-            .service(mockService)
-            .build())
+        Formbricks.setup(
+            with: FormbricksConfig.Builder(appUrl: appUrl, workspaceId: workspaceId)
+                .service(mockService)
+                .build())
 
         // Build the workspace straight from the fixture with `responseString` populated —
         // getSurveyJson reads the raw survey JSON from it (the production APIClient path sets
         // this; the mock service does not), so the survey's HTML question lands in the payload.
         guard let fixtureUrl = Bundle.module.url(forResource: "Environment", withExtension: "json"),
-              let fixtureData = try? Data(contentsOf: fixtureUrl),
-              let raw = String(data: fixtureData, encoding: .utf8) else {
-            XCTFail("Missing Environment.json fixture"); return
+            let fixtureData = try? Data(contentsOf: fixtureUrl),
+            let raw = String(data: fixtureData, encoding: .utf8)
+        else {
+            XCTFail("Missing Environment.json fixture")
+            return
         }
         var workspace = try JSONDecoder.iso8601Full.decode(WorkspaceResponse.self, from: fixtureData)
         workspace.responseString = raw
 
         guard let html = FormbricksViewModel(workspaceResponse: workspace, surveyId: surveyID).htmlString,
-              let blob = webviewDataBase64(from: html),
-              let data = Data(base64Encoded: blob),
-              let decoded = String(data: data, encoding: .utf8) else {
-            XCTFail("Could not decode WEBVIEW_DATA"); return
+            let blob = webviewDataBase64(from: html),
+            let data = Data(base64Encoded: blob),
+            let decoded = String(data: data, encoding: .utf8)
+        else {
+            XCTFail("Could not decode WEBVIEW_DATA")
+            return
         }
 
         // Sanity: the survey's HTML question content actually made it into the payload.
-        XCTAssertTrue(decoded.contains("fb-editor-paragraph"),
-                      "survey HTML content should be present in the payload")
+        XCTAssertTrue(
+            decoded.contains("fb-editor-paragraph"),
+            "survey HTML content should be present in the payload")
 
         // Double quotes survive as JSON-escaped quotes (\"), i.e. the \"->' workaround is gone.
-        XCTAssertTrue(decoded.contains(#"class=\"fb-editor-paragraph\""#),
-                      "Double quotes in survey content must survive the round-trip (\\\"->' mangling must not return).")
-        XCTAssertFalse(decoded.contains("class='fb-editor-paragraph'"),
-                       "Survey content quotes must not be mangled into single quotes.")
+        XCTAssertTrue(
+            decoded.contains(#"class=\"fb-editor-paragraph\""#),
+            "Double quotes in survey content must survive the round-trip (\\\"->' mangling must not return).")
+        XCTAssertFalse(
+            decoded.contains("class='fb-editor-paragraph'"),
+            "Survey content quotes must not be mangled into single quotes.")
         // Angle brackets are delivered intact by base64 (they'd be a script-injection risk if raw).
-        XCTAssertTrue(decoded.contains("<p "),
-                      "Angle brackets in survey content must survive the base64 round-trip.")
+        XCTAssertTrue(
+            decoded.contains("<p "),
+            "Angle brackets in survey content must survive the base64 round-trip.")
     }
 }
 
 /// Extracts the base64 survey payload embedded as `atob("...")` in the WebView HTML.
 private func webviewDataBase64(from html: String) -> String? {
     guard let start = html.range(of: "atob(\"")?.upperBound,
-          let end = html[start...].firstIndex(of: "\"") else { return nil }
+        let end = html[start...].firstIndex(of: "\"")
+    else { return nil }
     return String(html[start..<end])
 }
 
@@ -940,4 +979,33 @@ private final class NoopChallengeSender: NSObject, URLAuthenticationChallengeSen
     func use(_ credential: URLCredential, for challenge: URLAuthenticationChallenge) {}
     func continueWithoutCredential(for challenge: URLAuthenticationChallenge) {}
     func cancel(_ challenge: URLAuthenticationChallenge) {}
+}
+
+/// Keeps every core busy with `.utility` work until stopped: routine work a busy host app does.
+private final class CPULoad {
+    private let lock = NSLock()
+    private var running = false
+
+    private var isRunning: Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        return running
+    }
+
+    func start() {
+        lock.lock()
+        running = true
+        lock.unlock()
+        for _ in 0..<ProcessInfo.processInfo.activeProcessorCount {
+            DispatchQueue.global(qos: .utility).async { [self] in
+                while isRunning {}
+            }
+        }
+    }
+
+    func stop() {
+        lock.lock()
+        running = false
+        lock.unlock()
+    }
 }

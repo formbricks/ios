@@ -1,0 +1,62 @@
+name: CodeQL
+
+# Weekly, and not a required check: findings land in the Security tab.
+on:
+  schedule:
+    - cron: "17 4 * * 1"
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  analyze:
+    name: analyze (${{ matrix.language }})
+    runs-on: ${{ matrix.runs-on }}
+    timeout-minutes: 45
+    permissions:
+      contents: read
+      security-events: write # Uploads results to the Security tab.
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - language: swift
+            runs-on: macos-26
+            build-mode: manual
+          - language: actions
+            runs-on: ubuntu-latest
+            build-mode: none
+    steps:
+      - name: Harden the runner
+        uses: step-security/harden-runner@1d88384fd173af6ecb012dfd0264a306b711241a # v2.22.4
+        with:
+          egress-policy: audit
+
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Select Xcode
+        if: runner.os == 'macOS'
+        # Matches ci.yml. xcode-select, not DEVELOPER_DIR, so the whole toolchain follows it.
+        run: sudo xcode-select --switch /Applications/Xcode_26.3.app
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: ${{ matrix.build-mode }}
+
+      - name: Build
+        if: matrix.build-mode == 'manual'
+        run: make build
+
+      - name: Analyze
+        uses: github/codeql-action/analyze@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
+        with:
+          category: /language:${{ matrix.language }}

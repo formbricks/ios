@@ -6,7 +6,7 @@ extension Calendar {
         let fromDate = startOfDay(for: from)
         let toDate = startOfDay(for: to)
         let numberOfDays = dateComponents([.day], from: fromDate, to: toDate)
-        
+
         guard let day = numberOfDays.day else { return 0 }
         return max(0, day)
     }

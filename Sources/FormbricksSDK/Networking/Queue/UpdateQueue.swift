@@ -10,7 +10,7 @@ final class UpdateQueue {
 
     private let syncQueue = DispatchQueue(label: "com.formbricks.updateQueue")
     private var userId: String?
-    private var attributes: [String : AttributeValue]?
+    private var attributes: [String: AttributeValue]?
     private var language: String?
     private var timer: Timer?
     /// True while a commit-triggered sync is airborne. A repeat nudge joins that request
@@ -40,40 +40,40 @@ final class UpdateQueue {
     init(userManager: UserManagerSyncable) {
         self.userManager = userManager
     }
-    
+
     func set(userId: String) {
         syncQueue.sync {
             self.userId = userId
             startDebounceTimer()
         }
     }
-    
-    func set(attributes: [String : AttributeValue]) {
+
+    func set(attributes: [String: AttributeValue]) {
         syncQueue.sync {
             self.attributes = attributes
             startDebounceTimer()
         }
     }
-    
+
     func add(attribute: AttributeValue, forKey key: String) {
         syncQueue.sync {
-           if var attr = self.attributes {
-               attr[key] = attribute
-               self.attributes = attr
-           } else {
-               self.attributes = [key: attribute]
-           }
-           startDebounceTimer()
-       }
+            if var attr = self.attributes {
+                attr[key] = attribute
+                self.attributes = attr
+            } else {
+                self.attributes = [key: attribute]
+            }
+            startDebounceTimer()
+        }
     }
-    
+
     func set(language: String) {
         syncQueue.sync {
             self.language = language
-            
+
             // Check if we have an effective userId
             let effectiveUserId = self.userId ?? Formbricks.userManager?.userId
-            
+
             if effectiveUserId != nil {
                 // If we have a userId, set attributes
                 self.attributes = ["language": .string(language)]
@@ -82,11 +82,11 @@ final class UpdateQueue {
                 Formbricks.logger?.debug("UpdateQueue - updating language locally: \(language)")
                 return
             }
-            
+
             startDebounceTimer()
         }
     }
-    
+
     /// Asks for the user state to be re-read from the server. Carries no new data — it exists
     /// so an interaction that can change segment membership doesn't have to wait for the state
     /// to expire.
@@ -223,40 +223,54 @@ final class UpdateQueue {
             language = nil
         }
     }
-    
+
     deinit {
         Formbricks.logger?.debug("Deinitializing \(self)")
     }
 }
 
-private extension UpdateQueue {
+extension UpdateQueue {
     /// Must be read under `syncQueue`.
-    var hasPendingWorkLocked: Bool {
+    fileprivate var hasPendingWorkLocked: Bool {
         userId != nil || attributes != nil || isSyncInFlight
     }
 
     /// The id a commit would send. Must be read under `syncQueue`.
-    var effectiveUserIdLocked: String? {
+    fileprivate var effectiveUserIdLocked: String? {
         userId ?? inFlightUserId ?? Formbricks.userManager?.userId
     }
 
     /// Must be called under `syncQueue`.
-    func startDebounceTimer() {
+    fileprivate func startDebounceTimer() {
         onMain { [weak self] in
             guard let self = self else { return }
             self.timer?.invalidate()
             self.timer = nil
-            self.timer = Timer.scheduledTimer(timeInterval: Config.User.updateDebounceIntervalInSeconds,
-                                              target: self,
-                                              selector: #selector(self.commit),
-                                              userInfo: nil,
-                                              repeats: false)
+            self.timer = Timer.scheduledTimer(
+                timeInterval: Config.User.updateDebounceIntervalInSeconds,
+                target: self,
+                selector: #selector(self.commit),
+                userInfo: nil,
+                repeats: false)
         }
+    }
+
+    /// Whether a debounced commit is waiting to fire. Main thread only, like the timer itself.
+    var hasScheduledCommit: Bool {
+        timer?.isValid == true
+    }
+
+    /// Fires the debounced commit now, as if its interval had elapsed. Main thread only.
+    ///
+    /// For tests: sleeping past the debounce races the wall clock, and a stalled simulator lets
+    /// the sleep win. This drives the same timer the run loop would.
+    func fireScheduledCommit() {
+        timer?.fire()
     }
 
     /// Sends what is queued now instead of waiting the debounce window out. Everything queued so
     /// far still goes in a single request, so calls stay coalesced.
-    func flushNow() {
+    fileprivate func flushNow() {
         onMain { [weak self] in
             guard let self = self else { return }
             self.timer?.invalidate()
@@ -265,7 +279,7 @@ private extension UpdateQueue {
         }
     }
 
-    func scheduleWaiterTimeout(for token: Int) {
+    fileprivate func scheduleWaiterTimeout(for token: Int) {
         let timeout = Config.User.pendingUpdateTimeoutInSeconds
         syncQueue.asyncAfter(deadline: .now() + timeout) { [weak self] in
             guard let self = self else { return }
@@ -277,17 +291,17 @@ private extension UpdateQueue {
 
     /// Hands every parked waiter the same outcome. Resolution is moved off `syncQueue` so a
     /// waiter that calls back into the queue cannot deadlock on it.
-    func resolve(_ waiters: [(Bool) -> Void], with success: Bool) {
+    fileprivate func resolve(_ waiters: [(Bool) -> Void], with success: Bool) {
         guard !waiters.isEmpty else { return }
         DispatchQueue.main.async {
-            waiters.forEach { $0(success) }
+            for waiter in waiters { waiter(success) }
         }
     }
 
     /// `Timer` and `RunLoop` are bound to the thread that scheduled them, so all timer
     /// bookkeeping funnels through the main run loop. Runs inline when already there, so a
     /// `flushNow()` from the main thread sends without waiting for another turn of the loop.
-    func onMain(_ work: @escaping () -> Void) {
+    fileprivate func onMain(_ work: @escaping () -> Void) {
         if Thread.isMainThread {
             work()
         } else {
@@ -295,7 +309,7 @@ private extension UpdateQueue {
         }
     }
 
-    @objc func commit() {
+    @objc fileprivate func commit() {
         var effectiveUserId: String?
         var effectiveAttributes: [String: AttributeValue]?
         var isDeferred = false
@@ -339,7 +353,7 @@ private extension UpdateQueue {
             Formbricks.logger?.error(error.message)
             return
         }
-        
+
         // Nothing will call `syncDidFinish()` if there is no user manager left to run the
         // request, so settle it here rather than leaving the flag stuck and waiters parked.
         guard let userManager = userManager else {
@@ -347,7 +361,8 @@ private extension UpdateQueue {
             return
         }
 
-        Formbricks.logger?.debug("UpdateQueue - commit() called on UpdateQueue with \(userId) and \(effectiveAttributes ?? [:])")
+        Formbricks.logger?.debug(
+            "UpdateQueue - commit() called on UpdateQueue with \(userId) and \(effectiveAttributes ?? [:])")
         userManager.syncUser(withId: userId, attributes: effectiveAttributes)
     }
 }

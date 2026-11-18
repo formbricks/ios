@@ -1,4 +1,5 @@
 import XCTest
+
 @testable import FormbricksSDK
 
 final class GetWorkspaceRequestTests: XCTestCase {

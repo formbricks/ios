@@ -13,7 +13,7 @@ public enum FormbricksSDKErrorType: Int {
     case userIdIsNotSetYet
     case invalidDisplayOption
     case networkError
-    
+
     var description: String {
         switch self {
         case .sdkIsNotInitialized:
@@ -23,7 +23,8 @@ public enum FormbricksSDKErrorType: Int {
         case .invalidAppUrl:
             return "Invalid App URL"
         case .unableToRefreshEnvironment:
-            return "Unable to refresh the environment object. Will try again in \(Config.Environment.refreshStateOnErrorTimeoutInMinutes) minutes."
+            return
+                "Unable to refresh the environment object. Will try again in \(Config.Environment.refreshStateOnErrorTimeoutInMinutes) minutes."
         case .unableToPersistEnvironment:
             return "Unable to persist the environment object."
         case .unableToRetrieveEnvironment:
@@ -44,10 +45,10 @@ public enum FormbricksSDKErrorType: Int {
     }
 }
 
-public final class FormbricksSDKError:  LocalizedError {
+public final class FormbricksSDKError: LocalizedError {
     public let type: FormbricksSDKErrorType
     public var errorDescription: String
-    
+
     init(type: FormbricksSDKErrorType) {
         self.type = type
         self.errorDescription = type.description

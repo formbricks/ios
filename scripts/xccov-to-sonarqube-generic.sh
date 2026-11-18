@@ -22,6 +22,7 @@ function check_xcode_version() {
   return $(( (major >= 14) || (major == 13 && minor >= 3) ))
 }
 
+# shellcheck disable=SC2086 # the elif splits "26.3" into the major and minor arguments on purpose
 if ! xcode_version="$(xcodebuild -version | sed -n '1s/^Xcode \([0-9.]*\)$/\1/p')"; then
   echo 'Failed to get Xcode version' 1>&2
   exit 1

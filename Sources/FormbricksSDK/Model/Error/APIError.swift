@@ -3,7 +3,7 @@ import Foundation
 public enum FormbricksAPIErrorType: Int {
     case invalidResponse
     case responseError
-    
+
     var description: String {
         switch self {
         case .invalidResponse:
@@ -18,9 +18,9 @@ public final class FormbricksAPIClientError: LocalizedError {
     public let type: FormbricksAPIErrorType
     public let statusCodeInt: Int?
     let statusCode: HTTPStatusCode?
-    
+
     public var errorDescription: String
-    
+
     init(type: FormbricksAPIErrorType, statusCode: Int? = nil) {
         self.type = type
         if let statusCode = statusCode {

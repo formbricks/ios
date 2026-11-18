@@ -95,10 +95,40 @@ Formbricks.setAppearance(.dark) // .light, .dark or .system
 
 Custom CSS configured in Formbricks needs no SDK call; it arrives with the workspace state.
 
+## Development
+
+Every CI check has a `make` target, so `make check` runs them all locally. You need Xcode 26.3 and
+[SwiftLint](https://github.com/realm/SwiftLint) 0.65.1.
+
+| Target | What it checks |
+| --- | --- |
+| `make lint` | SwiftLint, strict |
+| `make format-check` | swift-format; `make format` fixes it |
+| `make build` | builds with warnings as errors |
+| `make test` | unit tests on an iPhone simulator |
+| `make api-check` | the public API against `api/FormbricksSDK.api` |
+| `make package-check` | an app can resolve and build the package through SPM |
+| `make script-tests` | the CI, release and E2E harness shell scripts (needs `jq`) |
+
+If you change the public API on purpose, run `make api-dump` and commit `api/FormbricksSDK.api` with the change.
+
+### Playground and E2E
+
+`Playground/Playground.xcodeproj` is a small app that uses the SDK from this checkout, with a button per
+SDK call (set up, set user ID, set attribute, track, log out). Its source is `Playground/project.yml`; after
+editing it, run `xcodegen generate --spec Playground/project.yml` and commit the project too.
+
+The E2E workflow (`.github/workflows/e2e.yml`) runs its XCUITest golden journey against a real Formbricks
+server. The server runs on Linux (`e2e/server/`) and the macOS job reaches it through a Cloudflare quick
+tunnel (`e2e/tunnel/`), because the SDK only accepts `https://` app URLs. To run it locally against a
+server you can reach over https:
+
+```sh
+e2e/ios/run-journey.sh build
+E2E_APP_URL=https://... E2E_USER_ID=qa-user-local E2E_FEEDBACK="Local feedback" e2e/ios/run-journey.sh test
+```
+
 ## Releasing
 
-1. Confirm the SonarQube workflow passes, including the iOS simulator tests.
-2. Create a new semantic-version Git tag (for example, `2.3.1`) on the tested commit and publish a GitHub release
-   with the changes and any upgrade instructions. Do not move existing release tags.
-3. Swift Package Manager discovers versions from Git tags; no separate registry publishing step is required.
-   Verify the new version resolves in Xcode and build an app that imports `FormbricksSDK`.
+See [RELEASING.md](RELEASING.md). The tag is the release, so the manual E2E QA run must pass before you
+publish.
