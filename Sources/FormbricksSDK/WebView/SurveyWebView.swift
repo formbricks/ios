@@ -162,8 +162,8 @@ extension SurveyWebView {
 
         // webView function handles Javascipt alert
         func webView(
-            _ webView: WKWebView, runJavaScriptAlertPanelWithMessage message: String,
-            initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping () -> Void
+            _: WKWebView, runJavaScriptAlertPanelWithMessage message: String,
+            initiatedByFrame _: WKFrameInfo, completionHandler: @escaping () -> Void
         ) {
             let alertController = UIAlertController(title: "", message: message, preferredStyle: .alert)
             alertController.addAction(
@@ -178,7 +178,7 @@ extension SurveyWebView {
         }
 
         func webView(
-            _ webView: WKWebView, didReceive _: URLAuthenticationChallenge,
+            _: WKWebView, didReceive _: URLAuthenticationChallenge,
             completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
         ) {
             // Let the OS perform standard certificate-chain validation. Never force-trust
