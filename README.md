@@ -132,3 +132,5 @@ E2E_APP_URL=https://... E2E_USER_ID=qa-user-local E2E_FEEDBACK="Local feedback" 
 
 See [RELEASING.md](RELEASING.md). The tag is the release, so the manual E2E QA run must pass before you
 publish.
+
+<!-- CI demo PR, do not merge -->
